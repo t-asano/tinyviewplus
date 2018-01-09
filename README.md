@@ -2,6 +2,8 @@
 
 Tiny View Plusは、FPV映像を3画面同時に表示できるアプリです。UVC対応のFPV受信機を、MacBook等のコンピューターに接続して利用します。
 
+![tinyviewplus](https://user-images.githubusercontent.com/14119184/34721592-a1043ef2-f586-11e7-9e4a-c73a2d42d59e.jpg)
+
 ## 動作環境
 
 - MacBook Pro + MacOS High Sierra
