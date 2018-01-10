@@ -11,7 +11,7 @@ Tiny View Plusは、FPV映像を3画面同時に表示できるアプリです�
 
 ### 補足
 
-- ソースコードからビルドする場合は openFrameworks v0.9.8 が必要です
+- ソースコードからビルドする場合は [openFrameworks](http://openframeworks.cc/ja/) v0.9.8 が必要です
 - Windowsでの動作は未検証です
 
 ## インストール
@@ -24,9 +24,10 @@ Tiny View Plusは、FPV映像を3画面同時に表示できるアプリです�
 ### ソースコードからビルドする場合
 
 1. [openFrameworks](http://openframeworks.cc/ja/) v0.9.8 をセットアップ
-2. 新規プロジェクトの雛形を作成
-3. このリポジトリのソースコード(src/)を組み込み
-4. ビルド
+2. [CVPixelBufferに関する修正パッチ](https://github.com/openframeworks/openFrameworks/commit/836fbda74770b7a1df3e136e9d2200b5c2cee8a4)を適用
+3. 新規プロジェクトの雛形を作成
+4. このリポジトリのソースコード(src/)を組み込み
+5. ビルド
 
 ## 起動
 
