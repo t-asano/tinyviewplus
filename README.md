@@ -6,28 +6,26 @@ Tiny View Plusは、FPV映像を3画面同時に表示できるアプリです�
 
 ## 動作環境
 
-- MacBook Pro + MacOS High Sierra
+- macOS High Sierra
+	- ソースコードからビルドする場合には [openFrameworks](http://openframeworks.cc/ja/) v0.9.8 が必要
+	- macOS以外でも動作する可能性はあるが未検証
 - Eachine ROTG01 / ROTG02
-
-### 補足
-
-- ソースコードからビルドする場合は [openFrameworks](http://openframeworks.cc/ja/) v0.9.8 が必要です
-- Windowsでの動作は未検証です
 
 ## インストール
 
-### ビルド済みバイナリを使用する場合(MacOSのみ)
+### ビルド済みバイナリを使用する場合(macOSのみ)
 
 1. [リリースページ](https://github.com/t-asano/tinyviewplus/releases)よりzipファイルをダウンロード
 2. zipファイルを適当な場所に展開
 
 ### ソースコードからビルドする場合
 
-1. [openFrameworks](http://openframeworks.cc/ja/) v0.9.8 をセットアップ
+1. [openFrameworks](http://openframeworks.cc/ja/) v0.9.8 をインストール
 2. [CVPixelBufferに関する修正パッチ](https://github.com/openframeworks/openFrameworks/commit/836fbda74770b7a1df3e136e9d2200b5c2cee8a4)を適用
-3. 新規プロジェクトの雛形を作成
-4. このリポジトリのソースコード(src/)を組み込み
-5. ビルド
+3. 新規プロジェクトを作成
+4. [ofxTrueTypeFontUCアドオン](https://github.com/hironishihara/ofxTrueTypeFontUC)を追加
+5. ソースコード(src/)とアセット(bin/data/)を取り込み
+6. ビルド
 
 ## 起動
 
@@ -36,9 +34,9 @@ Tiny View Plusは、FPV映像を3画面同時に表示できるアプリです�
 
 ### 補足
 
-- アプリ起動時に接続済みの受信機のみが使用されます
+- アプリ起動時に接続されている受信機のみを使用します
 - 複数の受信機がうまく検出されない場合は、1台ずつ時間をおいて接続して下さい
 
-## ライセンス
+## License
 
-MIT License
+Tiny View Plus is distributed under the MIT License. This gives everyone the freedoms to use Tiny View Plus in any context: commercial or non-commercial, public or private, open or closed source. Please see [LICENSE](LICENSE) for details.
