@@ -22,6 +22,12 @@ int namePosY[3];
 
 //--------------------------------------------------------------
 void ofApp::setup(){
+    // path
+    ofDirectory dir;
+    if (dir.doesDirectoryExist("../data") == false) {
+        // macOS binary release
+        ofSetDataPathRoot("../Resources/data");
+    }
     // screen
     ofSetWindowTitle("Tiny View Plus");
     ofBackground(0, 0, 0);
@@ -35,7 +41,7 @@ void ofApp::setup(){
         if (it->deviceName.substr(0, 16) == "USB2.0 PC CAMERA") {
             cameraNum++;
             if (cameraNum <= 3) {
-                cout<<"CAM"<<cameraNum<<": "<<it->deviceName<<endl;
+                ofLogNotice() << "CAM" << cameraNum << ": " << it->deviceName;
                 grabber[cameraNum - 1].setDeviceID(it->id);
                 grabber[cameraNum - 1].initGrabber(CAMERA_WIDTH, CAMERA_HEIGHT);
             }
