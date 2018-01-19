@@ -13,10 +13,10 @@
 #define LABEL_MARGIN_Y   (LABEL_HEIGHT + LABEL_MARGIN_X)
 #define HELP_MESSAGE    "Keyboard shortcuts:\n"\
                         "[1-3] Toggle camera 1-3 visibility\n"\
-                        "[h] Display help\n"\
-                        "[l] Change camera label\n"\
-                        "[r] Reset configuration\n"\
-                        "[w] Change wallpaper\n"
+                        "[H,h] Display help\n"\
+                        "[L,l] Change camera label\n"\
+                        "[R,r] Reset configuration\n"\
+                        "[W,w] Change wallpaper\n"
 
 void bindCameras();
 void toggleCameraVisibility(int);
