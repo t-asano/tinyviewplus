@@ -1,5 +1,3 @@
-## Tiny View Plus
-
 Tiny View Plus is distributed under the MIT License. This gives everyone the freedoms to use Tiny View Plus in any context: commercial or non-commercial, public or private, open or closed source.
 
 Copyright (c) 2018- t-asano
@@ -21,47 +19,3 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
-
-## M+ FONTS
-
-These fonts are free software.
-Unlimited permission is granted to use, copy, and distribute them, with or without modification, either commercially or noncommercially.
-THESE FONTS ARE PROVIDED "AS IS" WITHOUT WARRANTY.
-
-http://mplus-fonts.osdn.jp/about-en.html#license
-
-## ofxTrueTypeFontUC
-
-ofxTrueTypeFontUC is distributed under the MIT License. This gives everyone the freedoms to use ofxTrueTypeFontUC in any context: commercial or non-commercial, public or private, open or closed source.
-
-The MIT License (MIT)
-
-Copyright (c) 2011- openFrameworks Community and hironishihara
-
-https://raw.githubusercontent.com/hironishihara/ofxTrueTypeFontUC/master/License.txt
-
-## openFrameworks
-
-openFrameworks is distributed under the MIT License. This gives everyone the freedoms to use openFrameworks in any context: commercial or non-commercial, public or private, open or closed source.
-
-Copyright (c) 2004- openFrameworks Community
-
-http://openframeworks.cc/about/license/
-
-## other libraries
-
-openFrameworks also ships with a mix of the following libraries, depending on your platform, which may have different licenses.
-
-- OpenGL, GLEW, GLUT, libtess2 and cairo for graphics
-- rtAudio, PortAudio, OpenAL and Kiss FFT or FMOD for audio input, output and analysis
-- FreeType for fonts
-- FreeImage for image saving and loading
-- Quicktime, GStreamer and videoInput for video playback and grabbing
-- Poco for a variety of utilities
-- OpenCV for computer vision
-- Assimp for 3D model loading
-- TinyXml for xml parsing
-- 3DS model loader for 3DStudio model loading (deprecated by assimp)
-- CreEPS for postscript exporting (deprecated by cairo)
-
-http://openframeworks.cc/about/license/

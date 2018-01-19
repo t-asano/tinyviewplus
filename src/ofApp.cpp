@@ -1,24 +1,54 @@
 #include "ofApp.h"
 
 #define FRAME_RATE      60
+#define VERTICAL_SYNC   true
+#define WALL_FILE       "wallpaper.png"
+#define CAMERA_MAXNUM   3
 #define CAMERA_WIDTH    640
 #define CAMERA_HEIGHT   480
 #define CAMERA_RATIO    1.3333
 #define FONT_FILE       "mplus-1p-bold.ttf"
-#define NAME_HEIGHT     30
-#define NAME_MARGIN_X   10
-#define NAME_MARGIN_Y   (NAME_HEIGHT + NAME_MARGIN_X)
+#define LABEL_HEIGHT     30
+#define LABEL_MARGIN_X   10
+#define LABEL_MARGIN_Y   (LABEL_HEIGHT + LABEL_MARGIN_X)
+#define HELP_MESSAGE    "Keyboard shortcuts:\n"\
+                        "[1-3] Toggle camera 1-3 visibility\n"\
+                        "[h] Display help\n"\
+                        "[l] Change camera label\n"\
+                        "[r] Reset configuration\n"\
+                        "[w] Change wallpaper\n"
 
+void bindCameras();
+void toggleCameraVisibility(int);
+int getCameraIdxNthVisible(int);
+void changeCameraLabel();
+void changeWallImage();
+void setWallParams();
 void setViewParams();
+void resetConfig();
+
+class tvpCamView {
+public:
+    bool visible;
+    int width;
+    int height;
+    int posX;
+    int posY;
+    string labelString;
+    int labelPosX;
+    int labelPosY;
+};
+
 ofVideoGrabber grabber[3];
-int cameraNum;
-int camViewPosX[3];
-int camViewPosY[3];
-int camViewWidth[3];
-int camViewHeight[3];
 ofxTrueTypeFontUC myFont;
-int namePosX[3];
-int namePosY[3];
+ofImage wallImage;
+float wallRatio;
+int wallDrawWidth;
+int wallDrawHeight;
+tvpCamView camView[3];
+int cameraNum;
+int cameraNumVisible;
+string helpMessage;
 
 //--------------------------------------------------------------
 void ofApp::setup(){
@@ -28,29 +58,20 @@ void ofApp::setup(){
         // macOS binary release
         ofSetDataPathRoot("../Resources/data");
     }
+    // help
+    helpMessage = ofToString(HELP_MESSAGE);
     // screen
     ofSetWindowTitle("Tiny View Plus");
     ofBackground(0, 0, 0);
-    ofSetVerticalSync(true);
+    ofSetVerticalSync(VERTICAL_SYNC);
     ofSetFrameRate(FRAME_RATE);
-    myFont.loadFont(FONT_FILE, NAME_HEIGHT);
-    // video
-    cameraNum = 0;
-    vector<ofVideoDevice> devices = grabber[0].listDevices();
-    for (vector<ofVideoDevice>::iterator it = devices.begin(); it != devices.end(); ++it) {
-        if (it->deviceName.substr(0, 16) == "USB2.0 PC CAMERA") {
-            cameraNum++;
-            if (cameraNum <= 3) {
-                ofLogNotice() << "CAM" << cameraNum << ": " << it->deviceName;
-                grabber[cameraNum - 1].setDeviceID(it->id);
-                grabber[cameraNum - 1].initGrabber(CAMERA_WIDTH, CAMERA_HEIGHT);
-            }
-            if (cameraNum == 3) {
-                break;
-            }
-        }
-    }
-    // view
+    myFont.loadFont(FONT_FILE, LABEL_HEIGHT);
+    // wallpaper
+    wallImage.load(WALL_FILE);
+    wallRatio = wallImage.getWidth() / wallImage.getHeight();
+    setWallParams();
+    // camera
+    bindCameras();
     setViewParams();
 }
 
@@ -63,24 +84,41 @@ void ofApp::update(){
 
 //--------------------------------------------------------------
 void ofApp::draw(){
-    if (cameraNum == 0) {
-        ofSetColor(255, 215, 0);
-        myFont.drawString("no FPV receiver detected", NAME_MARGIN_X, NAME_MARGIN_Y);
-        return;
-    }
+    // wallpaper
+    ofSetColor(255, 255, 255);
+    wallImage.draw(0, 0, wallDrawWidth, wallDrawHeight);
+    // camera
     for (int i = 0; i < cameraNum; i++) {
-        // video
-        ofSetColor(255, 255, 255);
-        grabber[i].draw(camViewPosX[i], camViewPosY[i], camViewWidth[i], camViewHeight[i]);
-        // name
-        ofSetColor(255, 215, 0);
-        myFont.drawString("CAM" + ofToString(i + 1), namePosX[i], namePosY[i]);
+        // image
+        if (camView[i].visible == true) {
+            ofSetColor(255, 255, 255);
+            grabber[i].draw(camView[i].posX, camView[i].posY, camView[i].width, camView[i].height);
+        }
+        // label
+        if (camView[i].visible == true && camView[i].labelString != "") {
+            ofSetColor(255, 215, 0);
+            myFont.drawString(camView[i].labelString, camView[i].labelPosX, camView[i].labelPosY);
+        }
     }
 }
 
 //--------------------------------------------------------------
 void ofApp::keyPressed(int key){
-    
+    if (key == '1') {
+        toggleCameraVisibility(1);
+    } else if (key == '2') {
+        toggleCameraVisibility(2);
+    } else if (key == '3') {
+        toggleCameraVisibility(3);
+    } else if (key == 'h' || key == 'H') {
+        ofSystemAlertDialog(helpMessage);
+    } else if (key == 'l' || key == 'L') {
+        changeCameraLabel();
+    } else if (key == 'r' || key == 'R') {
+        resetConfig();
+    } else if (key == 'w' || key == 'W') {
+        changeWallImage();
+    }
 }
 
 //--------------------------------------------------------------
@@ -120,6 +158,9 @@ void ofApp::mouseExited(int x, int y){
 
 //--------------------------------------------------------------
 void ofApp::windowResized(int w, int h){
+    // wallpaper
+    setWallParams();
+    // view
     setViewParams();
 }
 
@@ -133,61 +174,213 @@ void ofApp::dragEvent(ofDragInfo dragInfo){
     
 }
 
+//--------------------------------------------------------------
+void bindCameras() {
+    cameraNum = 0;
+    for (int i = 0; i < CAMERA_MAXNUM; i++) {
+        camView[i].visible = false;
+        camView[i].labelString = "CAM" + ofToString(i + 1);
+    }
+    vector<ofVideoDevice> devices = grabber[0].listDevices();
+    for (vector<ofVideoDevice>::iterator it = devices.begin(); it != devices.end(); ++it) {
+        if (it->deviceName.substr(0, 16) == "USB2.0 PC CAMERA") {
+            cameraNum++;
+            if (cameraNum <= 3) {
+                int idx = cameraNum - 1;
+                ofLogNotice() << "CAM" << cameraNum << ": " << it->deviceName;
+                grabber[idx].setDeviceID(it->id);
+                grabber[idx].initGrabber(CAMERA_WIDTH, CAMERA_HEIGHT);
+                camView[idx].visible = true;
+            }
+            if (cameraNum == 3) {
+                break;
+            }
+        }
+    }
+    cameraNumVisible = cameraNum;
+    if (cameraNum == 0) {
+        ofSystemAlertDialog("Error: no FPV receiver detected");
+    }
+}
+
+//--------------------------------------------------------------
+void toggleCameraVisibility(int num) {
+    int idx = num - 1;
+    if (num < 1) {
+        return;
+    }
+    if (num > cameraNum) {
+        ofSystemAlertDialog("camera" + ofToString(num) + " not found");
+        return;
+    }
+    if (camView[idx].visible == true) {
+        camView[idx].visible = false;
+        cameraNumVisible -= 1;
+    } else {
+        camView[idx].visible = true;
+        cameraNumVisible += 1;
+    }
+    setViewParams();
+}
+
+//--------------------------------------------------------------
+int getCameraIdxNthVisible(int nth) {
+    int cnt = 0;
+    for (int i = 0; i < cameraNum; i++) {
+        if (camView[i].visible == true) {
+            cnt++;
+            if (cnt == nth) {
+                return i;
+            }
+        }
+    }
+    return -1;
+}
+
+//--------------------------------------------------------------
+void changeCameraLabel() {
+    string str;
+    for (int i = 0; i < CAMERA_MAXNUM && (i + 1) <= cameraNum; i++) {
+        str = camView[i].labelString;
+        str = ofSystemTextBoxDialog("camera" + ofToString(i + 1) + " name:", str);
+        camView[i].labelString = str;
+    }
+}
+
+//--------------------------------------------------------------
+void changeWallImage() {
+    ofFileDialogResult result = ofSystemLoadDialog("change wallpaper");
+    if (result.bSuccess) {
+        string path = result.getPath();
+        ofFile file(path);
+        string ext = ofToLower(file.getExtension());
+        if (ext == "jpg" || ext == "jpeg" || ext == "png" || ext == "gif") {
+            wallImage.clear();
+            wallImage.load(path);
+            wallRatio = wallImage.getWidth() / wallImage.getHeight();
+            setWallParams();
+        } else {
+            ofSystemAlertDialog("Error: unsupported file type");
+        }
+    } else {
+        ofSystemAlertDialog("Error: can't load file");
+    }
+}
+
+//--------------------------------------------------------------
+void setWallParams() {
+    float sratio;
+    sratio = float(ofGetWidth()) / float(ofGetHeight());
+    if (sratio > wallRatio) {
+        wallDrawWidth = ofGetWidth();
+        wallDrawHeight = wallDrawWidth / wallRatio;
+    } else {
+        wallDrawHeight = ofGetHeight();
+        wallDrawWidth = wallDrawHeight * wallRatio;
+    }
+}
+
+//--------------------------------------------------------------
 void setViewParams() {
+    int idx;
     int width = ofGetWidth();
     int height = ofGetHeight();
     float ratio = float(width) / float(height);
-    switch (cameraNum) {
+    switch (cameraNumVisible) {
         case 1:
-            // CAM1
-            camViewWidth[0] = width;
-            camViewHeight[0] = camViewWidth[0] / CAMERA_RATIO;
-            camViewPosX[0] = (width / 2) - (camViewWidth[0] / 2);
-            camViewPosY[0] = (height / 2) - (camViewHeight[0] / 2);
-            namePosX[0] = ((camViewPosX[0] < 0) ? 0 : camViewPosX[0]) + NAME_MARGIN_X;
-            namePosY[0] = ((camViewPosY[0] < 0) ? 0 : camViewPosY[0]) + NAME_MARGIN_Y;
+            // 1st visible camera
+            idx = getCameraIdxNthVisible(1);
+            if (idx == -1) {
+                break;
+            }
+            camView[idx].width = width;
+            camView[idx].height = camView[idx].width / CAMERA_RATIO;
+            camView[idx].posX = (width / 2) - (camView[idx].width / 2);
+            camView[idx].posY = (height / 2) - (camView[idx].height / 2);
+            camView[idx].labelPosX = ((camView[idx].posX < 0) ? 0 : camView[idx].posX) + LABEL_MARGIN_X;
+            camView[idx].labelPosY = ((camView[idx].posY < 0) ? 0 : camView[idx].posY) + LABEL_MARGIN_Y;
             break;
         case 2:
-            // CAM1
-            camViewWidth[0] = width / 2;
-            camViewHeight[0] = camViewWidth[0] / CAMERA_RATIO;
-            camViewPosX[0] = -1;
-            camViewPosY[0] = (height / 2) - (camViewHeight[0] / 2);
-            namePosX[0] = ((camViewPosX[0] < 0) ? 0 : camViewPosX[0]) + NAME_MARGIN_X;
-            namePosY[0] = ((camViewPosY[0] < 0) ? 0 : camViewPosY[0]) + NAME_MARGIN_Y;
-            // CAM2
-            camViewWidth[1] = width / 2;
-            camViewHeight[1] = camViewWidth[1] / CAMERA_RATIO;
-            camViewPosX[1] = (width / 2) + 1;
-            camViewPosY[1] = (height / 2) - (camViewHeight[1] / 2);
-            namePosX[1] = ((camViewPosX[1] < 0) ? 0 : camViewPosX[1]) + NAME_MARGIN_X;
-            namePosY[1] = ((camViewPosY[1] < 0) ? 0 : camViewPosY[1]) + NAME_MARGIN_Y;
+            // 1st visible camera
+            idx = getCameraIdxNthVisible(1);
+            if (idx == -1) {
+                break;
+            }
+            camView[idx].width = width / 2;
+            camView[idx].height = camView[idx].width / CAMERA_RATIO;
+            camView[idx].posX = -1;
+            camView[idx].posY = (height / 2) - (camView[idx].height / 2);
+            camView[idx].labelPosX = ((camView[idx].posX < 0) ? 0 : camView[idx].posX) + LABEL_MARGIN_X;
+            camView[idx].labelPosY = ((camView[idx].posY < 0) ? 0 : camView[idx].posY) + LABEL_MARGIN_Y;
+            // 2nd visible camera
+            idx = getCameraIdxNthVisible(2);
+            if (idx == -1) {
+                break;
+            }
+            camView[idx].width = width / 2;
+            camView[idx].height = camView[idx].width / CAMERA_RATIO;
+            camView[idx].posX = (width / 2) + 1;
+            camView[idx].posY = (height / 2) - (camView[idx].height / 2);
+            camView[idx].labelPosX = ((camView[idx].posX < 0) ? 0 : camView[idx].posX) + LABEL_MARGIN_X;
+            camView[idx].labelPosY = ((camView[idx].posY < 0) ? 0 : camView[idx].posY) + LABEL_MARGIN_Y;
             break;
         case 3:
-            // CAM1
-            camViewHeight[0] = height * 0.55;
-            camViewWidth[0] = camViewHeight[0] * CAMERA_RATIO;
-            camViewPosX[0] = (width / 2) - (camViewWidth[0] / 2);
-            camViewPosY[0] = 0;
-            namePosX[0] = ((camViewPosX[0] < 0) ? 0 : camViewPosX[0]) + NAME_MARGIN_X;
-            namePosY[0] = ((camViewPosY[0] < 0) ? 0 : camViewPosY[0]) + NAME_MARGIN_Y;
-            // CAM2
-            camViewHeight[1] = height * 0.55;
-            camViewWidth[1] = camViewHeight[1] * CAMERA_RATIO;
-            camViewPosX[1] = 0;
-            camViewPosY[1] = height * 0.45;
-            namePosX[1] = ((camViewPosX[1] < 0) ? 0 : camViewPosX[1]) + NAME_MARGIN_X;
-            namePosY[1] = ((camViewPosY[1] < 0) ? 0 : camViewPosY[1]) + NAME_MARGIN_Y;
-            // CAM3
-            camViewHeight[2] = height * 0.55;
-            camViewWidth[2] = camViewHeight[2] * CAMERA_RATIO;
-            camViewPosX[2] = width - camViewWidth[2];
-            camViewPosY[2] = height * 0.45;
-            namePosX[2] = ((camViewPosX[2] < 0) ? 0 : camViewPosX[2]) + NAME_MARGIN_X;
-            namePosY[2] = ((camViewPosY[2] < 0) ? 0 : camViewPosY[2]) + NAME_MARGIN_Y;
+            // 1st visible camera
+            idx = getCameraIdxNthVisible(1);
+            if (idx == -1) {
+                break;
+            }
+            camView[idx].height = height * 0.55;
+            camView[idx].width = camView[idx].height * CAMERA_RATIO;
+            camView[idx].posX = (width / 2) - (camView[idx].width / 2);
+            camView[idx].posY = 0;
+            camView[idx].labelPosX = ((camView[idx].posX < 0) ? 0 : camView[idx].posX) + LABEL_MARGIN_X;
+            camView[idx].labelPosY = ((camView[idx].posY < 0) ? 0 : camView[idx].posY) + LABEL_MARGIN_Y;
+            // 2nd visible camera
+            idx = getCameraIdxNthVisible(2);
+            if (idx == -1) {
+                break;
+            }
+            camView[idx].height = height * 0.55;
+            camView[idx].width = camView[idx].height * CAMERA_RATIO;
+            camView[idx].posX = 0;
+            camView[idx].posY = height * 0.45;
+            camView[idx].labelPosX = ((camView[idx].posX < 0) ? 0 : camView[idx].posX) + LABEL_MARGIN_X;
+            camView[idx].labelPosY = ((camView[idx].posY < 0) ? 0 : camView[idx].posY) + LABEL_MARGIN_Y;
+            // 3rd visible camera
+            idx = getCameraIdxNthVisible(3);
+            if (idx == -1) {
+                break;
+            }
+            camView[idx].height = height * 0.55;
+            camView[idx].width = camView[idx].height * CAMERA_RATIO;
+            camView[idx].posX = width - camView[idx].width;
+            camView[idx].posY = height * 0.45;
+            camView[idx].labelPosX = ((camView[idx].posX < 0) ? 0 : camView[idx].posX) + LABEL_MARGIN_X;
+            camView[idx].labelPosY = ((camView[idx].posY < 0) ? 0 : camView[idx].posY) + LABEL_MARGIN_Y;
             break;
         default:
             // none
             break;
+    }
+}
+
+//--------------------------------------------------------------
+void resetConfig() {
+    int i;
+    // wallpaper
+    wallImage.clear();
+    wallImage.load(WALL_FILE);
+    wallRatio = wallImage.getWidth() / wallImage.getHeight();
+    setWallParams();
+    // camera visibility
+    for (i = 0; i < cameraNum; i++) {
+        camView[i].visible = true;
+    }
+    cameraNumVisible = cameraNum;
+    setViewParams();
+    // camera label
+    for (i = 0; i < CAMERA_MAXNUM; i++) {
+        camView[i].labelString = "CAM" + ofToString(i + 1);
     }
 }
