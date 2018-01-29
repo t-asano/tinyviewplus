@@ -2,6 +2,7 @@
 
 #include "ofMain.h"
 #include "ofxTrueTypeFontUC.h"
+#include "ofxOsc.h"
 
 class ofApp : public ofBaseApp {
 public:
