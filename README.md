@@ -25,14 +25,14 @@ Tiny View Plusは、FPV映像を手軽に表示するためのアプリです。
 1. [リリースページ](https://github.com/t-asano/tinyviewplus/releases)よりzipファイルをダウンロード
 2. zipファイルを適当な場所に展開
 
-バイナリの作成にあたっては細心の注意を払っていますが、アプリを実行することで起きる不具合については一切責任を負いません。セキュリティ等に不安がある方は、ソースコードの内容を十分に理解した上で、以下の手順に従ってソースコードからビルドすることをお勧めします。
+バイナリの作成にあたっては細心の注意を払っていますが、アプリを実行することで起こる不具合については、一切責任を負いません。セキュリティ等に不安がある方は、ソースコードの内容を十分に理解した上で、以下の手順に従ってソースコードからビルドすることをお勧めします。
 
 ### ソースコードからビルドする場合
 
 1. [openFrameworks](http://openframeworks.cc/ja/) v0.9.8 をインストール
 2. [CVPixelBufferに関する修正パッチ](https://github.com/openframeworks/openFrameworks/commit/836fbda74770b7a1df3e136e9d2200b5c2cee8a4)を適用
 3. 新規プロジェクトを作成
-4. [最新のofxOscアドオン](https://github.com/openframeworks/openFrameworks/tree/master/addons/ofxOsc)を追加
+4. ofxOscアドオンを[最新版](https://github.com/openframeworks/openFrameworks/tree/master/addons/ofxOsc)に入れ替え
 5. [ofxTrueTypeFontUCアドオン](https://github.com/hironishihara/ofxTrueTypeFontUC)を追加
 6. ソースコード(src/)とアセット(bin/data/)を取り込み
 7. ビルド
@@ -45,9 +45,11 @@ Tiny View Plusは、FPV映像を手軽に表示するためのアプリです。
 2. アプリを起動
 
 ビルド済みバイナリを起動しようとすると、以下のような警告が表示されることがあります。
+
 ![binary01](docs/binary01.png)
 
-[システム環境設定] -> [セキュリティとプライバシー] -> [一般]を開いて、[このまま開く]をクリックすると、アプリを起動できます。アプリを実行することで起きる不具合については一切責任を追いません。ご了承ください。
+[システム環境設定] -> [セキュリティとプライバシー] -> [一般]を開いて、[このまま開く] をクリックすると、アプリを起動できます。（アプリを実行することで起こる不具合については、一切責任を追いません。ご了承ください。）
+
 ![binary02](docs/binary02.png)
 
 受信機がうまく検出されない場合は、以下をお試し下さい。
@@ -58,7 +60,7 @@ Tiny View Plusは、FPV映像を手軽に表示するためのアプリです。
 4. 受信機を一台ずつ数秒間隔で接続
 5. アプリを起動
 
-macOSの場合、QuickTimeアプリで認識済みカメラのリストを表示できます。Tiny View Plusを実行する前に、QuickTimeでカメラの認識を確認しておくと、問題の切り分けがしやすくなります。
+macOSの場合、QuickTimeアプリでカメラのリストを表示できます。Tiny View Plusを実行する前に、QuickTimeアプリでカメラの検出状況を確認しておくと、問題の切り分けがしやすくなります。
 
 ### キー操作
 
