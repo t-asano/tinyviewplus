@@ -7,38 +7,47 @@
 // view
 #define FRAME_RATE      60
 #define VERTICAL_SYNC   true
-#define WALL_FILE       "wallpaper.png"
+#define WALL_FILE       "background.png"
 #define CAMERA_MAXNUM   3
 #define CAMERA_WIDTH    640
 #define CAMERA_HEIGHT   480
 #define CAMERA_RATIO    1.3333
 #define FONT_FILE       "mplus-1p-bold.ttf"
-#define LABEL_HEIGHT    30
-#define LABEL_MARGIN_X  10
-#define LABEL_MARGIN_Y  (10 + LABEL_HEIGHT)
-#define LAP_HEIGHT      LABEL_HEIGHT
+#define ICON_FILE_HEAD  "pilots/pilot"
+#define ICON_FILE_FOOT  ".png"
+#define ICON_WIDTH      60
+#define ICON_HEIGHT     60
+#define ICON_MARGIN_X   10
+#define ICON_MARGIN_Y   10
+#define LABEL_HEIGHT    40
+#define LABEL_MARGIN_X  80  // ICON_MARGIN_X + ICON_WIDTH + 10
+#define LABEL_MARGIN_Y  60  // 10 + LABEL_HEIGHT + (ICON_HEIGHT - LABEL_HEIGHT) / 2
+#define LAP_HEIGHT      30
 #define LAP_MARGIN_X    10
-#define LAP_MARGIN_Y    (10 + LABEL_MARGIN_Y + LAP_HEIGHT)
+#define LAP_MARGIN_Y    110 // ICON_MARGIN_Y + ICON_HEIGHT + 10 + LAP_HEIGHT
 // osc
 #define OSC_LISTEN_PORT 4000
 // help
 #ifdef FEATURE_SPEECH
 #define HELP_MSG_SPEECH "[S] Toggle speech on/off\n"
+#define DFLT_SPCH_ENBLD false
 #else /* FEATURE_SPEECH */
 #define HELP_MSG_SPEECH ""
 #endif /* FEATURE_SPEECH */
 #define HELP_MESSAGE    "Keyboard shortcuts:\n"\
-                        "[1-3] Toggle camera 1-3 on/off\n"\
                         "[H] Display help\n"\
+                        "[1-3] Toggle camera 1-3 on/off\n"\
+                        "[Q,W,E] Change camera 1-3 icon\n"\
                         "[L] Change camera label\n"\
-                        "[R] Reset configuration\n"\
+                        "[B] Change background image\n"\
                         HELP_MSG_SPEECH\
-                        "[W] Change wallpaper\n"
+                        "[R] Reset configuration\n"
 
 void bindCameras();
 void toggleCameraVisibility(int);
 int getCameraIdxNthVisible(int);
 void changeCameraLabel();
+void changeCameraIcon(int);
 void changeWallImage();
 void setWallParams();
 void setViewParams();
@@ -60,6 +69,9 @@ public:
     int height;
     int posX;
     int posY;
+    ofImage iconImage;
+    int iconPosX;
+    int iconPosY;
     string labelString;
     int labelPosX;
     int labelPosY;
@@ -69,7 +81,7 @@ public:
 };
 
 ofVideoGrabber grabber[CAMERA_MAXNUM];
-ofxTrueTypeFontUC myFont;
+ofxTrueTypeFontUC myFontLabel, myFontLap;
 ofImage wallImage;
 float wallRatio;
 int wallDrawWidth;
@@ -98,7 +110,8 @@ void ofApp::setup(){
     ofBackground(0, 0, 0);
     ofSetVerticalSync(VERTICAL_SYNC);
     ofSetFrameRate(FRAME_RATE);
-    myFont.loadFont(FONT_FILE, LABEL_HEIGHT);
+    myFontLabel.load(FONT_FILE, LABEL_HEIGHT);
+    myFontLap.load(FONT_FILE, LAP_HEIGHT);
     // wallpaper
     wallImage.load(WALL_FILE);
     wallRatio = wallImage.getWidth() / wallImage.getHeight();
@@ -110,7 +123,7 @@ void ofApp::setup(){
     oscReceiver.setup(OSC_LISTEN_PORT);
 #ifdef FEATURE_SPEECH
     // speech
-    speechEnabled = false;
+    speechEnabled = DFLT_SPCH_ENBLD;
 #endif /* FEATURE_SPEECH */
 }
 
@@ -134,13 +147,14 @@ void ofApp::draw(){
         if (camView[i].visible == false) {
             continue;
         }
-        // image
+        // camera image, icon
         ofSetColor(255, 255, 255);
         grabber[i].draw(camView[i].posX, camView[i].posY, camView[i].width, camView[i].height);
+        camView[i].iconImage.draw(camView[i].iconPosX, camView[i].iconPosY, ICON_WIDTH, ICON_HEIGHT);
         // label
         if (camView[i].labelString != "") {
             ofSetColor(255, 215, 0);
-            myFont.drawString(camView[i].labelString, camView[i].labelPosX, camView[i].labelPosY);
+            myFontLabel.drawString(camView[i].labelString, camView[i].labelPosX, camView[i].labelPosY);
         }
         // laptime
         if (camView[i].lap != 0) {
@@ -149,7 +163,7 @@ void ofApp::draw(){
             stream << fixed << setprecision(2) << camView[i].lap;
             ofSetColor(255, 255, 255);
             sout = ofToString("Lap:") + stream.str() + "s";
-            myFont.drawString(sout, camView[i].lapPosX, camView[i].lapPosY);
+            myFontLap.drawString(sout, camView[i].lapPosX, camView[i].lapPosY);
         }
     }
 }
@@ -172,8 +186,14 @@ void ofApp::keyPressed(int key){
     } else if (key == 's' || key == 'S') {
         toggleSpeech();
 #endif /* FEATURE_SPEECH */
-    } else if (key == 'w' || key == 'W') {
+    } else if (key == 'b' || key == 'B') {
         changeWallImage();
+    } else if (key == 'q' || key == 'Q') {
+        changeCameraIcon(1);
+    } else if (key == 'w' || key == 'W') {
+        changeCameraIcon(2);
+    } else if (key == 'e' || key == 'E') {
+        changeCameraIcon(3);
     }
 }
 
@@ -236,15 +256,18 @@ void bindCameras() {
     vector<ofVideoDevice> devices = grabber[0].listDevices();
     for (vector<ofVideoDevice>::iterator it = devices.begin(); it != devices.end(); ++it) {
         if (it->deviceName.substr(0, 16) == "USB2.0 PC CAMERA") {
-            cameraNum++;
-            if (cameraNum <= CAMERA_MAXNUM) {
-                int idx = cameraNum - 1;
-                ofLogNotice() << "Pilot" << cameraNum << ": " << it->deviceName;
+            if (cameraNum < CAMERA_MAXNUM) {
+                int idx = cameraNum;
                 grabber[idx].setDeviceID(it->id);
-                grabber[idx].initGrabber(CAMERA_WIDTH, CAMERA_HEIGHT);
-                camView[idx].visible = true;
-                camView[idx].labelString = "Pilot" + ofToString(idx + 1);
-                camView[idx].lap = 0;
+                if (grabber[idx].initGrabber(CAMERA_WIDTH, CAMERA_HEIGHT) == true) {
+                    string path = ICON_FILE_HEAD + ofToString(idx + 1) + ICON_FILE_FOOT;
+                    ofLogNotice() << "Pilot" << (cameraNum + 1) << ": " << it->deviceName;
+                    camView[idx].visible = true;
+                    camView[idx].iconImage.load(path);
+                    camView[idx].labelString = "Pilot" + ofToString(idx + 1);
+                    camView[idx].lap = 0;
+                    cameraNum++;
+                }
             }
             if (cameraNum == CAMERA_MAXNUM) {
                 break;
@@ -302,6 +325,30 @@ void changeCameraLabel() {
 }
 
 //--------------------------------------------------------------
+void changeCameraIcon(int camid) {
+    string str;
+    if (camid < 1 || camid > cameraNum) {
+        return;
+    }
+    str = "change camera" + ofToString(camid) + " icon";
+    ofFileDialogResult result = ofSystemLoadDialog(str);
+    if (result.bSuccess) {
+        string path = result.getPath();
+        ofFile file(path);
+        string ext = ofToLower(file.getExtension());
+        if (ext == "jpg" || ext == "jpeg" || ext == "png" || ext == "gif") {
+            int idx = camid - 1;
+            camView[idx].iconImage.clear();
+            camView[idx].iconImage.load(path);
+        } else {
+            ofSystemAlertDialog("unsupported file type");
+        }
+    } else {
+        ofSystemAlertDialog("can't load file");
+    }
+}
+
+//--------------------------------------------------------------
 void changeWallImage() {
     ofFileDialogResult result = ofSystemLoadDialog("change wallpaper");
     if (result.bSuccess) {
@@ -314,10 +361,10 @@ void changeWallImage() {
             wallRatio = wallImage.getWidth() / wallImage.getHeight();
             setWallParams();
         } else {
-            ofSystemAlertDialog("Error: unsupported file type");
+            ofSystemAlertDialog("unsupported file type");
         }
     } else {
-        ofSystemAlertDialog("Error: can't load file");
+        ofSystemAlertDialog("can't load file");
     }
 }
 
@@ -351,6 +398,8 @@ void setViewParams() {
             camView[idx].height = camView[idx].width / CAMERA_RATIO;
             camView[idx].posX = (width / 2) - (camView[idx].width / 2);
             camView[idx].posY = (height / 2) - (camView[idx].height / 2);
+            camView[idx].iconPosX = max(0, camView[idx].posX) + ICON_MARGIN_X;
+            camView[idx].iconPosY = max(0, camView[idx].posY) + ICON_MARGIN_Y;
             camView[idx].labelPosX = max(0, camView[idx].posX) + LABEL_MARGIN_X;
             camView[idx].labelPosY = max(0, camView[idx].posY) + LABEL_MARGIN_Y;
             camView[idx].lapPosX = max(0, camView[idx].posX) + LAP_MARGIN_X;
@@ -366,6 +415,8 @@ void setViewParams() {
             camView[idx].height = camView[idx].width / CAMERA_RATIO;
             camView[idx].posX = -1;
             camView[idx].posY = (height / 2) - (camView[idx].height / 2);
+            camView[idx].iconPosX = max(0, camView[idx].posX) + ICON_MARGIN_X;
+            camView[idx].iconPosY = max(0, camView[idx].posY) + ICON_MARGIN_Y;
             camView[idx].labelPosX = max(0, camView[idx].posX) + LABEL_MARGIN_X;
             camView[idx].labelPosY = max(0, camView[idx].posY) + LABEL_MARGIN_Y;
             camView[idx].lapPosX = max(0, camView[idx].posX) + LAP_MARGIN_X;
@@ -379,6 +430,8 @@ void setViewParams() {
             camView[idx].height = camView[idx].width / CAMERA_RATIO;
             camView[idx].posX = (width / 2) + 1;
             camView[idx].posY = (height / 2) - (camView[idx].height / 2);
+            camView[idx].iconPosX = max(0, camView[idx].posX) + ICON_MARGIN_X;
+            camView[idx].iconPosY = max(0, camView[idx].posY) + ICON_MARGIN_Y;
             camView[idx].labelPosX = max(0, camView[idx].posX) + LABEL_MARGIN_X;
             camView[idx].labelPosY = max(0, camView[idx].posY) + LABEL_MARGIN_Y;
             camView[idx].lapPosX = max(0, camView[idx].posX) + LAP_MARGIN_X;
@@ -394,6 +447,8 @@ void setViewParams() {
             camView[idx].width = camView[idx].height * CAMERA_RATIO;
             camView[idx].posX = (width / 2) - (camView[idx].width / 2);
             camView[idx].posY = 0;
+            camView[idx].iconPosX = max(0, camView[idx].posX) + ICON_MARGIN_X;
+            camView[idx].iconPosY = max(0, camView[idx].posY) + ICON_MARGIN_Y;
             camView[idx].labelPosX = max(0, camView[idx].posX) + LABEL_MARGIN_X;
             camView[idx].labelPosY = max(0, camView[idx].posY) + LABEL_MARGIN_Y;
             camView[idx].lapPosX = max(0, camView[idx].posX) + LAP_MARGIN_X;
@@ -407,6 +462,8 @@ void setViewParams() {
             camView[idx].width = camView[idx].height * CAMERA_RATIO;
             camView[idx].posX = 0;
             camView[idx].posY = height * 0.45;
+            camView[idx].iconPosX = max(0, camView[idx].posX) + ICON_MARGIN_X;
+            camView[idx].iconPosY = max(0, camView[idx].posY) + ICON_MARGIN_Y;
             camView[idx].labelPosX = max(0, camView[idx].posX) + LABEL_MARGIN_X;
             camView[idx].labelPosY = max(0, camView[idx].posY) + LABEL_MARGIN_Y;
             camView[idx].lapPosX = max(0, camView[idx].posX) + LAP_MARGIN_X;
@@ -420,6 +477,8 @@ void setViewParams() {
             camView[idx].width = camView[idx].height * CAMERA_RATIO;
             camView[idx].posX = width - camView[idx].width;
             camView[idx].posY = height * 0.45;
+            camView[idx].iconPosX = max(0, camView[idx].posX) + ICON_MARGIN_X;
+            camView[idx].iconPosY = max(0, camView[idx].posY) + ICON_MARGIN_Y;
             camView[idx].labelPosX = max(0, camView[idx].posX) + LABEL_MARGIN_X;
             camView[idx].labelPosY = max(0, camView[idx].posY) + LABEL_MARGIN_Y;
             camView[idx].lapPosX = max(0, camView[idx].posX) + LAP_MARGIN_X;
@@ -445,14 +504,17 @@ void resetConfig() {
     }
     cameraNumVisible = cameraNum;
     setViewParams();
-    // camera label, laptime
+    // camera icon, label, laptime
     for (i = 0; i < cameraNum; i++) {
+        string path = ICON_FILE_HEAD + ofToString(i + 1) + ICON_FILE_FOOT;
+        camView[i].iconImage.clear();
+        camView[i].iconImage.load(path);
         camView[i].labelString = "Pilot" + ofToString(i + 1);
         camView[i].lap = 0;
     }
 #ifdef FEATURE_SPEECH
     // speech
-    speechEnabled = true;
+    speechEnabled = DFLT_SPCH_ENBLD;
 #endif /* FEATURE_SPEECH */
 }
 
