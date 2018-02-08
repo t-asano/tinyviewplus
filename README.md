@@ -8,15 +8,14 @@ Tiny View Plusは、FPV映像を手軽に表示するためのアプリです。
 
 <table>
 <tr>
-<td>OS</td><td>macOS (High Sierra以降を推奨)</td>
+<td>OS</td><td>macOS (High Sierra推奨)</td>
 </tr>
 <tr>
 <td>受信機</td><td>Eachine ROTG02, ROTG01</td>
 </tr>
 </table>
 
-- ソースコードからビルドする場合には [openFrameworks](http://openframeworks.cc/ja/) v0.9.8 が必要です
-- Windows環境でもビルドできる可能性がありますが、未検証です
+ソースコードからビルドする場合には [openFrameworks](http://openframeworks.cc/ja/) v0.9.8 が必要です
 
 ## インストール
 
@@ -25,42 +24,46 @@ Tiny View Plusは、FPV映像を手軽に表示するためのアプリです。
 1. [リリースページ](https://github.com/t-asano/tinyviewplus/releases)よりzipファイルをダウンロード
 2. zipファイルを適当な場所に展開
 
-バイナリの作成にあたっては細心の注意を払っていますが、アプリを実行することで起こる不具合については、一切責任を負いません。セキュリティ等に不安がある方は、ソースコードの内容を十分に理解した上で、以下の手順に従ってソースコードからビルドすることをお勧めします。
+バイナリの作成にあたっては細心の注意を払っていますが、アプリを実行することで起こる不具合については、一切責任を負いません。
 
 ### ソースコードからビルドする場合
 
 1. [openFrameworks](http://openframeworks.cc/ja/) v0.9.8 をインストール
-2. [CVPixelBufferに関する修正パッチ](https://github.com/openframeworks/openFrameworks/commit/836fbda74770b7a1df3e136e9d2200b5c2cee8a4)を適用
-3. 新規プロジェクトを作成
-4. ofxOscアドオンを[最新版](https://github.com/openframeworks/openFrameworks/tree/master/addons/ofxOsc)に入れ替え
-5. [ofxTrueTypeFontUCアドオン](https://github.com/hironishihara/ofxTrueTypeFontUC)を追加
-6. ソースコード(src/)とアセット(bin/data/)を取り込み
-7. ビルド
+- [CVPixelBufferに関する修正パッチ](https://github.com/openframeworks/openFrameworks/commit/836fbda74770b7a1df3e136e9d2200b5c2cee8a4)を適用(macOSのみ)
+- ofxOscアドオンの[最新版](https://github.com/openframeworks/openFrameworks/tree/master/addons/ofxOsc)を addons/ofxOsc に上書き
+- [ofxTrueTypeFontUCアドオン](https://github.com/hironishihara/ofxTrueTypeFontUC)を addons/ の下に配置
+- プロジェクトジェネレーターで上記2つのアドオンを含むプロジェクトを作成
+- ソースコード(src/)とアセット(bin/data/)を上書き
+- ビルド
 
 ## 使い方
 
 ### 起動
 
 1. コンピューターに受信機を接続
-2. アプリを起動
+2. アプリ本体をダブルクリックして起動
 
-ビルド済みバイナリを起動しようとすると、以下のような警告が表示されることがあります。
+macOSにおいて、ビルド済みバイナリを起動しようとすると、以下のような警告が表示されることがあります。
 
 ![binary01](docs/binary01.png)
 
-[システム環境設定] -> [セキュリティとプライバシー] -> [一般]を開いて、[このまま開く] をクリックすると、アプリを起動できます。（アプリを実行することで起こる不具合については、一切責任を追いません。ご了承ください。）
+この場合、[システム環境設定] -> [セキュリティとプライバシー] -> [一般]を開き [このまま開く] をクリックすると、アプリを起動できます。
 
 ![binary02](docs/binary02.png)
+
+### 受信機の検出
 
 受信機がうまく検出されない場合は、以下をお試し下さい。
 
 1. アプリを終了
 2. 受信機を全て外す
-3. USBハブ使用の場合はそれを接続し直す
+3. USBハブ使用の場合はそれを接続し直す、または撤去する
 4. 受信機を一台ずつ数秒間隔で接続
 5. アプリを起動
 
-macOSの場合、QuickTimeアプリでカメラのリストを表示できます。Tiny View Plusを実行する前に、QuickTimeアプリでカメラの検出状況を確認しておくと、問題の切り分けがしやすくなります。
+macOSの場合、QuickTimeアプリでカメラ(受信機)のリストを表示できます。Tiny View Plusを実行する前に、QuickTimeアプリでカメラの検出状況を確認しておくと、問題の切り分けがしやすくなります。
+
+Windowsでは、デバイスマネージャーでカメラ(受信機)の検出状況を確認できます。なお、一つのUSBハブに複数の受信機を接続した場合に、そのうち1台しか動作しないことがあります。この場合、USBハブを経由せずに接続すれば、改善することがあります。
 
 ### キー操作
 
@@ -70,7 +73,7 @@ macOSの場合、QuickTimeアプリでカメラのリストを表示できます
 | H | ヘルプの表示 | - |
 | L | カメラのラベルの変更 | Pilot1~3 |
 | R | 設定の初期化（※1） | 各設定の初期値 |
-| S | 音声読み上げのオン/オフ(macOSのみ) | オン |
+| S | 音声読み上げのオン/オフ(macOSのみ) | オフ |
 | W | 壁紙の変更 | アプリ内蔵の壁紙 |
 
 - （※1）以下の設定項目が初期化されます

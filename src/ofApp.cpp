@@ -110,7 +110,7 @@ void ofApp::setup(){
     oscReceiver.setup(OSC_LISTEN_PORT);
 #ifdef FEATURE_SPEECH
     // speech
-    speechEnabled = true;
+    speechEnabled = false;
 #endif /* FEATURE_SPEECH */
 }
 
