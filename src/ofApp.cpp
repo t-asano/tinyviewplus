@@ -386,8 +386,6 @@ void changeCameraIcon(int camid) {
     if (result.bSuccess) {
         string path = result.getPath();
         changeCameraIconPath(camid, path);
-    } else {
-        ofSystemAlertDialog("can't load file");
     }
 }
 
@@ -440,8 +438,6 @@ void changeWallImage() {
         } else {
             ofSystemAlertDialog("unsupported file type");
         }
-    } else {
-        ofSystemAlertDialog("can't load file");
     }
 }
 
