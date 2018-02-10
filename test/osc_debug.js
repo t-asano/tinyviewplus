@@ -51,4 +51,16 @@ function test() {
   setTimeout(exit, wait += step);
 }
 
+function test2() {
+  var wait = 0;
+  var step = 800;
+  console.log('Sending OSC message to udp://127.0.0.1:4000');
+  // camera label
+  sendOsc("/v1/camera/1/label", "sample pilot", wait += step);
+  sendOsc("/v1/camera/2/label", "sample pilot", wait += step);
+  sendOsc("/v1/camera/3/label", "sample pilot", wait += step);
+  // exit
+  setTimeout(exit, wait += step);
+}
+
 test();

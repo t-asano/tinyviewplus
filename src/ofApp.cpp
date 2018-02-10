@@ -7,24 +7,37 @@
 // view
 #define FRAME_RATE      60
 #define VERTICAL_SYNC   true
-#define WALL_FILE       "background.png"
+#define WALL_FILE       "default_background.png"
 #define CAMERA_MAXNUM   3
 #define CAMERA_WIDTH    640
 #define CAMERA_HEIGHT   480
 #define CAMERA_RATIO    1.3333
 #define FONT_FILE       "mplus-1p-bold.ttf"
-#define ICON_FILE_HEAD  "pilots/pilot"
-#define ICON_FILE_FOOT  ".png"
-#define ICON_WIDTH      60
-#define ICON_HEIGHT     60
+#define ICON_FILE       "default_pilot_icon.png"
+#define ICON_PATH       "pilots/"
+#define ICON_WIDTH      40
+#define ICON_HEIGHT     40
 #define ICON_MARGIN_X   10
 #define ICON_MARGIN_Y   10
-#define LABEL_HEIGHT    40
-#define LABEL_MARGIN_X  80  // ICON_MARGIN_X + ICON_WIDTH + 10
-#define LABEL_MARGIN_Y  60  // 10 + LABEL_HEIGHT + (ICON_HEIGHT - LABEL_HEIGHT) / 2
+#define LABEL_HEIGHT    30
+#define LABEL_MARGIN_X  60
+#define LABEL_MARGIN_Y  50
+#define BASE_MARGIN_X   0
+#define BASE_MARGIN_Y   40
+#define BASE_HEIGHT     20
+#define BASE_1_RED      201
+#define BASE_1_GREEN    58
+#define BASE_1_BLUE     64
+#define BASE_2_RED      160
+#define BASE_2_GREEN    194
+#define BASE_2_BLUE     56
+#define BASE_3_RED      0
+#define BASE_3_GREEN    116
+#define BASE_3_BLUE     191
+#define BASE_ALPHA      128
 #define LAP_HEIGHT      30
 #define LAP_MARGIN_X    10
-#define LAP_MARGIN_Y    110 // ICON_MARGIN_Y + ICON_HEIGHT + 10 + LAP_HEIGHT
+#define LAP_MARGIN_Y    100
 // osc
 #define OSC_LISTEN_PORT 4000
 // help
@@ -46,8 +59,11 @@
 void bindCameras();
 void toggleCameraVisibility(int);
 int getCameraIdxNthVisible(int);
+void setupBaseColors();
 void changeCameraLabel();
 void changeCameraIcon(int);
+void changeCameraIconPath(int, string);
+void autoSelectCameraIcon(int, string);
 void changeWallImage();
 void setWallParams();
 void setViewParams();
@@ -69,6 +85,11 @@ public:
     int height;
     int posX;
     int posY;
+    ofColor baseColor;
+    int basePosX;
+    int basePosY;
+    int baseWidth;
+    int baseHeight;
     ofImage iconImage;
     int iconPosX;
     int iconPosY;
@@ -147,9 +168,14 @@ void ofApp::draw(){
         if (camView[i].visible == false) {
             continue;
         }
-        // camera image, icon
+        // camera image
         ofSetColor(255, 255, 255);
         grabber[i].draw(camView[i].posX, camView[i].posY, camView[i].width, camView[i].height);
+        // base
+        ofSetColor(camView[i].baseColor, BASE_ALPHA);
+        ofDrawRectangle(camView[i].basePosX, camView[i].basePosY, camView[i].baseWidth, camView[i].baseHeight);
+        // icon
+        ofSetColor(255, 255, 255);
         camView[i].iconImage.draw(camView[i].iconPosX, camView[i].iconPosY, ICON_WIDTH, ICON_HEIGHT);
         // label
         if (camView[i].labelString != "") {
@@ -260,10 +286,9 @@ void bindCameras() {
                 int idx = cameraNum;
                 grabber[idx].setDeviceID(it->id);
                 if (grabber[idx].initGrabber(CAMERA_WIDTH, CAMERA_HEIGHT) == true) {
-                    string path = ICON_FILE_HEAD + ofToString(idx + 1) + ICON_FILE_FOOT;
                     ofLogNotice() << "Pilot" << (cameraNum + 1) << ": " << it->deviceName;
                     camView[idx].visible = true;
-                    camView[idx].iconImage.load(path);
+                    camView[idx].iconImage.load(ICON_FILE);
                     camView[idx].labelString = "Pilot" + ofToString(idx + 1);
                     camView[idx].lap = 0;
                     cameraNum++;
@@ -278,6 +303,7 @@ void bindCameras() {
     if (cameraNum == 0) {
         ofSystemAlertDialog("no FPV receiver detected");
     }
+    setupBaseColors();
 }
 
 //--------------------------------------------------------------
@@ -315,6 +341,31 @@ int getCameraIdxNthVisible(int nth) {
 }
 
 //--------------------------------------------------------------
+void setupBaseColors() {
+    for (int i = 0; i < CAMERA_MAXNUM; i++) {
+        switch(i) {
+            case 0:
+                camView[i].baseColor.r = BASE_1_RED;
+                camView[i].baseColor.g = BASE_1_GREEN;
+                camView[i].baseColor.b = BASE_1_BLUE;
+                break;
+            case 1:
+                camView[i].baseColor.r = BASE_2_RED;
+                camView[i].baseColor.g = BASE_2_GREEN;
+                camView[i].baseColor.b = BASE_2_BLUE;
+                break;
+            case 2:
+                camView[i].baseColor.r = BASE_3_RED;
+                camView[i].baseColor.g = BASE_3_GREEN;
+                camView[i].baseColor.b = BASE_3_BLUE;
+                break;
+            defaut:
+                break;
+        }
+    }
+}
+
+//--------------------------------------------------------------
 void changeCameraLabel() {
     string str;
     for (int i = 0; (i + 1) <= cameraNum; i++) {
@@ -334,17 +385,43 @@ void changeCameraIcon(int camid) {
     ofFileDialogResult result = ofSystemLoadDialog(str);
     if (result.bSuccess) {
         string path = result.getPath();
-        ofFile file(path);
-        string ext = ofToLower(file.getExtension());
-        if (ext == "jpg" || ext == "jpeg" || ext == "png" || ext == "gif") {
-            int idx = camid - 1;
-            camView[idx].iconImage.clear();
-            camView[idx].iconImage.load(path);
-        } else {
-            ofSystemAlertDialog("unsupported file type");
-        }
+        changeCameraIconPath(camid, path);
     } else {
         ofSystemAlertDialog("can't load file");
+    }
+}
+
+//--------------------------------------------------------------
+void changeCameraIconPath(int camid, string path) {
+    ofFile file(path);
+    if (camid < 1 || camid > cameraNum) {
+        return;
+    }
+    string ext = ofToLower(file.getExtension());
+    if (ext == "jpg" || ext == "png") {
+        int idx = camid - 1;
+        camView[idx].iconImage.clear();
+        camView[idx].iconImage.load(path);
+    } else {
+        ofSystemAlertDialog("unsupported file type");
+    }
+}
+
+//--------------------------------------------------------------
+void autoSelectCameraIcon(int camid, string pname) {
+    ofFile file;
+    string path;
+    if (camid < 1 || camid > cameraNum) {
+        return;
+    }
+    path = ICON_PATH + pname + ".png";
+    if (file.doesFileExist(path)) {
+        changeCameraIconPath(camid, path);
+        return;
+    }
+    path = ICON_PATH + pname + ".jpg";
+    if (file.doesFileExist(path)) {
+        changeCameraIconPath(camid, path);
     }
 }
 
@@ -355,7 +432,7 @@ void changeWallImage() {
         string path = result.getPath();
         ofFile file(path);
         string ext = ofToLower(file.getExtension());
-        if (ext == "jpg" || ext == "jpeg" || ext == "png" || ext == "gif") {
+        if (ext == "jpg" || ext == "png") {
             wallImage.clear();
             wallImage.load(path);
             wallRatio = wallImage.getWidth() / wallImage.getHeight();
@@ -383,7 +460,7 @@ void setWallParams() {
 
 //--------------------------------------------------------------
 void setViewParams() {
-    int idx;
+    int idx, i;
     int width = ofGetWidth();
     int height = ofGetHeight();
     float ratio = float(width) / float(height);
@@ -398,12 +475,6 @@ void setViewParams() {
             camView[idx].height = camView[idx].width / CAMERA_RATIO;
             camView[idx].posX = (width / 2) - (camView[idx].width / 2);
             camView[idx].posY = (height / 2) - (camView[idx].height / 2);
-            camView[idx].iconPosX = max(0, camView[idx].posX) + ICON_MARGIN_X;
-            camView[idx].iconPosY = max(0, camView[idx].posY) + ICON_MARGIN_Y;
-            camView[idx].labelPosX = max(0, camView[idx].posX) + LABEL_MARGIN_X;
-            camView[idx].labelPosY = max(0, camView[idx].posY) + LABEL_MARGIN_Y;
-            camView[idx].lapPosX = max(0, camView[idx].posX) + LAP_MARGIN_X;
-            camView[idx].lapPosY = max(0, camView[idx].posY) + LAP_MARGIN_Y;
             break;
         case 2:
             // 1st visible camera
@@ -415,12 +486,6 @@ void setViewParams() {
             camView[idx].height = camView[idx].width / CAMERA_RATIO;
             camView[idx].posX = -1;
             camView[idx].posY = (height / 2) - (camView[idx].height / 2);
-            camView[idx].iconPosX = max(0, camView[idx].posX) + ICON_MARGIN_X;
-            camView[idx].iconPosY = max(0, camView[idx].posY) + ICON_MARGIN_Y;
-            camView[idx].labelPosX = max(0, camView[idx].posX) + LABEL_MARGIN_X;
-            camView[idx].labelPosY = max(0, camView[idx].posY) + LABEL_MARGIN_Y;
-            camView[idx].lapPosX = max(0, camView[idx].posX) + LAP_MARGIN_X;
-            camView[idx].lapPosY = max(0, camView[idx].posY) + LAP_MARGIN_Y;
             // 2nd visible camera
             idx = getCameraIdxNthVisible(2);
             if (idx == -1) {
@@ -430,12 +495,6 @@ void setViewParams() {
             camView[idx].height = camView[idx].width / CAMERA_RATIO;
             camView[idx].posX = (width / 2) + 1;
             camView[idx].posY = (height / 2) - (camView[idx].height / 2);
-            camView[idx].iconPosX = max(0, camView[idx].posX) + ICON_MARGIN_X;
-            camView[idx].iconPosY = max(0, camView[idx].posY) + ICON_MARGIN_Y;
-            camView[idx].labelPosX = max(0, camView[idx].posX) + LABEL_MARGIN_X;
-            camView[idx].labelPosY = max(0, camView[idx].posY) + LABEL_MARGIN_Y;
-            camView[idx].lapPosX = max(0, camView[idx].posX) + LAP_MARGIN_X;
-            camView[idx].lapPosY = max(0, camView[idx].posY) + LAP_MARGIN_Y;
             break;
         case 3:
             // 1st visible camera
@@ -447,12 +506,6 @@ void setViewParams() {
             camView[idx].width = camView[idx].height * CAMERA_RATIO;
             camView[idx].posX = (width / 2) - (camView[idx].width / 2);
             camView[idx].posY = 0;
-            camView[idx].iconPosX = max(0, camView[idx].posX) + ICON_MARGIN_X;
-            camView[idx].iconPosY = max(0, camView[idx].posY) + ICON_MARGIN_Y;
-            camView[idx].labelPosX = max(0, camView[idx].posX) + LABEL_MARGIN_X;
-            camView[idx].labelPosY = max(0, camView[idx].posY) + LABEL_MARGIN_Y;
-            camView[idx].lapPosX = max(0, camView[idx].posX) + LAP_MARGIN_X;
-            camView[idx].lapPosY = max(0, camView[idx].posY) + LAP_MARGIN_Y;
             // 2nd visible camera
             idx = getCameraIdxNthVisible(2);
             if (idx == -1) {
@@ -462,12 +515,6 @@ void setViewParams() {
             camView[idx].width = camView[idx].height * CAMERA_RATIO;
             camView[idx].posX = 0;
             camView[idx].posY = height * 0.45;
-            camView[idx].iconPosX = max(0, camView[idx].posX) + ICON_MARGIN_X;
-            camView[idx].iconPosY = max(0, camView[idx].posY) + ICON_MARGIN_Y;
-            camView[idx].labelPosX = max(0, camView[idx].posX) + LABEL_MARGIN_X;
-            camView[idx].labelPosY = max(0, camView[idx].posY) + LABEL_MARGIN_Y;
-            camView[idx].lapPosX = max(0, camView[idx].posX) + LAP_MARGIN_X;
-            camView[idx].lapPosY = max(0, camView[idx].posY) + LAP_MARGIN_Y;
             // 3rd visible camera
             idx = getCameraIdxNthVisible(3);
             if (idx == -1) {
@@ -477,16 +524,26 @@ void setViewParams() {
             camView[idx].width = camView[idx].height * CAMERA_RATIO;
             camView[idx].posX = width - camView[idx].width;
             camView[idx].posY = height * 0.45;
-            camView[idx].iconPosX = max(0, camView[idx].posX) + ICON_MARGIN_X;
-            camView[idx].iconPosY = max(0, camView[idx].posY) + ICON_MARGIN_Y;
-            camView[idx].labelPosX = max(0, camView[idx].posX) + LABEL_MARGIN_X;
-            camView[idx].labelPosY = max(0, camView[idx].posY) + LABEL_MARGIN_Y;
-            camView[idx].lapPosX = max(0, camView[idx].posX) + LAP_MARGIN_X;
-            camView[idx].lapPosY = max(0, camView[idx].posY) + LAP_MARGIN_Y;
             break;
         default:
             // none
             break;
+    }
+    for (i = 1; i <= cameraNumVisible; i++) {
+        idx = getCameraIdxNthVisible(i);
+        if (idx == -1) {
+            break;
+        }
+        camView[idx].basePosX = max(0, camView[idx].posX) + BASE_MARGIN_X;
+        camView[idx].basePosY = max(0, camView[idx].posY) + BASE_MARGIN_Y;
+        camView[idx].baseWidth = camView[idx].width - (BASE_MARGIN_X * 2);
+        camView[idx].baseHeight = BASE_HEIGHT;
+        camView[idx].iconPosX = max(0, camView[idx].posX) + ICON_MARGIN_X;
+        camView[idx].iconPosY = max(0, camView[idx].posY) + ICON_MARGIN_Y;
+        camView[idx].labelPosX = max(0, camView[idx].posX) + LABEL_MARGIN_X;
+        camView[idx].labelPosY = max(0, camView[idx].posY) + LABEL_MARGIN_Y;
+        camView[idx].lapPosX = max(0, camView[idx].posX) + LAP_MARGIN_X;
+        camView[idx].lapPosY = max(0, camView[idx].posY) + LAP_MARGIN_Y;
     }
 }
 
@@ -506,9 +563,8 @@ void resetConfig() {
     setViewParams();
     // camera icon, label, laptime
     for (i = 0; i < cameraNum; i++) {
-        string path = ICON_FILE_HEAD + ofToString(i + 1) + ICON_FILE_FOOT;
         camView[i].iconImage.clear();
-        camView[i].iconImage.load(path);
+        camView[i].iconImage.load(ICON_FILE);
         camView[i].labelString = "Pilot" + ofToString(i + 1);
         camView[i].lap = 0;
     }
@@ -590,6 +646,7 @@ void recvOscCameraString(int camid, string method, string argstr) {
     }
     else if (method == "label") {
         camView[camid - 1].labelString = argstr;
+        autoSelectCameraIcon(camid, argstr);
     }
 }
 
