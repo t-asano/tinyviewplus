@@ -112,7 +112,7 @@ OSCプロトコルにより外部からの制御が可能です。UDP4000番ポ�
 - [例]カメラ2のラベルを"Whooper2"とする
     - /v1/camera/2/label "Whooper2"
 
-ラベルを変更するのと同時にアイコンを自動的に変更します。data/pilots/フォルダ(macOSバイナリの場合はResources/data/pilotsフォルダ)の下に、ラベル.pngまたはラベル.jpgを配置してください。縦横比は1:1となります。
+ラベルを変更するのと同時に、アイコン画像を自動的に変更します。macOSバイナリの場合は "Tiny View Plus.app/Contents/Resources/data/pilots" フォルダの下、それ以外の場合は "data/pilots" フォルダの下に、{label}.png または {label}.jpg というファイルが見つかると、この優先順でアイコン画像として採用します。縦横比は強制的に1:1となります。
 
 #### カメラのラップタイムの更新
 /v1/camera/{id}/laptime {time}
