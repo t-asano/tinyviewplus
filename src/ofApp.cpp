@@ -421,6 +421,8 @@ void autoSelectCameraIcon(int camid, string pname) {
     path = ICON_PATH + pname + ".jpg";
     if (file.doesFileExist(path)) {
         changeCameraIconPath(camid, path);
+    } else {
+        changeCameraIconPath(camid, ICON_FILE);
     }
 }
 
