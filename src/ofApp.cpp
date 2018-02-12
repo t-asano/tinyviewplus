@@ -370,8 +370,9 @@ void changeCameraLabel() {
     string str;
     for (int i = 0; (i + 1) <= cameraNum; i++) {
         str = camView[i].labelString;
-        str = ofSystemTextBoxDialog("camera" + ofToString(i + 1) + " name:", str);
+        str = ofSystemTextBoxDialog("camera" + ofToString(i + 1) + " label:", str);
         camView[i].labelString = str;
+        autoSelectCameraIcon(i + 1, str);
     }
 }
 
