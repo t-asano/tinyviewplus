@@ -1,5 +1,7 @@
 # Tiny View Plus
 
+[English version](./README_en.md)
+
 Tiny View Plusは、FPV映像を手軽に表示するためのアプリです。UVC対応の受信機を、MacBook等のコンピューターに接続して使用します。openFrameworksを使って実装されており、高速に動作します。
 
 ![tinyviewplus](docs/overview.jpg)
