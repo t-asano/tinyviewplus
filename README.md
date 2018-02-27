@@ -157,4 +157,4 @@ client.send("/v1/camera/1/laptime", 62.09, function () {});
 
 ## License
 
-Tiny View Plus is distributed under the MIT License. This gives everyone the freedoms to use Tiny View Plus in any context: commercial or non-commercial, public or private, open or closed source. Please see [LICENSE](LICENSE) for details.
+Tiny View Plus is distributed under the MIT License. This gives everyone the freedoms to use Tiny View Plus in any context: commercial or non-commercial, public or private, open or closed source. Please see [LICENSE](LICENSE) and [LICENSE_THIRD_PARTY](LICENSE_THIRD_PARTY) for details.
