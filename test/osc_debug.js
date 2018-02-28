@@ -31,9 +31,9 @@ function test() {
   sendOsc("/v1/camera/2/display", "on", wait += step);
   sendOsc("/v1/camera/3/display", "on", wait += step);
   // camera label
-  sendOsc("/v1/camera/1/label", "Whooper1", wait += step);
-  sendOsc("/v1/camera/2/label", "Whooper2", wait += step);
-  sendOsc("/v1/camera/3/label", "Whooper3", wait += step);
+  sendOsc("/v1/camera/1/label", "パイロット1", wait += step);
+  sendOsc("/v1/camera/2/label", "パイロット2", wait += step);
+  sendOsc("/v1/camera/3/label", "パイロット3", wait += step);
   sendOsc("/v1/camera/1/label", "Pilot1", wait += step);
   sendOsc("/v1/camera/2/label", "Pilot2", wait += step);
   sendOsc("/v1/camera/3/label", "Pilot3", wait += step);
