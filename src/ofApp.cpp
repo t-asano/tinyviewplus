@@ -15,15 +15,15 @@
 #define FONT_FILE       "mplus-1p-bold.ttf"
 #define ICON_FILE       "default_pilot_icon.png"
 #define ICON_PATH       "pilots/"
-#define ICON_WIDTH      40
-#define ICON_HEIGHT     40
+#define ICON_WIDTH      50
+#define ICON_HEIGHT     50
 #define ICON_MARGIN_X   10
 #define ICON_MARGIN_Y   10
 #define LABEL_HEIGHT    30
-#define LABEL_MARGIN_X  60
+#define LABEL_MARGIN_X  70
 #define LABEL_MARGIN_Y  50
 #define BASE_MARGIN_X   0
-#define BASE_MARGIN_Y   40
+#define BASE_MARGIN_Y   45
 #define BASE_HEIGHT     20
 #define BASE_1_RED      201
 #define BASE_1_GREEN    58
@@ -37,7 +37,7 @@
 #define BASE_ALPHA      128
 #define LAP_HEIGHT      30
 #define LAP_MARGIN_X    10
-#define LAP_MARGIN_Y    100
+#define LAP_MARGIN_Y    110
 // osc
 #define OSC_LISTEN_PORT 4000
 // help
