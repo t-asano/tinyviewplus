@@ -1,6 +1,6 @@
 # Tiny View Plus
 
-Tiny View Plus is an application to display FPV video easily. Usually connected to a computer such as MacBook by using a receiver compatible with UVC. It is implemented using openFrameworks and it operates at high speed.
+Tiny View Plus is an application to display FPV video easily by using receivers compatible with UVC. Up to 4 receivers can be connected. It is implemented using openFrameworks and it operates at high speed.
 
 ![tinyviewplus](docs/overview.jpg)
 
@@ -29,18 +29,18 @@ Attention. We are not responsible for any problems caused by running the applica
 ### Build from source code
 
 1. Install [openFrameworks](http://openframeworks.cc/ja/) v0.9.8.
-- Apply [patcht for CVPixelBuffer](https://github.com/openframeworks/openFrameworks/commit/836fbda74770b7a1df3e136e9d2200b5c2cee8a4)(only for macOS)
-- Install [latest ofxOsc addon](https://github.com/openframeworks/openFrameworks/tree/master/addons/ofxOsc).
-- Install [ofxTrueTypeFontUC addon](https://github.com/hironishihara/ofxTrueTypeFontUC)
-- Create a project with above two addons by Project Generator.
-- Overwrite src/ and bin/data/.
-- Build.
+2. Apply [patcht for CVPixelBuffer](https://github.com/openframeworks/openFrameworks/commit/836fbda74770b7a1df3e136e9d2200b5c2cee8a4)(only for macOS)
+3. Install [latest ofxOsc addon](https://github.com/openframeworks/openFrameworks/tree/master/addons/ofxOsc).
+4. Install [ofxTrueTypeFontUC addon](https://github.com/hironishihara/ofxTrueTypeFontUC)
+5. Create a project with above two addons by Project Generator.
+6. Overwrite src/ and bin/data/.
+7. Build.
 
 ## Usage
 
 ### Launch
 
-1. Connect receivers to computer.
+1. Connect receivers(Up to 4) to computer.
 2. Launch application.
 
 ### Detection of receivers
@@ -53,21 +53,21 @@ If receivers are not successfully detected, please try following operation.
 4. Connect receivers one by one at intervals of several seconds.
 5. Launch the application.
 
-On macOS, you can check a list of cameras (receivers) with the QuickTime.
+On macOS, you can check a list of cameras (receivers) with the QuickTime. If you are using a USB hub and the picture drops, please reduce the number of receivers per USB hub.
 
-On Windows, you can check the detection status of the camera (receiver) with the device manager. In addition, if multiple receivers are connected to one USB hub, only one of them may operate.
+On Windows, you can check the detection status of the camera (receiver) with the device manager. In addition, if multiple receivers are connected to same USB hub, only one of them may operate.
 
 ### Keyboard shortcuts
                         
 | key | Function | Default value |
 |---|---|---|
 | H | Display help | - |
-| 1~3 | Toggle camera 1-3 on/off | on |
-| Q,W,E | Change camera 1-3 icon | built-in image |
-| L | Change camera label | Pilot1~3 |
+| 1~4 | Toggle camera 1~4 on/off | on |
+| Q,W,E,R | Change camera 1~4 icon | built-in image |
+| L | Change camera label | Pilot1~4 |
 | B | Change background image | built-in image |
 | S | Toggle speech on/off (only for macOS) | off |
-| R | Reset configuration (※1) | Default value of each setting |
+| I | Initialize configuration (※1) | Default value of each setting |
 
 - Camera icon is also automatically changed in conjunction with the camera label change.
 	- If {label string}.png or {label string}.jpg was found under "Tiny View Plus.app / Contents / Presents / data / pilots" folder (on macOS binary), otherwise under the "data / pilots" folder,	it is adopted as an icon image in this priority order.
@@ -79,8 +79,8 @@ On Windows, you can check the detection status of the camera (receiver) with the
 	- Camera on / off
 	- Camera icon
 	- Camera label
-	- backgroud image
-	- speech on / off
+	- Backgroud image
+	- Speech on / off
 - When you exit the application settings will be initialized.
 - Camera audio is not supported.
 
@@ -95,7 +95,7 @@ Tiny View Plus can be controlled by OSC protocol. It receives OSC packet at UDP 
 /v1/camera/{id}/display {switch}
 
 - Parameters
-	- id ... Numbers from 1 to 3
+	- id ... Number from 1 to 4
 	- switch ... "on" or "off"
 - [Example] camera 1 off
 	- /v1/camera/1/display "off"
@@ -105,7 +105,7 @@ Tiny View Plus can be controlled by OSC protocol. It receives OSC packet at UDP 
 /v1/camera/{id}/label {label}
 
 - Parameters
-	- id ... Numbers from 1 to 3
+	- id ... Number from 1 to 4
 	- label ... Any string (such as pilot name)
 - [Example] Set the label of camera 2 to "Whooper 2"
 	- /v1/camera/2/label "Whooper 2"
@@ -121,12 +121,12 @@ Camera icon is also automatically changed in conjunction with the camera label c
 /v1/camera/{id}/laptime {time}
 
 - Parameters
-	- id ... Numbers from 1 to 3
+	- id ... Number from 1 to 4
 	- label ... Number indicating the lap time (seconds)
 - [Example] Set the lap time of camera 3 to 128.64 seconds
 	- /v1/camera/3/laptime 128.64
-- [Example] Clear the lap time of camera 3
-	- /v1/camera/3/laptime 0
+- [Example] Clear the lap time of camera 4
+	- /v1/camera/4/laptime 0
 
 #### Speech synthesis (only for macOS)
 
@@ -134,7 +134,7 @@ Camera icon is also automatically changed in conjunction with the camera label c
 
 - Parameters
 	- language ... "en" (English) or "jp" (Japanese)
-	- text ... sentence to read aloud
+	- text ... sentence to speak
 - [Example] Say "We can fly!" in English
 	- /v1/speeech/en/say "We can fly!"
 

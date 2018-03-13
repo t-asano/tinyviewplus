@@ -8,7 +8,7 @@
 #define FRAME_RATE      60
 #define VERTICAL_SYNC   true
 #define WALL_FILE       "default_background.png"
-#define CAMERA_MAXNUM   3
+#define CAMERA_MAXNUM   4
 #define CAMERA_WIDTH    640
 #define CAMERA_HEIGHT   480
 #define CAMERA_RATIO    1.3333
@@ -34,7 +34,10 @@
 #define BASE_3_RED      0
 #define BASE_3_GREEN    116
 #define BASE_3_BLUE     191
-#define BASE_ALPHA      128
+#define BASE_4_RED      248
+#define BASE_4_GREEN    128
+#define BASE_4_BLUE     23
+#define BASE_ALPHA      160
 #define LAP_HEIGHT      30
 #define LAP_MARGIN_X    10
 #define LAP_MARGIN_Y    110
@@ -49,12 +52,12 @@
 #endif /* FEATURE_SPEECH */
 #define HELP_MESSAGE    "Keyboard shortcuts:\n"\
                         "[H] Display help\n"\
-                        "[1-3] Toggle camera 1-3 on/off\n"\
-                        "[Q,W,E] Change camera 1-3 icon\n"\
+                        "[1~4] Toggle camera 1~4 on/off\n"\
+                        "[Q,W,E,R] Change camera 1~4 icon\n"\
                         "[L] Change camera label\n"\
                         "[B] Change background image\n"\
                         HELP_MSG_SPEECH\
-                        "[R] Reset configuration\n"
+                        "[I] Initialize configuration\n"
 
 void bindCameras();
 void toggleCameraVisibility(int);
@@ -67,7 +70,7 @@ void autoSelectCameraIcon(int, string);
 void changeWallImage();
 void setWallParams();
 void setViewParams();
-void resetConfig();
+void initConfig();
 void recvOsc();
 void recvOscCameraString(int, string, string);
 void recvOscCameraFloat(int, string, float);
@@ -202,12 +205,14 @@ void ofApp::keyPressed(int key){
         toggleCameraVisibility(2);
     } else if (key == '3') {
         toggleCameraVisibility(3);
+    } else if (key == '4') {
+        toggleCameraVisibility(4);
     } else if (key == 'h' || key == 'H') {
         ofSystemAlertDialog(helpMessage);
+    } else if (key == 'i' || key == 'I') {
+        initConfig();
     } else if (key == 'l' || key == 'L') {
         changeCameraLabel();
-    } else if (key == 'r' || key == 'R') {
-        resetConfig();
 #ifdef FEATURE_SPEECH
     } else if (key == 's' || key == 'S') {
         toggleSpeech();
@@ -220,6 +225,8 @@ void ofApp::keyPressed(int key){
         changeCameraIcon(2);
     } else if (key == 'e' || key == 'E') {
         changeCameraIcon(3);
+    } else if (key == 'r' || key == 'R') {
+        changeCameraIcon(4);
     }
 }
 
@@ -358,6 +365,11 @@ void setupBaseColors() {
                 camView[i].baseColor.r = BASE_3_RED;
                 camView[i].baseColor.g = BASE_3_GREEN;
                 camView[i].baseColor.b = BASE_3_BLUE;
+                break;
+            case 3:
+                camView[i].baseColor.r = BASE_4_RED;
+                camView[i].baseColor.g = BASE_4_GREEN;
+                camView[i].baseColor.b = BASE_4_BLUE;
                 break;
             defaut:
                 break;
@@ -524,6 +536,44 @@ void setViewParams() {
             camView[idx].posX = width - camView[idx].width;
             camView[idx].posY = height * 0.45;
             break;
+        case 4:
+            // 1st visible camera
+            idx = getCameraIdxNthVisible(1);
+            if (idx == -1) {
+                break;
+            }
+            camView[idx].height = height * 0.5;
+            camView[idx].width = camView[idx].height * CAMERA_RATIO;
+            camView[idx].posX = (width / 2) - (camView[idx].width + 1);
+            camView[idx].posY = -1;
+            // 2nd visible camera
+            idx = getCameraIdxNthVisible(2);
+            if (idx == -1) {
+                break;
+            }
+            camView[idx].height = height * 0.5;
+            camView[idx].width = camView[idx].height * CAMERA_RATIO;
+            camView[idx].posX = (width / 2) + 1;
+            camView[idx].posY = -1;
+            // 3rd visible camera
+            idx = getCameraIdxNthVisible(3);
+            if (idx == -1) {
+                break;
+            }
+            camView[idx].height = height * 0.5;
+            camView[idx].width = camView[idx].height * CAMERA_RATIO;
+            camView[idx].posX = (width / 2) - (camView[idx].width + 1);
+            camView[idx].posY = (height / 2) + 1;
+            // 4th visible camera
+            idx = getCameraIdxNthVisible(4);
+            if (idx == -1) {
+                break;
+            }
+            camView[idx].height = height * 0.5;
+            camView[idx].width = camView[idx].height * CAMERA_RATIO;
+            camView[idx].posX = (width / 2) + 1;
+            camView[idx].posY = (height / 2) + 1;
+            break;
         default:
             // none
             break;
@@ -547,7 +597,7 @@ void setViewParams() {
 }
 
 //--------------------------------------------------------------
-void resetConfig() {
+void initConfig() {
     int i;
     // wallpaper
     wallImage.clear();

@@ -2,7 +2,7 @@
 
 [English version](./README_en.md)
 
-Tiny View Plusは、FPV映像を手軽に表示するためのアプリです。UVC対応の受信機を、MacBook等のコンピューターに接続して使用します。openFrameworksを使って実装されており、高速に動作します。
+Tiny View Plusは、FPV映像を手軽に表示するためのアプリです。UVC対応の受信機を、MacBook等のコンピューターに接続して使用します。受信機は4台まで接続できます。openFrameworksを使って実装されており、高速に動作します。
 
 ![tinyviewplus](docs/overview.jpg)
 
@@ -31,18 +31,18 @@ Tiny View Plusは、FPV映像を手軽に表示するためのアプリです。
 ### ソースコードからビルドする場合
 
 1. [openFrameworks](http://openframeworks.cc/ja/) v0.9.8 をインストール
-- [CVPixelBufferに関する修正パッチ](https://github.com/openframeworks/openFrameworks/commit/836fbda74770b7a1df3e136e9d2200b5c2cee8a4)を適用(macOSのみ)
-- ofxOscアドオンの[最新版](https://github.com/openframeworks/openFrameworks/tree/master/addons/ofxOsc)を addons/ofxOsc に上書き
-- [ofxTrueTypeFontUCアドオン](https://github.com/hironishihara/ofxTrueTypeFontUC)を addons/ の下に配置
-- プロジェクトジェネレーターで上記2つのアドオンを含むプロジェクトを作成
-- ソースコード(src/)とアセット(bin/data/)を上書き
-- ビルド
+2. [CVPixelBufferに関する修正パッチ](https://github.com/openframeworks/openFrameworks/commit/836fbda74770b7a1df3e136e9d2200b5c2cee8a4)を適用(macOSのみ)
+3. ofxOscアドオンの[最新版](https://github.com/openframeworks/openFrameworks/tree/master/addons/ofxOsc)を addons/ofxOsc に上書き
+4. [ofxTrueTypeFontUCアドオン](https://github.com/hironishihara/ofxTrueTypeFontUC)を addons/ の下に配置
+5. プロジェクトジェネレーターで上記2つのアドオンを含むプロジェクトを作成
+6. ソースコード(src/)とアセット(bin/data/)を上書き
+7. ビルド
 
 ## 使い方
 
 ### 起動
 
-1. コンピューターに受信機を接続
+1. コンピューターに受信機(4台まで)を接続
 2. アプリ本体をダブルクリックして起動
 
 macOSにおいて、ビルド済みバイナリを起動しようとすると、以下のような警告が表示されることがあります。
@@ -63,7 +63,7 @@ macOSにおいて、ビルド済みバイナリを起動しようとすると、
 4. 受信機を一台ずつ数秒間隔で接続
 5. アプリを起動
 
-macOSの場合、QuickTimeアプリで、カメラ(受信機)のリストを表示できます。Tiny View Plusを実行する前に、カメラの検出状況を確認しておくと、問題の切り分けがしやすくなります。
+macOSの場合、QuickTimeアプリで、カメラ(受信機)のリストを表示できます。Tiny View Plusを実行する前に、カメラの検出状況を確認しておくと、問題の切り分けがしやすくなります。USBハブを使用していて、映像がコマ落ちするようなら、USBハブ1台あたりの受信機の数を3台以下を目安に減らしてください。
 
 Windowsでは、デバイスマネージャーでカメラ(受信機)の検出状況を確認できます。なお、一つのUSBハブに複数の受信機を接続した場合に、そのうち1台しか動作しないことがあります。この場合、USBハブを経由せずに接続すれば、改善することがあります。
 
@@ -72,12 +72,12 @@ Windowsでは、デバイスマネージャーでカメラ(受信機)の検出�
 | キー | 機能 | 初期値 |
 |---|---|---|
 | H | ヘルプの表示 | - |
-| 1~3 | カメラ1~3の表示/非表示 | 表示 |
-| Q,W,E | カメラ1~3のアイコンの変更 | アプリ内蔵の画像 |
-| L | カメラのラベルの変更 | Pilot1~3 |
+| 1~4 | カメラ1~4の表示/非表示 | 表示 |
+| Q,W,E,R | カメラ1~4のアイコンの変更 | アプリ内蔵の画像 |
+| L | カメラのラベルの変更 | Pilot1~4 |
 | B | 背景画像の変更 | アプリ内蔵の画像 |
 | S | 音声読み上げのオン/オフ(macOSのみ) | オフ |
-| R | 設定の初期化(※1) | 各設定の初期値 |
+| I | 設定の初期化(※1) | 各設定の初期値 |
 
 - カメラのラベルを変更すると、アイコンが自動的に変更されます
 	- macOSバイナリの場合は "Tiny View Plus.app/Contents/Resources/data/pilots" フォルダの下、それ以外の場合は "data/pilots" フォルダの下に、ラベル文字列.png または ラベル文字列.jpg という画像ファイルが見つかると、この優先順でアイコン画像として採用されます
@@ -104,7 +104,7 @@ OSCプロトコルにより外部からの制御が可能です。UDP4000番ポ�
 /v1/camera/{id}/display {switch}
 
 - パラメーター
-    - id ... 1～3の数値
+    - id ... 1～4の数値
     - switch ... "on" または "off"
 - [例]カメラ1を非表示とする
     - /v1/camera/1/display "off"
@@ -113,7 +113,7 @@ OSCプロトコルにより外部からの制御が可能です。UDP4000番ポ�
 /v1/camera/{id}/label {label}
 
 - パラメーター
-    - id ... 1～3の数値
+    - id ... 1～4の数値
     - label ... 任意の文字列(パイロット名など)
 - [例]カメラ2のラベルを"Whooper2"とする
     - /v1/camera/2/label "Whooper2"
@@ -128,12 +128,12 @@ OSCプロトコルにより外部からの制御が可能です。UDP4000番ポ�
 /v1/camera/{id}/laptime {time}
 
 - パラメーター
-    - id ... 1～3の数値
+    - id ... 1～4の数値
     - label ... ラップタイムを示す数値(秒)
 - [例]カメラ3のラップタイムを128秒64とする
     - /v1/camera/3/laptime 128.64
-- [例]カメラ3のラップタイムをクリアする
-    - /v1/camera/3/laptime 0
+- [例]カメラ4のラップタイムをクリアする
+    - /v1/camera/4/laptime 0
 
 #### 音声読み上げ(macOSのみ)
 /v1/speech/{language}/say {text}
