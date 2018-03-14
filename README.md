@@ -17,18 +17,20 @@ Tiny View Plusは、FPV映像を手軽に表示するためのアプリです。
 </tr>
 </table>
 
-ソースコードからビルドする場合には [openFrameworks](http://openframeworks.cc/ja/) v0.9.8 が必要です
+冒頭の写真の例では、USBハブ(C-A)とUSBケーブル(A-microB)を別途用意しています。この場合、ROTG付属のUSBケーブル(OTG用microB-microB)は使用しません。
+
+ソースコードからビルドする場合には [openFrameworks](http://openframeworks.cc/ja/) v0.9.8 が必要です。openFrameworksが対応している他のOS(Ubuntu等)でも動作する可能性はありますが、未検証です。
 
 ## インストール
 
-### ビルド済みバイナリを使用する場合
+### ビルド済みバイナリを使用する場合(通常はこちら)
 
 1. [リリースページ](https://github.com/t-asano/tinyviewplus/releases)よりzipファイルをダウンロード
 2. zipファイルを適当な場所に展開
 
 バイナリの作成にあたっては細心の注意を払っていますが、アプリを実行することで起こる不具合については、一切責任を負いません。
 
-### ソースコードからビルドする場合
+### ソースコードからビルドする場合(上級者向け)
 
 1. [openFrameworks](http://openframeworks.cc/ja/) v0.9.8 をインストール
 2. [CVPixelBufferに関する修正パッチ](https://github.com/openframeworks/openFrameworks/commit/836fbda74770b7a1df3e136e9d2200b5c2cee8a4)を適用(macOSのみ)

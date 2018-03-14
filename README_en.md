@@ -21,12 +21,12 @@ To build from source code, [openFrameworks](http://openframeworks.cc/ja/) v0.9.8
 
 Attention. We are not responsible for any problems caused by running the application.
 
-### Prebuilt binary
+### Case 1: Prebuilt binary
 
 1. Download a zip file from [Release page](https://github.com/t-asano/tinyviewplus/releases).
 2. Extract it.
 
-### Build from source code
+### Case 2: Build from source code (for experts)
 
 1. Install [openFrameworks](http://openframeworks.cc/ja/) v0.9.8.
 2. Apply [patcht for CVPixelBuffer](https://github.com/openframeworks/openFrameworks/commit/836fbda74770b7a1df3e136e9d2200b5c2cee8a4)(only for macOS)
