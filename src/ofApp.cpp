@@ -6,6 +6,7 @@
 
 // view
 #define FRAME_RATE      60
+#define MOVE_STEPS      8
 #define VERTICAL_SYNC   true
 #define WALL_FILE       "default_background.png"
 #define CAMERA_MAXNUM   4
@@ -74,6 +75,8 @@ void autoSelectCameraIcon(int, string);
 void changeWallImage();
 void setWallParams();
 void setViewParams();
+int calcViewParam(int, int, int);
+void updateViewParams();
 void initConfig();
 void recvOsc();
 void recvOscCameraString(int, string, string);
@@ -87,26 +90,47 @@ void speakAny(string, string);
 
 class tvpCamView {
 public:
+    // camera
     bool visible;
+    int moveSteps;
     int width;
     int height;
+    int widthTarget;
+    int heightTarget;
     int posX;
     int posY;
+    int posXTarget;
+    int posYTarget;
+    // base
     ofColor baseColor;
     int basePosX;
     int basePosY;
+    int basePosXTarget;
+    int basePosYTarget;
     int baseWidth;
     int baseHeight;
+    // number
     int numberPosX;
     int numberPosY;
+    int numberPosXTarget;
+    int numberPosYTarget;
+    // icon
     ofImage iconImage;
     int iconPosX;
     int iconPosY;
+    int iconPosXTarget;
+    int iconPosYTarget;
+    // label
     string labelString;
     int labelPosX;
     int labelPosY;
+    int labelPosXTarget;
+    int labelPosYTarget;
+    // lap
     int lapPosX;
     int lapPosY;
+    int lapPosXTarget;
+    int lapPosYTarget;
     float lap;
 };
 
@@ -164,6 +188,8 @@ void ofApp::update(){
     for (int i = 0; i < cameraNum; i++) {
         grabber[i].update();
     }
+    // layout
+    updateViewParams();
     // osc
     recvOsc();
 }
@@ -519,10 +545,11 @@ void setViewParams() {
             if (idx == -1) {
                 break;
             }
-            camView[idx].width = width;
-            camView[idx].height = camView[idx].width / CAMERA_RATIO;
-            camView[idx].posX = (width / 2) - (camView[idx].width / 2);
-            camView[idx].posY = (height / 2) - (camView[idx].height / 2);
+            camView[idx].moveSteps = MOVE_STEPS;
+            camView[idx].widthTarget = width;
+            camView[idx].heightTarget = camView[idx].widthTarget / CAMERA_RATIO;
+            camView[idx].posXTarget = (width / 2) - (camView[idx].widthTarget / 2);
+            camView[idx].posYTarget = (height / 2) - (camView[idx].heightTarget / 2);
             break;
         case 2:
             // 1st visible camera
@@ -530,19 +557,21 @@ void setViewParams() {
             if (idx == -1) {
                 break;
             }
-            camView[idx].width = width / 2;
-            camView[idx].height = camView[idx].width / CAMERA_RATIO;
-            camView[idx].posX = -1;
-            camView[idx].posY = (height / 2) - (camView[idx].height / 2);
+            camView[idx].moveSteps = MOVE_STEPS;
+            camView[idx].widthTarget = width / 2;
+            camView[idx].heightTarget = camView[idx].widthTarget / CAMERA_RATIO;
+            camView[idx].posXTarget = -1;
+            camView[idx].posYTarget = (height / 2) - (camView[idx].heightTarget / 2);
             // 2nd visible camera
             idx = getCameraIdxNthVisible(2);
             if (idx == -1) {
                 break;
             }
-            camView[idx].width = width / 2;
-            camView[idx].height = camView[idx].width / CAMERA_RATIO;
-            camView[idx].posX = (width / 2) + 1;
-            camView[idx].posY = (height / 2) - (camView[idx].height / 2);
+            camView[idx].moveSteps = MOVE_STEPS;
+            camView[idx].widthTarget = width / 2;
+            camView[idx].heightTarget = camView[idx].widthTarget / CAMERA_RATIO;
+            camView[idx].posXTarget = (width / 2) + 1;
+            camView[idx].posYTarget = (height / 2) - (camView[idx].heightTarget / 2);
             break;
         case 3:
             // 1st visible camera
@@ -550,28 +579,31 @@ void setViewParams() {
             if (idx == -1) {
                 break;
             }
-            camView[idx].height = height * 0.55;
-            camView[idx].width = camView[idx].height * CAMERA_RATIO;
-            camView[idx].posX = (width / 2) - (camView[idx].width / 2);
-            camView[idx].posY = 0;
+            camView[idx].moveSteps = MOVE_STEPS;
+            camView[idx].heightTarget = height * 0.55;
+            camView[idx].widthTarget = camView[idx].heightTarget * CAMERA_RATIO;
+            camView[idx].posXTarget = (width / 2) - (camView[idx].widthTarget / 2);
+            camView[idx].posYTarget = 0;
             // 2nd visible camera
             idx = getCameraIdxNthVisible(2);
             if (idx == -1) {
                 break;
             }
-            camView[idx].height = height * 0.55;
-            camView[idx].width = camView[idx].height * CAMERA_RATIO;
-            camView[idx].posX = 0;
-            camView[idx].posY = height * 0.45;
+            camView[idx].moveSteps = MOVE_STEPS;
+            camView[idx].heightTarget = height * 0.55;
+            camView[idx].widthTarget = camView[idx].heightTarget * CAMERA_RATIO;
+            camView[idx].posXTarget = 0;
+            camView[idx].posYTarget = height * 0.45;
             // 3rd visible camera
             idx = getCameraIdxNthVisible(3);
             if (idx == -1) {
                 break;
             }
-            camView[idx].height = height * 0.55;
-            camView[idx].width = camView[idx].height * CAMERA_RATIO;
-            camView[idx].posX = width - camView[idx].width;
-            camView[idx].posY = height * 0.45;
+            camView[idx].moveSteps = MOVE_STEPS;
+            camView[idx].heightTarget = height * 0.55;
+            camView[idx].widthTarget = camView[idx].heightTarget * CAMERA_RATIO;
+            camView[idx].posXTarget = width - camView[idx].widthTarget;
+            camView[idx].posYTarget = height * 0.45;
             break;
         case 4:
             // 1st visible camera
@@ -579,37 +611,41 @@ void setViewParams() {
             if (idx == -1) {
                 break;
             }
-            camView[idx].height = height * 0.5;
-            camView[idx].width = camView[idx].height * CAMERA_RATIO;
-            camView[idx].posX = (width / 2) - (camView[idx].width + 1);
-            camView[idx].posY = -1;
+            camView[idx].moveSteps = MOVE_STEPS;
+            camView[idx].heightTarget = height * 0.5;
+            camView[idx].widthTarget = camView[idx].heightTarget * CAMERA_RATIO;
+            camView[idx].posXTarget = (width / 2) - (camView[idx].widthTarget + 1);
+            camView[idx].posYTarget = -1;
             // 2nd visible camera
             idx = getCameraIdxNthVisible(2);
             if (idx == -1) {
                 break;
             }
-            camView[idx].height = height * 0.5;
-            camView[idx].width = camView[idx].height * CAMERA_RATIO;
-            camView[idx].posX = (width / 2) + 1;
-            camView[idx].posY = -1;
+            camView[idx].moveSteps = MOVE_STEPS;
+            camView[idx].heightTarget = height * 0.5;
+            camView[idx].widthTarget = camView[idx].heightTarget * CAMERA_RATIO;
+            camView[idx].posXTarget = (width / 2) + 1;
+            camView[idx].posYTarget = -1;
             // 3rd visible camera
             idx = getCameraIdxNthVisible(3);
             if (idx == -1) {
                 break;
             }
-            camView[idx].height = height * 0.5;
-            camView[idx].width = camView[idx].height * CAMERA_RATIO;
-            camView[idx].posX = (width / 2) - (camView[idx].width + 1);
-            camView[idx].posY = (height / 2) + 1;
+            camView[idx].moveSteps = MOVE_STEPS;
+            camView[idx].heightTarget = height * 0.5;
+            camView[idx].widthTarget = camView[idx].heightTarget * CAMERA_RATIO;
+            camView[idx].posXTarget = (width / 2) - (camView[idx].widthTarget + 1);
+            camView[idx].posYTarget = (height / 2) + 1;
             // 4th visible camera
             idx = getCameraIdxNthVisible(4);
             if (idx == -1) {
                 break;
             }
-            camView[idx].height = height * 0.5;
-            camView[idx].width = camView[idx].height * CAMERA_RATIO;
-            camView[idx].posX = (width / 2) + 1;
-            camView[idx].posY = (height / 2) + 1;
+            camView[idx].moveSteps = MOVE_STEPS;
+            camView[idx].heightTarget = height * 0.5;
+            camView[idx].widthTarget = camView[idx].heightTarget * CAMERA_RATIO;
+            camView[idx].posXTarget = (width / 2) + 1;
+            camView[idx].posYTarget = (height / 2) + 1;
             break;
         default:
             // none
@@ -620,18 +656,71 @@ void setViewParams() {
         if (idx == -1) {
             break;
         }
-        camView[idx].basePosX = max(0, camView[idx].posX) + BASE_MARGIN_X;
-        camView[idx].basePosY = max(0, camView[idx].posY) + BASE_MARGIN_Y;
+        camView[idx].basePosXTarget = max(0, camView[idx].posXTarget) + BASE_MARGIN_X;
+        camView[idx].basePosYTarget = max(0, camView[idx].posYTarget) + BASE_MARGIN_Y;
         camView[idx].baseWidth = BASE_WIDTH;
         camView[idx].baseHeight = BASE_HEIGHT;
-        camView[idx].numberPosX = max(0, camView[idx].posX) + NUMBER_MARGIN_X;
-        camView[idx].numberPosY = max(0, camView[idx].posY) + NUMBER_MARGIN_Y;
-        camView[idx].iconPosX = max(0, camView[idx].posX) + ICON_MARGIN_X;
-        camView[idx].iconPosY = max(0, camView[idx].posY) + ICON_MARGIN_Y;
-        camView[idx].labelPosX = max(0, camView[idx].posX) + LABEL_MARGIN_X;
-        camView[idx].labelPosY = max(0, camView[idx].posY) + LABEL_MARGIN_Y;
-        camView[idx].lapPosX = max(0, camView[idx].posX) + LAP_MARGIN_X;
-        camView[idx].lapPosY = max(0, camView[idx].posY) + LAP_MARGIN_Y;
+        camView[idx].numberPosXTarget = max(0, camView[idx].posXTarget) + NUMBER_MARGIN_X;
+        camView[idx].numberPosYTarget = max(0, camView[idx].posYTarget) + NUMBER_MARGIN_Y;
+        camView[idx].iconPosXTarget = max(0, camView[idx].posXTarget) + ICON_MARGIN_X;
+        camView[idx].iconPosYTarget = max(0, camView[idx].posYTarget) + ICON_MARGIN_Y;
+        camView[idx].labelPosXTarget = max(0, camView[idx].posXTarget) + LABEL_MARGIN_X;
+        camView[idx].labelPosYTarget = max(0, camView[idx].posYTarget) + LABEL_MARGIN_Y;
+        camView[idx].lapPosXTarget = max(0, camView[idx].posXTarget) + LAP_MARGIN_X;
+        camView[idx].lapPosYTarget = max(0, camView[idx].posYTarget) + LAP_MARGIN_Y;
+    }
+}
+
+//--------------------------------------------------------------
+int calcViewParam(int target, int current, int steps) {
+    int val, diff;
+    if (steps == 0 || target == current) {
+        return target;
+    }
+    if (target > current) {
+        diff = (target - current) / steps;
+        val = current + diff;
+    } else {
+        diff = (current - target) / steps;
+        val = current - diff;
+    }
+    return val;
+}
+
+//--------------------------------------------------------------
+void updateViewParams() {
+    int i, idx, steps;
+    for (i = 1; i <= cameraNumVisible; i++) {
+        idx = getCameraIdxNthVisible(i);
+        if (idx == -1) {
+            break;
+        }
+        steps = camView[idx].moveSteps;
+        if (steps == 0) {
+            continue;
+        }
+        // camera
+        camView[idx].width = calcViewParam(camView[idx].widthTarget, camView[idx].width, steps);
+        camView[idx].height = calcViewParam(camView[idx].heightTarget, camView[idx].height, steps);
+        camView[idx].posX = calcViewParam(camView[idx].posXTarget, camView[idx].posX, steps);
+        camView[idx].posY = calcViewParam(camView[idx].posYTarget, camView[idx].posY, steps);
+        // base
+        camView[idx].basePosX = calcViewParam(camView[idx].basePosXTarget, camView[idx].basePosX, steps);
+        camView[idx].basePosY = calcViewParam(camView[idx].basePosYTarget, camView[idx].basePosY, steps);
+        // number
+        camView[idx].numberPosX = calcViewParam(camView[idx].numberPosXTarget, camView[idx].numberPosX, steps);
+        camView[idx].numberPosY = calcViewParam(camView[idx].numberPosYTarget, camView[idx].numberPosY, steps);
+        // icon
+        camView[idx].iconPosX = calcViewParam(camView[idx].iconPosXTarget, camView[idx].iconPosX, steps);
+        camView[idx].iconPosY = calcViewParam(camView[idx].iconPosYTarget, camView[idx].iconPosY, steps);
+        // label
+        camView[idx].labelPosX = calcViewParam(camView[idx].labelPosXTarget, camView[idx].labelPosX, steps);
+        camView[idx].labelPosY = calcViewParam(camView[idx].labelPosYTarget, camView[idx].labelPosY, steps);
+        // lap
+        camView[idx].lapPosX = calcViewParam(camView[idx].lapPosXTarget, camView[idx].lapPosX, steps);
+        camView[idx].lapPosY = calcViewParam(camView[idx].lapPosYTarget, camView[idx].lapPosY, steps);
+        // finished
+        camView[idx].moveSteps--;
     }
 }
 
