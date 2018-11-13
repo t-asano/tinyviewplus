@@ -17,14 +17,18 @@
 #define ICON_PATH       "pilots/"
 #define ICON_WIDTH      50
 #define ICON_HEIGHT     50
-#define ICON_MARGIN_X   10
-#define ICON_MARGIN_Y   10
+#define ICON_MARGIN_X   20
+#define ICON_MARGIN_Y   0
+#define NUMBER_HEIGHT   20
+#define NUMBER_MARGIN_X 1
+#define NUMBER_MARGIN_Y 35
 #define LABEL_HEIGHT    30
-#define LABEL_MARGIN_X  70
-#define LABEL_MARGIN_Y  50
+#define LABEL_MARGIN_X  75
+#define LABEL_MARGIN_Y  40
 #define BASE_MARGIN_X   0
-#define BASE_MARGIN_Y   45
-#define BASE_HEIGHT     20
+#define BASE_MARGIN_Y   0
+#define BASE_WIDTH      20
+#define BASE_HEIGHT     50
 #define BASE_1_RED      201
 #define BASE_1_GREEN    58
 #define BASE_1_BLUE     64
@@ -37,10 +41,9 @@
 #define BASE_4_RED      248
 #define BASE_4_GREEN    128
 #define BASE_4_BLUE     23
-#define BASE_ALPHA      160
 #define LAP_HEIGHT      30
-#define LAP_MARGIN_X    10
-#define LAP_MARGIN_Y    110
+#define LAP_MARGIN_X    20
+#define LAP_MARGIN_Y    90
 // osc
 #define OSC_LISTEN_PORT 4000
 // help
@@ -93,6 +96,8 @@ public:
     int basePosY;
     int baseWidth;
     int baseHeight;
+    int numberPosX;
+    int numberPosY;
     ofImage iconImage;
     int iconPosX;
     int iconPosY;
@@ -105,7 +110,7 @@ public:
 };
 
 ofVideoGrabber grabber[CAMERA_MAXNUM];
-ofxTrueTypeFontUC myFontLabel, myFontLap;
+ofxTrueTypeFontUC myFontNumber, myFontLabel, myFontLap;
 ofImage wallImage;
 float wallRatio;
 int wallDrawWidth;
@@ -134,6 +139,7 @@ void ofApp::setup(){
     ofBackground(0, 0, 0);
     ofSetVerticalSync(VERTICAL_SYNC);
     ofSetFrameRate(FRAME_RATE);
+    myFontNumber.load(FONT_FILE, NUMBER_HEIGHT);
     myFontLabel.load(FONT_FILE, LABEL_HEIGHT);
     myFontLap.load(FONT_FILE, LAP_HEIGHT);
     // wallpaper
@@ -175,8 +181,11 @@ void ofApp::draw(){
         ofSetColor(255, 255, 255);
         grabber[i].draw(camView[i].posX, camView[i].posY, camView[i].width, camView[i].height);
         // base
-        ofSetColor(camView[i].baseColor, BASE_ALPHA);
+        ofSetColor(camView[i].baseColor);
         ofDrawRectangle(camView[i].basePosX, camView[i].basePosY, camView[i].baseWidth, camView[i].baseHeight);
+        // number
+        ofSetColor(255, 255, 255);
+        myFontNumber.drawString(ofToString(i + 1), camView[i].numberPosX, camView[i].numberPosY);
         // icon
         ofSetColor(255, 255, 255);
         camView[i].iconImage.draw(camView[i].iconPosX, camView[i].iconPosY, ICON_WIDTH, ICON_HEIGHT);
@@ -585,8 +594,10 @@ void setViewParams() {
         }
         camView[idx].basePosX = max(0, camView[idx].posX) + BASE_MARGIN_X;
         camView[idx].basePosY = max(0, camView[idx].posY) + BASE_MARGIN_Y;
-        camView[idx].baseWidth = camView[idx].width - (BASE_MARGIN_X * 2);
+        camView[idx].baseWidth = BASE_WIDTH;
         camView[idx].baseHeight = BASE_HEIGHT;
+        camView[idx].numberPosX = max(0, camView[idx].posX) + NUMBER_MARGIN_X;
+        camView[idx].numberPosY = max(0, camView[idx].posY) + NUMBER_MARGIN_Y;
         camView[idx].iconPosX = max(0, camView[idx].posX) + ICON_MARGIN_X;
         camView[idx].iconPosY = max(0, camView[idx].posY) + ICON_MARGIN_Y;
         camView[idx].labelPosX = max(0, camView[idx].posX) + LABEL_MARGIN_X;
