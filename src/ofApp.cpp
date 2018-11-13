@@ -66,7 +66,8 @@ void bindCameras();
 void toggleCameraVisibility(int);
 int getCameraIdxNthVisible(int);
 void setupBaseColors();
-void changeCameraLabel();
+void changeCameraLabel(int);
+void changeCameraLabelAll();
 void changeCameraIcon(int);
 void changeCameraIconPath(int, string);
 void autoSelectCameraIcon(int, string);
@@ -221,7 +222,7 @@ void ofApp::keyPressed(int key){
     } else if (key == 'i' || key == 'I') {
         initConfig();
     } else if (key == 'l' || key == 'L') {
-        changeCameraLabel();
+        changeCameraLabelAll();
 #ifdef FEATURE_SPEECH
     } else if (key == 's' || key == 'S') {
         toggleSpeech();
@@ -261,7 +262,26 @@ void ofApp::mousePressed(int x, int y, int button){
 
 //--------------------------------------------------------------
 void ofApp::mouseReleased(int x, int y, int button){
-    
+    // camera icon
+    for (int i = 0; i < cameraNum; i++) {
+        if (camView[i].visible == false) {
+            continue;
+        }
+        if (x >= camView[i].iconPosX && x <= camView[i].iconPosX + ICON_WIDTH
+            && y >= camView[i].iconPosY && y <= camView[i].iconPosY + ICON_HEIGHT) {
+            changeCameraIcon(i + 1);
+        }
+    }
+    // camera label
+    for (int i = 0; i < cameraNum; i++) {
+        if (camView[i].visible == false) {
+            continue;
+        }
+        if (x >= camView[i].labelPosX && x <= camView[i].posX + camView[i].width
+            && y >= camView[i].posY && y <= camView[i].iconPosY + ICON_HEIGHT) {
+            changeCameraLabel(i + 1);
+        }
+    }
 }
 
 //--------------------------------------------------------------
@@ -387,13 +407,21 @@ void setupBaseColors() {
 }
 
 //--------------------------------------------------------------
-void changeCameraLabel() {
+void changeCameraLabel(int camid) {
     string str;
-    for (int i = 0; (i + 1) <= cameraNum; i++) {
-        str = camView[i].labelString;
-        str = ofSystemTextBoxDialog("camera" + ofToString(i + 1) + " label:", str);
-        camView[i].labelString = str;
-        autoSelectCameraIcon(i + 1, str);
+    if (camid < 1 || camid > cameraNum) {
+        return;
+    }
+    str = camView[camid - 1].labelString;
+    str = ofSystemTextBoxDialog("camera" + ofToString(camid) + " label:", str);
+    camView[camid - 1].labelString = str;
+    autoSelectCameraIcon(camid, str);
+}
+
+//--------------------------------------------------------------
+void changeCameraLabelAll() {
+    for (int i = 0; i < cameraNum; i++) {
+        changeCameraLabel(i + 1);
     }
 }
 
