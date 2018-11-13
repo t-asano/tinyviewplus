@@ -34,10 +34,11 @@ Tiny View Plusは、FPV映像を手軽に表示するためのアプリです。
 
 1. [openFrameworks](http://openframeworks.cc/ja/) v0.10.0 をインストール
 2. [ofxTrueTypeFontUCアドオン](https://github.com/hironishihara/ofxTrueTypeFontUC)を addons/ の下に配置
-3. プロジェクトジェネレーターで、2つのアドオン(ofxOsc, ofxTrueTypeFontUC)を含むプロジェクトを作成
-4. TinyViewPlusのソースコード(src/)とアセット(bin/data/)を上書き
-5. macOSの場合のみ、[openFrameworksの設定ファイルを修正](https://github.com/openframeworks/openFrameworks/commit/da6929bf6dc529a1082224a7db249e8a073b2361)
-5. ビルド
+3. [ofxTrueTypeFontUCアドオンの修正パッチ](https://github.com/hironishihara/ofxTrueTypeFontUC/pull/29/commits/297e75e9cdccb6d29b507eccf16b84d8fef86a88)を適用
+4. プロジェクトジェネレーターで、2つのアドオン(ofxOsc, ofxTrueTypeFontUC)を含むプロジェクトを作成
+5. TinyViewPlusのソースコード(src/)とアセット(bin/data/)を上書き
+6. macOSの場合のみ、[openFrameworksの設定ファイルを修正](https://github.com/openframeworks/openFrameworks/commit/da6929bf6dc529a1082224a7db249e8a073b2361)
+7. ビルド
 
 ## 使い方
 

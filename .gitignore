@@ -87,3 +87,15 @@ Desktop.ini
 
 # Android
 .csettings
+
+################
+# TVP additional
+################
+
+Makefile
+Project.xcconfig
+addons.make
+config.make
+openFrameworks-Info.plist
+tinyviewplus.xcodeproj/
+
