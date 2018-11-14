@@ -67,7 +67,7 @@ On Windows, you can check the detection status of the camera (receiver) with the
 | L | Change camera label | Pilot1~4 |
 | B | Change background image | built-in image |
 | S | Toggle speech on/off (only for macOS) | off |
-| I | Initialize configuration (※1) | Default value of each setting |
+| I | Initialize configuration (*1) | Default value of each setting |
 
 - Camera icon is also automatically changed in conjunction with the camera label change.
 	- If {label string}.png or {label string}.jpg was found under "Tiny View Plus.app / Contents / Presents / data / pilots" folder (on macOS binary), otherwise under the "data / pilots" folder,	it is adopted as an icon image in this priority order.
@@ -75,7 +75,7 @@ On Windows, you can check the detection status of the camera (receiver) with the
 	- The aspect ratio is forced to 1:1.
 - The background image is scaled according to the screen, and the upper left is displayed in priority.
 - Speech function works when linked with external application.
-- (* 1) The following settings will be initialized.
+- (*1) The following settings will be initialized.
 	- Camera on / off
 	- Camera icon
 	- Camera label
@@ -83,6 +83,18 @@ On Windows, you can check the detection status of the camera (receiver) with the
 	- Speech on / off
 - When you exit the application settings will be initialized.
 - Camera audio is not supported.
+
+### Mouse operation
+
+Some functions can also be operated with the mouse.
+
+
+| Click location | Function |
+| --- | --- |
+| Camera 1~4 icon | Change camera 1~4 icon |
+| Camera 1~4 label | Change camera 1~4 label (*1) |
+
+(*1) The icon is also automatically changed according to the label.
 
 ## Control by OSC
 
