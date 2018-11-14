@@ -23,6 +23,15 @@ function test() {
   var step_lap = 3000;
   var step_spc = 1200;
   console.log('Sending OSC message to udp://127.0.0.1:4000');
+  // camera solo
+  sendOsc("/v1/camera/1/solo", "on", wait += step);
+  sendOsc("/v1/camera/1/solo", "off", wait += step);
+  sendOsc("/v1/camera/2/solo", "on", wait += step);
+  sendOsc("/v1/camera/2/solo", "off", wait += step);
+  sendOsc("/v1/camera/3/solo", "on", wait += step);
+  sendOsc("/v1/camera/3/solo", "off", wait += step);
+  sendOsc("/v1/camera/4/solo", "on", wait += step);
+  sendOsc("/v1/camera/4/solo", "off", wait += step);
   // camera display
   sendOsc("/v1/camera/1/display", "off", wait += step);
   sendOsc("/v1/camera/2/display", "off", wait += step);

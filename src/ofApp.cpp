@@ -6,7 +6,7 @@
 
 // view
 #define FRAME_RATE      60
-#define MOVE_STEPS      8
+#define MOVE_STEPS      10
 #define VERTICAL_SYNC   true
 #define WALL_FILE       "default_background.png"
 #define CAMERA_MAXNUM   4
@@ -56,7 +56,8 @@
 #endif /* FEATURE_SPEECH */
 #define HELP_MESSAGE    "Keyboard shortcuts:\n"\
                         "[H] Display help\n"\
-                        "[1~4] Toggle camera 1~4 on/off\n"\
+                        "[1~4] Toggle camera 1~4 solo mode on/off\n"\
+                        "[Shift + 1~4] Toggle camera 1~4 on/off\n"\
                         "[Q,W,E,R] Change camera 1~4 icon\n"\
                         "[L] Change camera label\n"\
                         "[B] Change background image\n"\
@@ -64,8 +65,10 @@
                         "[I] Initialize configuration\n"
 
 void bindCameras();
+void toggleCameraSolo(int);
 void toggleCameraVisibility(int);
-int getCameraIdxNthVisible(int);
+int getCameraIdxNthVisibleAll(int);
+int getCameraIdxNthVisibleSub(int);
 void setupBaseColors();
 void changeCameraLabel(int);
 void changeCameraLabelAll();
@@ -87,6 +90,7 @@ void recvOscSpeech(string, string);
 void speakLap(int, float);
 void speakAny(string, string);
 #endif /* FEATURE_SPEECH */
+void drawCamera(int);
 
 class tvpCamView {
 public:
@@ -136,6 +140,7 @@ public:
 
 ofVideoGrabber grabber[CAMERA_MAXNUM];
 ofxTrueTypeFontUC myFontNumber, myFontLabel, myFontLap;
+ofxTrueTypeFontUC myFontNumberSub, myFontLabelSub, myFontLapSub;
 ofImage wallImage;
 float wallRatio;
 int wallDrawWidth;
@@ -143,6 +148,7 @@ int wallDrawHeight;
 tvpCamView camView[CAMERA_MAXNUM];
 int cameraNum;
 int cameraNumVisible;
+int cameraIdxSolo;
 string helpMessage;
 ofxOscReceiver oscReceiver;
 #ifdef FEATURE_SPEECH
@@ -167,6 +173,9 @@ void ofApp::setup(){
     myFontNumber.load(FONT_FILE, NUMBER_HEIGHT);
     myFontLabel.load(FONT_FILE, LABEL_HEIGHT);
     myFontLap.load(FONT_FILE, LAP_HEIGHT);
+    myFontNumberSub.load(FONT_FILE, NUMBER_HEIGHT / 2);
+    myFontLabelSub.load(FONT_FILE, LABEL_HEIGHT / 2);
+    myFontLapSub.load(FONT_FILE, LAP_HEIGHT / 2);
     // wallpaper
     wallImage.load(WALL_FILE);
     wallRatio = wallImage.getWidth() / wallImage.getHeight();
@@ -195,47 +204,85 @@ void ofApp::update(){
 }
 
 //--------------------------------------------------------------
-void ofApp::draw(){
-    // wallpaper
+void drawCamera(int idx) {
+    int i = idx;
+    bool isSub = false;
+    if (cameraIdxSolo != -1 && i != cameraIdxSolo) {
+        isSub = true;
+    }
+    // image
     ofSetColor(255, 255, 255);
-    wallImage.draw(0, 0, wallDrawWidth, wallDrawHeight);
-    // camera
-    for (int i = 0; i < cameraNum; i++) {
-        if (camView[i].visible == false) {
-            continue;
-        }
-        // camera image
-        ofSetColor(255, 255, 255);
-        grabber[i].draw(camView[i].posX, camView[i].posY, camView[i].width, camView[i].height);
-        // base
-        ofSetColor(camView[i].baseColor);
-        ofDrawRectangle(camView[i].basePosX, camView[i].basePosY, camView[i].baseWidth, camView[i].baseHeight);
-        // number
-        ofSetColor(255, 255, 255);
+    grabber[i].draw(camView[i].posX, camView[i].posY, camView[i].width, camView[i].height);
+    // base
+    ofSetColor(camView[i].baseColor);
+    ofDrawRectangle(camView[i].basePosX, camView[i].basePosY, camView[i].baseWidth, camView[i].baseHeight);
+    // number
+    ofSetColor(255, 255, 255);
+    if (isSub) {
+        myFontNumberSub.drawString(ofToString(i + 1), camView[i].numberPosX, camView[i].numberPosY);
+    } else {
         myFontNumber.drawString(ofToString(i + 1), camView[i].numberPosX, camView[i].numberPosY);
-        // icon
-        ofSetColor(255, 255, 255);
+    }
+    // icon
+    ofSetColor(255, 255, 255);
+    if (isSub) {
+        camView[i].iconImage.draw(camView[i].iconPosX, camView[i].iconPosY, ICON_WIDTH / 2, ICON_HEIGHT / 2);
+    } else {
         camView[i].iconImage.draw(camView[i].iconPosX, camView[i].iconPosY, ICON_WIDTH, ICON_HEIGHT);
-        // label
-        if (camView[i].labelString != "") {
-            ofSetColor(255, 215, 0);
+    }
+    // label
+    if (camView[i].labelString != "") {
+        ofSetColor(255, 215, 0);
+        if (isSub) {
+            myFontLabelSub.drawString(camView[i].labelString, camView[i].labelPosX, camView[i].labelPosY);
+        } else {
             myFontLabel.drawString(camView[i].labelString, camView[i].labelPosX, camView[i].labelPosY);
         }
-        // laptime
-        if (camView[i].lap != 0) {
-            string sout;
-            stringstream stream;
-            stream << fixed << setprecision(2) << camView[i].lap;
-            ofSetColor(255, 255, 255);
-            sout = ofToString("Lap:") + stream.str() + "s";
+    }
+    // laptime
+    if (camView[i].lap != 0) {
+        string sout;
+        stringstream stream;
+        stream << fixed << setprecision(2) << camView[i].lap;
+        sout = ofToString("Lap:") + stream.str() + "s";
+        ofSetColor(255, 255, 255);
+        if (isSub) {
+            myFontLapSub.drawString(sout, camView[i].lapPosX, camView[i].lapPosY);
+        } else {
             myFontLap.drawString(sout, camView[i].lapPosX, camView[i].lapPosY);
         }
     }
 }
 
 //--------------------------------------------------------------
+void ofApp::draw(){
+    // wallpaper
+    ofSetColor(255, 255, 255);
+    wallImage.draw(0, 0, wallDrawWidth, wallDrawHeight);
+    // camera (solo main)
+    if (cameraIdxSolo != -1) {
+        drawCamera(cameraIdxSolo);
+    }
+    // camera (solo sub / solo off)
+    for (int i = 0; i < cameraNum; i++) {
+        if (camView[i].visible == false || i == cameraIdxSolo) {
+            continue;
+        }
+        drawCamera(i);
+    }
+}
+
+//--------------------------------------------------------------
 void ofApp::keyPressed(int key){
-    if (key == '!') {
+    if (key == '1') {
+        toggleCameraSolo(1);
+    } else if (key == '2') {
+        toggleCameraSolo(2);
+    } else if (key == '3') {
+        toggleCameraSolo(3);
+    } else if (key == '4') {
+        toggleCameraSolo(4);
+    } else if (key == '!') {
         toggleCameraVisibility(1);
     } else if (key == '"' || key == '@') {
         toggleCameraVisibility(2);
@@ -341,6 +388,7 @@ void ofApp::dragEvent(ofDragInfo dragInfo){
 //--------------------------------------------------------------
 void bindCameras() {
     cameraNum = 0;
+    cameraIdxSolo = -1;
     vector<ofVideoDevice> devices = grabber[0].listDevices();
     for (vector<ofVideoDevice>::iterator it = devices.begin(); it != devices.end(); ++it) {
         if (it->deviceName.substr(0, 16) == "USB2.0 PC CAMERA") {
@@ -369,16 +417,32 @@ void bindCameras() {
 }
 
 //--------------------------------------------------------------
-void toggleCameraVisibility(int num) {
-    int idx = num - 1;
-    if (num < 1) {
+void toggleCameraSolo(int camid) {
+    int idx = camid - 1;
+    if (cameraNum == 1 || camid < 1 || camid > cameraNum) {
         return;
     }
-    if (num > cameraNum) {
-        ofSystemAlertDialog("camera" + ofToString(num) + " not found");
+    if (idx == cameraIdxSolo) {
+        cameraIdxSolo = -1;
+    } else {
+        if (camView[idx].visible == false) {
+            toggleCameraVisibility(camid);
+        }
+        cameraIdxSolo = idx;
+    }
+    setViewParams();
+}
+
+//--------------------------------------------------------------
+void toggleCameraVisibility(int camid) {
+    int idx = camid - 1;
+    if (camid < 1 || camid > cameraNum) {
         return;
     }
     if (camView[idx].visible == true) {
+        if (cameraIdxSolo == idx) {
+            toggleCameraSolo(camid);
+        }
         camView[idx].visible = false;
         cameraNumVisible -= 1;
     } else {
@@ -389,10 +453,24 @@ void toggleCameraVisibility(int num) {
 }
 
 //--------------------------------------------------------------
-int getCameraIdxNthVisible(int nth) {
+int getCameraIdxNthVisibleAll(int nth) {
     int cnt = 0;
     for (int i = 0; i < cameraNum; i++) {
         if (camView[i].visible == true) {
+            cnt++;
+            if (cnt == nth) {
+                return i;
+            }
+        }
+    }
+    return -1;
+}
+
+//--------------------------------------------------------------
+int getCameraIdxNthVisibleSub(int nth) {
+    int cnt = 0;
+    for (int i = 0; i < cameraNum; i++) {
+        if (camView[i].visible == true && i != cameraIdxSolo) {
             cnt++;
             if (cnt == nth) {
                 return i;
@@ -541,7 +619,7 @@ void setViewParams() {
     switch (cameraNumVisible) {
         case 1:
             // 1st visible camera
-            idx = getCameraIdxNthVisible(1);
+            idx = getCameraIdxNthVisibleAll(1);
             if (idx == -1) {
                 break;
             }
@@ -552,107 +630,152 @@ void setViewParams() {
             camView[idx].posYTarget = (height / 2) - (camView[idx].heightTarget / 2);
             break;
         case 2:
-            // 1st visible camera
-            idx = getCameraIdxNthVisible(1);
-            if (idx == -1) {
-                break;
+            if (cameraIdxSolo == -1) { // solo mode off
+                // 1st camera
+                idx = getCameraIdxNthVisibleAll(1);
+                camView[idx].moveSteps = MOVE_STEPS;
+                camView[idx].widthTarget = width / 2;
+                camView[idx].heightTarget = camView[idx].widthTarget / CAMERA_RATIO;
+                camView[idx].posXTarget = -1;
+                camView[idx].posYTarget = (height / 2) - (camView[idx].heightTarget / 2);
+                // 2nd camera
+                idx = getCameraIdxNthVisibleAll(2);
+                camView[idx].moveSteps = MOVE_STEPS;
+                camView[idx].widthTarget = width / 2;
+                camView[idx].heightTarget = camView[idx].widthTarget / CAMERA_RATIO;
+                camView[idx].posXTarget = (width / 2) + 1;
+                camView[idx].posYTarget = (height / 2) - (camView[idx].heightTarget / 2);
+            } else { // solo mode on
+                // main camera
+                idx = cameraIdxSolo;
+                camView[idx].moveSteps = MOVE_STEPS;
+                camView[idx].widthTarget = width;
+                camView[idx].heightTarget = camView[idx].widthTarget / CAMERA_RATIO;
+                camView[idx].posXTarget = (width / 2) - (camView[idx].widthTarget / 2);
+                camView[idx].posYTarget = (height / 2) - (camView[idx].heightTarget / 2);
+                // 1st sub camera
+                idx = getCameraIdxNthVisibleSub(1);
+                camView[idx].moveSteps = MOVE_STEPS;
+                camView[idx].widthTarget = width / 5;
+                camView[idx].heightTarget = camView[idx].widthTarget / CAMERA_RATIO;
+                camView[idx].posXTarget = width - camView[idx].widthTarget;
+                camView[idx].posYTarget = height - camView[idx].heightTarget;
             }
-            camView[idx].moveSteps = MOVE_STEPS;
-            camView[idx].widthTarget = width / 2;
-            camView[idx].heightTarget = camView[idx].widthTarget / CAMERA_RATIO;
-            camView[idx].posXTarget = -1;
-            camView[idx].posYTarget = (height / 2) - (camView[idx].heightTarget / 2);
-            // 2nd visible camera
-            idx = getCameraIdxNthVisible(2);
-            if (idx == -1) {
-                break;
-            }
-            camView[idx].moveSteps = MOVE_STEPS;
-            camView[idx].widthTarget = width / 2;
-            camView[idx].heightTarget = camView[idx].widthTarget / CAMERA_RATIO;
-            camView[idx].posXTarget = (width / 2) + 1;
-            camView[idx].posYTarget = (height / 2) - (camView[idx].heightTarget / 2);
             break;
         case 3:
-            // 1st visible camera
-            idx = getCameraIdxNthVisible(1);
-            if (idx == -1) {
-                break;
+            if (cameraIdxSolo == -1) { // solo mode off
+                // 1st camera
+                idx = getCameraIdxNthVisibleAll(1);
+                camView[idx].moveSteps = MOVE_STEPS;
+                camView[idx].heightTarget = height * 0.55;
+                camView[idx].widthTarget = camView[idx].heightTarget * CAMERA_RATIO;
+                camView[idx].posXTarget = (width / 2) - (camView[idx].widthTarget / 2);
+                camView[idx].posYTarget = 0;
+                // 2nd camera
+                idx = getCameraIdxNthVisibleAll(2);
+                camView[idx].moveSteps = MOVE_STEPS;
+                camView[idx].heightTarget = height * 0.55;
+                camView[idx].widthTarget = camView[idx].heightTarget * CAMERA_RATIO;
+                camView[idx].posXTarget = 0;
+                camView[idx].posYTarget = height * 0.45;
+                // 3rd camera
+                idx = getCameraIdxNthVisibleAll(3);
+                camView[idx].moveSteps = MOVE_STEPS;
+                camView[idx].heightTarget = height * 0.55;
+                camView[idx].widthTarget = camView[idx].heightTarget * CAMERA_RATIO;
+                camView[idx].posXTarget = width - camView[idx].widthTarget;
+                camView[idx].posYTarget = height * 0.45;
+            } else { // solo mode on
+                // main camera
+                idx = cameraIdxSolo;
+                camView[idx].moveSteps = MOVE_STEPS;
+                camView[idx].widthTarget = width;
+                camView[idx].heightTarget = camView[idx].widthTarget / CAMERA_RATIO;
+                camView[idx].posXTarget = (width / 2) - (camView[idx].widthTarget / 2);
+                camView[idx].posYTarget = (height / 2) - (camView[idx].heightTarget / 2);
+                // 1st sub camera
+                idx = getCameraIdxNthVisibleSub(1);
+                camView[idx].moveSteps = MOVE_STEPS;
+                camView[idx].widthTarget = width / 5;
+                camView[idx].heightTarget = camView[idx].widthTarget / CAMERA_RATIO;
+                camView[idx].posXTarget = 0;
+                camView[idx].posYTarget = height - camView[idx].heightTarget;
+                // 2nd sub camera
+                idx = getCameraIdxNthVisibleSub(2);
+                camView[idx].moveSteps = MOVE_STEPS;
+                camView[idx].widthTarget = width / 5;
+                camView[idx].heightTarget = camView[idx].widthTarget / CAMERA_RATIO;
+                camView[idx].posXTarget = width - camView[idx].widthTarget;
+                camView[idx].posYTarget = height - camView[idx].heightTarget;
             }
-            camView[idx].moveSteps = MOVE_STEPS;
-            camView[idx].heightTarget = height * 0.55;
-            camView[idx].widthTarget = camView[idx].heightTarget * CAMERA_RATIO;
-            camView[idx].posXTarget = (width / 2) - (camView[idx].widthTarget / 2);
-            camView[idx].posYTarget = 0;
-            // 2nd visible camera
-            idx = getCameraIdxNthVisible(2);
-            if (idx == -1) {
-                break;
-            }
-            camView[idx].moveSteps = MOVE_STEPS;
-            camView[idx].heightTarget = height * 0.55;
-            camView[idx].widthTarget = camView[idx].heightTarget * CAMERA_RATIO;
-            camView[idx].posXTarget = 0;
-            camView[idx].posYTarget = height * 0.45;
-            // 3rd visible camera
-            idx = getCameraIdxNthVisible(3);
-            if (idx == -1) {
-                break;
-            }
-            camView[idx].moveSteps = MOVE_STEPS;
-            camView[idx].heightTarget = height * 0.55;
-            camView[idx].widthTarget = camView[idx].heightTarget * CAMERA_RATIO;
-            camView[idx].posXTarget = width - camView[idx].widthTarget;
-            camView[idx].posYTarget = height * 0.45;
             break;
         case 4:
-            // 1st visible camera
-            idx = getCameraIdxNthVisible(1);
-            if (idx == -1) {
-                break;
+            if (cameraIdxSolo == -1) { // solo mode off
+                // 1st camera
+                idx = getCameraIdxNthVisibleAll(1);
+                camView[idx].moveSteps = MOVE_STEPS;
+                camView[idx].heightTarget = height * 0.5;
+                camView[idx].widthTarget = camView[idx].heightTarget * CAMERA_RATIO;
+                camView[idx].posXTarget = (width / 2) - (camView[idx].widthTarget + 1);
+                camView[idx].posYTarget = -1;
+                // 2nd camera
+                idx = getCameraIdxNthVisibleAll(2);
+                camView[idx].moveSteps = MOVE_STEPS;
+                camView[idx].heightTarget = height * 0.5;
+                camView[idx].widthTarget = camView[idx].heightTarget * CAMERA_RATIO;
+                camView[idx].posXTarget = (width / 2) + 1;
+                camView[idx].posYTarget = -1;
+                // 3rd camera
+                idx = getCameraIdxNthVisibleAll(3);
+                camView[idx].moveSteps = MOVE_STEPS;
+                camView[idx].heightTarget = height * 0.5;
+                camView[idx].widthTarget = camView[idx].heightTarget * CAMERA_RATIO;
+                camView[idx].posXTarget = (width / 2) - (camView[idx].widthTarget + 1);
+                camView[idx].posYTarget = (height / 2) + 1;
+                // 4th camera
+                idx = getCameraIdxNthVisibleAll(4);
+                camView[idx].moveSteps = MOVE_STEPS;
+                camView[idx].heightTarget = height * 0.5;
+                camView[idx].widthTarget = camView[idx].heightTarget * CAMERA_RATIO;
+                camView[idx].posXTarget = (width / 2) + 1;
+                camView[idx].posYTarget = (height / 2) + 1;
+            } else { // solo mode off
+                // main camera
+                idx = cameraIdxSolo;
+                camView[idx].moveSteps = MOVE_STEPS;
+                camView[idx].widthTarget = width;
+                camView[idx].heightTarget = camView[idx].widthTarget / CAMERA_RATIO;
+                camView[idx].posXTarget = (width / 2) - (camView[idx].widthTarget / 2);
+                camView[idx].posYTarget = (height / 2) - (camView[idx].heightTarget / 2);
+                // 1st sub camera
+                idx = getCameraIdxNthVisibleSub(1);
+                camView[idx].moveSteps = MOVE_STEPS;
+                camView[idx].widthTarget = width / 5;
+                camView[idx].heightTarget = camView[idx].widthTarget / CAMERA_RATIO;
+                camView[idx].posXTarget = 0;
+                camView[idx].posYTarget = height - camView[idx].heightTarget;
+                // 2nd sub camera
+                idx = getCameraIdxNthVisibleSub(2);
+                camView[idx].moveSteps = MOVE_STEPS;
+                camView[idx].widthTarget = width / 5;
+                camView[idx].heightTarget = camView[idx].widthTarget / CAMERA_RATIO;
+                camView[idx].posXTarget = (width / 2) - (camView[idx].widthTarget / 2);
+                camView[idx].posYTarget = height - camView[idx].heightTarget;
+                // 3rd sub camera
+                idx = getCameraIdxNthVisibleSub(3);
+                camView[idx].moveSteps = MOVE_STEPS;
+                camView[idx].widthTarget = width / 5;
+                camView[idx].heightTarget = camView[idx].widthTarget / CAMERA_RATIO;
+                camView[idx].posXTarget = width - camView[idx].widthTarget;
+                camView[idx].posYTarget = height - camView[idx].heightTarget;
             }
-            camView[idx].moveSteps = MOVE_STEPS;
-            camView[idx].heightTarget = height * 0.5;
-            camView[idx].widthTarget = camView[idx].heightTarget * CAMERA_RATIO;
-            camView[idx].posXTarget = (width / 2) - (camView[idx].widthTarget + 1);
-            camView[idx].posYTarget = -1;
-            // 2nd visible camera
-            idx = getCameraIdxNthVisible(2);
-            if (idx == -1) {
-                break;
-            }
-            camView[idx].moveSteps = MOVE_STEPS;
-            camView[idx].heightTarget = height * 0.5;
-            camView[idx].widthTarget = camView[idx].heightTarget * CAMERA_RATIO;
-            camView[idx].posXTarget = (width / 2) + 1;
-            camView[idx].posYTarget = -1;
-            // 3rd visible camera
-            idx = getCameraIdxNthVisible(3);
-            if (idx == -1) {
-                break;
-            }
-            camView[idx].moveSteps = MOVE_STEPS;
-            camView[idx].heightTarget = height * 0.5;
-            camView[idx].widthTarget = camView[idx].heightTarget * CAMERA_RATIO;
-            camView[idx].posXTarget = (width / 2) - (camView[idx].widthTarget + 1);
-            camView[idx].posYTarget = (height / 2) + 1;
-            // 4th visible camera
-            idx = getCameraIdxNthVisible(4);
-            if (idx == -1) {
-                break;
-            }
-            camView[idx].moveSteps = MOVE_STEPS;
-            camView[idx].heightTarget = height * 0.5;
-            camView[idx].widthTarget = camView[idx].heightTarget * CAMERA_RATIO;
-            camView[idx].posXTarget = (width / 2) + 1;
-            camView[idx].posYTarget = (height / 2) + 1;
             break;
         default:
             // none
             break;
     }
     for (i = 1; i <= cameraNumVisible; i++) {
-        idx = getCameraIdxNthVisible(i);
+        idx = getCameraIdxNthVisibleAll(i);
         if (idx == -1) {
             break;
         }
@@ -668,6 +791,17 @@ void setViewParams() {
         camView[idx].labelPosYTarget = max(0, camView[idx].posYTarget) + LABEL_MARGIN_Y;
         camView[idx].lapPosXTarget = max(0, camView[idx].posXTarget) + LAP_MARGIN_X;
         camView[idx].lapPosYTarget = max(0, camView[idx].posYTarget) + LAP_MARGIN_Y;
+        if (cameraIdxSolo != -1 && idx != cameraIdxSolo) { // sub
+            camView[idx].baseWidth = camView[idx].baseWidth / 2;
+            camView[idx].baseHeight = camView[idx].baseHeight / 2;
+            camView[idx].numberPosXTarget = camView[idx].numberPosXTarget - (NUMBER_MARGIN_X / 2);
+            camView[idx].numberPosYTarget = camView[idx].numberPosYTarget - (NUMBER_MARGIN_Y / 2);
+            camView[idx].iconPosXTarget = camView[idx].iconPosXTarget - (ICON_MARGIN_X / 2);
+            camView[idx].labelPosXTarget = camView[idx].labelPosXTarget - (LABEL_MARGIN_X / 2);
+            camView[idx].labelPosYTarget = camView[idx].labelPosYTarget - (LABEL_MARGIN_Y / 2);
+            camView[idx].lapPosXTarget = camView[idx].lapPosXTarget - (LAP_MARGIN_X / 2);
+            camView[idx].lapPosYTarget = camView[idx].lapPosYTarget - (LAP_MARGIN_Y / 2);
+        }
     }
 }
 
@@ -691,7 +825,8 @@ int calcViewParam(int target, int current, int steps) {
 void updateViewParams() {
     int i, idx, steps;
     for (i = 1; i <= cameraNumVisible; i++) {
-        idx = getCameraIdxNthVisible(i);
+        // normal view
+        idx = getCameraIdxNthVisibleAll(i);
         if (idx == -1) {
             break;
         }
@@ -737,6 +872,7 @@ void initConfig() {
         camView[i].visible = true;
     }
     cameraNumVisible = cameraNum;
+    cameraIdxSolo = -1;
     setViewParams();
     // camera icon, label, laptime
     for (i = 0; i < cameraNum; i++) {
@@ -813,7 +949,14 @@ void recvOscCameraString(int camid, string method, string argstr) {
     if (camid < 1 || camid > cameraNum) {
         return;
     }
-    if (method == "display") {
+    if (method == "solo") {
+        if (cameraIdxSolo != (camid - 1) && argstr == "on") {
+            toggleCameraSolo(camid);
+        }
+        if (cameraIdxSolo == (camid - 1) && argstr == "off") {
+            toggleCameraSolo(camid);
+        }
+    } else if (method == "display") {
         if (argstr == "on" && camView[camid - 1].visible == false) {
             toggleCameraVisibility(camid);
         }

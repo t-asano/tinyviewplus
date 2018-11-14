@@ -62,7 +62,8 @@ On Windows, you can check the detection status of the camera (receiver) with the
 | key | Function | Default value |
 |---|---|---|
 | H | Display help | - |
-| Shift + 1~4 | Toggle camera 1~4 on/off | on |
+| 1~4 | Toggle camera 1~4 solo mode on/off | off |
+| Shift + 1~4 | Toggle camera 1~4 display on/off | on |
 | Q,W,E,R | Change camera 1~4 icon | built-in image |
 | L | Change camera label | Pilot1~4 |
 | B | Change background image | built-in image |
@@ -88,7 +89,6 @@ On Windows, you can check the detection status of the camera (receiver) with the
 
 Some functions can also be operated with the mouse.
 
-
 | Click location | Function |
 | --- | --- |
 | Camera 1~4 icon | Change camera 1~4 icon |
@@ -102,7 +102,17 @@ Tiny View Plus can be controlled by OSC protocol. It receives OSC packet at UDP 
 
 ### Message format
 
-#### Toggle camera on / off
+#### Toggle camera solo mode on / off
+
+/v1/camera/{id}/solo {switch}
+
+- Parameters
+	- id ... Number from 1 to 4
+	- switch ... "on" or "off"
+- [Example] camera 1 solo mode on
+    - /v1/camera/1/solo "on"
+
+#### Toggle camera visibility on / off
 
 /v1/camera/{id}/display {switch}
 
