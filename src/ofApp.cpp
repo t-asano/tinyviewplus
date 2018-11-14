@@ -235,13 +235,13 @@ void ofApp::draw(){
 
 //--------------------------------------------------------------
 void ofApp::keyPressed(int key){
-    if (key == '1') {
+    if (key == '!') {
         toggleCameraVisibility(1);
-    } else if (key == '2') {
+    } else if (key == '"' || key == '@') {
         toggleCameraVisibility(2);
-    } else if (key == '3') {
+    } else if (key == '#') {
         toggleCameraVisibility(3);
-    } else if (key == '4') {
+    } else if (key == '$') {
         toggleCameraVisibility(4);
     } else if (key == 'h' || key == 'H') {
         ofSystemAlertDialog(helpMessage);

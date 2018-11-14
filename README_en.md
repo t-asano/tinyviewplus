@@ -62,7 +62,7 @@ On Windows, you can check the detection status of the camera (receiver) with the
 | key | Function | Default value |
 |---|---|---|
 | H | Display help | - |
-| 1~4 | Toggle camera 1~4 on/off | on |
+| Shift + 1~4 | Toggle camera 1~4 on/off | on |
 | Q,W,E,R | Change camera 1~4 icon | built-in image |
 | L | Change camera label | Pilot1~4 |
 | B | Change background image | built-in image |
