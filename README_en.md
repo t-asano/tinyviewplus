@@ -8,7 +8,7 @@ Tiny View Plus is an application to display FPV video easily by using receivers 
 
 <table>
 <tr>
-<td>OS</td><td>macOS (High Sierra is recommended)<br/>Windows (10 64bit is recommended)</td>
+<td>OS</td><td>macOS (Mojave is recommended)<br/>Windows (10 64bit is recommended)</td>
 </tr>
 <tr>
 <td>FPV Receiver</td><td>Eachine ROTG02<br/>Eachine ROTG01</td>

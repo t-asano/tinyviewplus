@@ -10,7 +10,7 @@ Tiny View Plusは、FPV映像を手軽に表示するためのアプリです。
 
 <table>
 <tr>
-<td>OS</td><td>macOS (High Sierra推奨)<br/>Windows (10 64bit推奨)</td>
+<td>OS</td><td>macOS (Mojave推奨)<br/>Windows (10 64bit推奨)</td>
 </tr>
 <tr>
 <td>受信機</td><td>Eachine ROTG02<br/>Eachine ROTG01</td>
