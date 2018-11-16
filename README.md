@@ -19,7 +19,7 @@ Tiny View Plusは、FPV映像を手軽に表示するためのアプリです。
 
 冒頭の写真の例では、USBハブ(C-A)とUSBケーブル(A-microB)を別途用意しています。この場合、ROTG付属のUSBケーブル(OTG用microB-microB)は使用しません。
 
-ソースコードからビルドする場合には [openFrameworks](http://openframeworks.cc/ja/) v0.10.0 が必要です。openFrameworksが対応している他のOS(Ubuntu等)でも動作する可能性はありますが、未検証です。
+ソースコードからビルドする場合には [openFrameworks](http://openframeworks.cc/ja/) v0.10.1 が必要です。openFrameworksが対応している他のOS(Ubuntu等)でも動作する可能性はありますが、未検証です。
 
 ## インストール
 
@@ -32,13 +32,12 @@ Tiny View Plusは、FPV映像を手軽に表示するためのアプリです。
 
 ### ソースコードからビルドする場合(上級者向け)
 
-1. [openFrameworks](http://openframeworks.cc/ja/) v0.10.0 をインストール
+1. [openFrameworks](http://openframeworks.cc/ja/) v0.10.1 をインストール
 2. [ofxTrueTypeFontUCアドオン](https://github.com/hironishihara/ofxTrueTypeFontUC)を addons/ の下に配置
 3. [ofxTrueTypeFontUCアドオンの修正パッチ](https://github.com/hironishihara/ofxTrueTypeFontUC/pull/29/commits/297e75e9cdccb6d29b507eccf16b84d8fef86a88)を適用
 4. プロジェクトジェネレーターで、2つのアドオン(ofxOsc, ofxTrueTypeFontUC)を含むプロジェクトを作成
 5. TinyViewPlusのソースコード(src/)とアセット(bin/data/)を上書き
-6. macOSの場合のみ、[openFrameworksの設定ファイルを修正](https://github.com/openframeworks/openFrameworks/commit/da6929bf6dc529a1082224a7db249e8a073b2361)
-7. ビルド
+6. ビルド
 
 ## 使い方
 

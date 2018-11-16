@@ -15,7 +15,7 @@ Tiny View Plus is an application to display FPV video easily by using receivers 
 </tr>
 </table>
 
-To build from source code, [openFrameworks](http://openframeworks.cc/ja/) v0.10.0 is required.
+To build from source code, [openFrameworks](http://openframeworks.cc/ja/) v0.10.1 is required.
 
 ## Install
 
@@ -28,13 +28,12 @@ Attention. We are not responsible for any problems caused by running the applica
 
 ### Case 2: Build from source code (for experts)
 
-1. Install [openFrameworks](http://openframeworks.cc/ja/) v0.10.0.
+1. Install [openFrameworks](http://openframeworks.cc/ja/) v0.10.1.
 2. Install [ofxTrueTypeFontUC addon](https://github.com/hironishihara/ofxTrueTypeFontUC)
 3. Apply [patches for ofxTrueTypeFontUC addon](https://github.com/hironishihara/ofxTrueTypeFontUC/pull/29/commits/297e75e9cdccb6d29b507eccf16b84d8fef86a88).
 4. Create a project with ofxOsc and ofxTrueTypeFontUC by Project Generator.
 5. Overwrite src/ and bin/data/.
-6. [Fix build settings for macOS](https://github.com/openframeworks/openFrameworks/commit/da6929bf6dc529a1082224a7db249e8a073b2361)
-7. Build.
+6. Build.
 
 ## Usage
 
