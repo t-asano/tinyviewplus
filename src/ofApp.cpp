@@ -1134,6 +1134,7 @@ void initConfig() {
     minLapTime = DFLT_ARAP_MNLAP;
     raceDuraLaps = DFLT_ARAP_RLAPS;
     raceStarted = false;
+    ofSystemAlertDialog("Configuration Initialized");
 }
 
 //--------------------------------------------------------------
