@@ -29,10 +29,20 @@ Attention. We are not responsible for any problems caused by running the applica
 ### Case 2: Build from source code (for experts)
 
 1. Install [openFrameworks](http://openframeworks.cc/ja/) v0.10.1.
-2. Install [ofxTrueTypeFontUC addon](https://github.com/hironishihara/ofxTrueTypeFontUC)
+2. Install addons:
+	- [ofxTrueTypeFontUC](https://github.com/hironishihara/ofxTrueTypeFontUC)
+	- [ofxAruco](https://github.com/arturoc/ofxAruco)
+	- [ofxCv](https://github.com/kylemcdonald/ofxCv/)
 3. Apply [patches for ofxTrueTypeFontUC addon](https://github.com/hironishihara/ofxTrueTypeFontUC/pull/29/commits/297e75e9cdccb6d29b507eccf16b84d8fef86a88).
-4. Create a project with ofxOsc and ofxTrueTypeFontUC by Project Generator.
-5. Overwrite src/ and bin/data/.
+4. Add [setup2d() for ofxAruco](https://github.com/arturoc/ofxAruco/tree/7af4eb215e53cce26e5bc30d3c8834167ed39c22/src).
+4. Create a project with addons:
+	- ofxOsc
+	- ofxTrueTypeFontUC
+	- ofxAruco
+	- ofxCv
+	- ofxOpenCv
+	- ofxPoco
+5. Overwrite src/ and bin/data/ of Tiny View Plus.
 6. Build.
 
 ## Usage
@@ -61,26 +71,26 @@ On Windows, you can check the detection status of the camera (receiver) with the
 | key | Function | Default value |
 |---|---|---|
 | H | Display help | - |
-| 1~4 | Toggle camera 1~4 solo mode on/off | off |
-| Shift + 1~4 | Toggle camera 1~4 display on/off | on |
-| Q,W,E,R | Change camera 1~4 icon | built-in image |
-| L | Change camera label | Pilot1~4 |
+| 1~4 | Camera 1~4 solo mode on/off | off |
+| Shift + 1~4 | Camera 1~4 display on/off | on |
+| Q,W,E,R | Change camera 1~4 icon (\*1) | built-in image |
+| L | Change all camera label (\*1) | Pilot1~4 |
 | B | Change background image | built-in image |
-| S | Toggle speech on/off (only for macOS) | off |
-| I | Initialize configuration (*1) | Default value of each setting |
+| A | AR lap timer on/off | on |
+| Space | Start/Stop race | - |
+| V | Display race results | - |
+| X | Set race duration (1~100 laps) | 10 |
+| M | Set minimum lap time (1~100 sec) | 3 |
+| N | Change speech language (Japanese/English) (\*2) | Japanese |
+| S | OSC speech on/off (\*2) | off |
+| I | Initialize configuration | Default value of each setting |
 
-- Camera icon is also automatically changed in conjunction with the camera label change.
+- (\*1) Camera icon will be automatically changed according to camera label.
 	- If {label string}.png or {label string}.jpg was found under "Tiny View Plus.app / Contents / Presents / data / pilots" folder (on macOS binary), otherwise under the "data / pilots" folder,	it is adopted as an icon image in this priority order.
 	- If no image file is found, the default icon will be adopted.
 	- The aspect ratio is forced to 1:1.
 - The background image is scaled according to the screen, and the upper left is displayed in priority.
-- Speech function works when linked with external application.
-- (*1) The following settings will be initialized.
-	- Camera on / off
-	- Camera icon
-	- Camera label
-	- Backgroud image
-	- Speech on / off
+- (\*2) Only supported on macOS.
 - When you exit the application settings will be initialized.
 - Camera audio is not supported.
 
@@ -93,7 +103,26 @@ Some functions can also be operated with the mouse.
 | Camera 1~4 icon | Change camera 1~4 icon |
 | Camera 1~4 label | Change camera 1~4 label (*1) |
 
-(*1) The icon is also automatically changed according to the label.
+(*1) Camera icon will be automatically changed according to label.
+
+### AR lap timer
+
+![docs/argate.jpg](docs/argate.jpg)
+
+You can measure the lap time using the AR marker. Place the following four types of markers around the gate.
+
+- [marker_0.png](bin/data/system/marker/marker_0.png)
+- [marker_1.png](bin/data/system/marker/marker_1.png)
+- [marker_2.png](bin/data/system/marker/marker_2.png)
+- [marker_3.png](bin/data/system/marker/marker_3.png)
+
+After detecting two or more kinds of markers simultaneously, when the marker disappears from the screen, the lap time will be confirmed.
+
+The size of the marker should be 120mm per side.
+
+Lap time is measured only during the race.
+
+Depending on the environment, recognition processing of markers might be heavy. In that case, please disable the function.
 
 ## Control by OSC
 
@@ -172,4 +201,4 @@ client.send("/v1/camera/1/laptime", 62.09, function () {});
 
 ## License
 
-Tiny View Plus is distributed under the MIT License. This gives everyone the freedoms to use Tiny View Plus in any context: commercial or non-commercial, public or private, open or closed source. Please see [LICENSE](LICENSE) and [LICENSE_THIRD_PARTY](LICENSE_THIRD_PARTY) for details.
+Tiny View Plus is distributed under the MIT License. This gives everyone the freedoms to use Tiny View Plus in any context: commercial or non-commercial, public or private, open or closed source. Please see [LICENSE](LICENSE) and [LICENSE\_THIRD\_PARTY](LICENSE_THIRD_PARTY) for details.

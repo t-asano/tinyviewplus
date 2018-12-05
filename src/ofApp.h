@@ -3,6 +3,8 @@
 #include "ofMain.h"
 #include "ofxTrueTypeFontUC.h"
 #include "ofxOsc.h"
+#include "ofxAruco.h"
+#include "highlyreliablemarkers.h"
 
 class ofApp : public ofBaseApp {
 public:

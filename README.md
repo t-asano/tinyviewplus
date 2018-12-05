@@ -33,11 +33,21 @@ Tiny View Plusは、FPV映像を手軽に表示するためのアプリです。
 ### ソースコードからビルドする場合(上級者向け)
 
 1. [openFrameworks](http://openframeworks.cc/ja/) v0.10.1 をインストール
-2. [ofxTrueTypeFontUCアドオン](https://github.com/hironishihara/ofxTrueTypeFontUC)を addons/ の下に配置
-3. [ofxTrueTypeFontUCアドオンの修正パッチ](https://github.com/hironishihara/ofxTrueTypeFontUC/pull/29/commits/297e75e9cdccb6d29b507eccf16b84d8fef86a88)を適用
-4. プロジェクトジェネレーターで、2つのアドオン(ofxOsc, ofxTrueTypeFontUC)を含むプロジェクトを作成
-5. TinyViewPlusのソースコード(src/)とアセット(bin/data/)を上書き
-6. ビルド
+2. 以下のアドオンを addon/ の下に配置
+	- [ofxTrueTypeFontUC](https://github.com/hironishihara/ofxTrueTypeFontUC)
+	- [ofxAruco](https://github.com/arturoc/ofxAruco)
+	- [ofxCv](https://github.com/kylemcdonald/ofxCv/)
+3. ofxTrueTypeFontUCアドオンに[修正パッチ](https://github.com/hironishihara/ofxTrueTypeFontUC/pull/29/commits/297e75e9cdccb6d29b507eccf16b84d8fef86a88)を適用
+4. ofxArucoアドオンに[setup2d()](https://github.com/arturoc/ofxAruco/tree/7af4eb215e53cce26e5bc30d3c8834167ed39c22/src)を追加
+5. プロジェクトジェネレーターで、以下のアドオンを含むプロジェクトを作成
+	- ofxOsc
+	- ofxTrueTypeFontUC
+	- ofxAruco
+	- ofxCv
+	- ofxOpenCv
+	- ofxPoco
+6. Tiny View Plusのソースコード(src/)とアセット(bin/data/)を上書き
+7. ビルド
 
 ## 使い方
 
@@ -74,25 +84,25 @@ Windowsでは、デバイスマネージャーでカメラ(受信機)の検出�
 |---|---|---|
 | H | ヘルプの表示 | - |
 | 1~4 | カメラ1~4のソロ表示のオン/オフ | オフ |
-| shift + 1~4 | カメラ1~4の表示のオン/オフ | オン |
+| Shift + 1~4 | カメラ1~4の表示のオン/オフ | オン |
 | Q,W,E,R | カメラ1~4のアイコンの変更 | アプリ内蔵の画像 |
-| L | カメラのラベルの変更 | Pilot1~4 |
+| L | 全カメラのラベルの変更(※1) | Pilot1~4 |
 | B | 背景画像の変更 | アプリ内蔵の画像 |
-| S | 音声読み上げのオン/オフ(macOSのみ) | オフ |
-| I | 設定の初期化(※1) | 各設定の初期値 |
+| A | ARラップタイマーのオン/オフ | オン |
+| Space | レースの開始/終了 | - |
+| V | レースの結果の表示 | - |
+| X | レースの周回数(1~100)の設定 | 10 |
+| M | 最小ラップタイム(1~100)の設定 | 3秒 |
+| N | タイム読み上げ言語の変更(日本語/英語)(※2) | 日本語 |
+| S | OSC経由での音声読み上げのオン/オフ(※2) | オフ |
+| I | 設定の初期化 | - |
 
-- カメラのラベルを変更すると、アイコンが自動的に変更されます
+- (※1) カメラのラベルを変更すると、アイコンが自動的に変更されます
 	- macOSバイナリの場合は "Tiny View Plus.app/Contents/Resources/data/pilots" フォルダの下、それ以外の場合は "data/pilots" フォルダの下に、ラベル文字列.png または ラベル文字列.jpg という画像ファイルが見つかると、この優先順でアイコン画像として採用されます
 	- 画像ファイルが見つからない場合は、デフォルトアイコンが採用されます
 	- 縦横比は強制的に1:1となります
 - 背景画像は、画面に合わせて拡大縮小され、左上が優先表示されます
-- 音声読み上げは、外部アプリとの連携時に動作します
-- (※1) 以下の設定項目が初期化されます
-	- カメラの表示/非表示
-	- カメラのアイコン
-	- カメラのラベル
-	- 音声読み上げのオン/オフ
-	- 壁紙
+- (※2) macOSのみ対応
 - アプリを終了すると設定は消去されます
 - カメラの音声は出力されません
 
@@ -106,6 +116,23 @@ Windowsでは、デバイスマネージャーでカメラ(受信機)の検出�
 | カメラ1~4のラベル | カメラ1~4のラベルの変更(※1) |
 
 (※1)ラベルに合わせて、アイコンも自動的に変更されます。任意のアイコンを使用したい場合は、ラベル、アイコンの順で変更してください。
+
+### ARラップタイマー
+
+![docs/argate.jpg](docs/argate.jpg)
+
+ARマーカーを利用して、ラップタイムを計測できます。以下の4種類のマーカーを、ゲートの周囲に配置してください。
+
+- [marker_0.png](bin/data/system/marker/marker_0.png)
+- [marker_1.png](bin/data/system/marker/marker_1.png)
+- [marker_2.png](bin/data/system/marker/marker_2.png)
+- [marker_3.png](bin/data/system/marker/marker_3.png)
+
+4種類のマーカーのうち、同時に2種類以上を検出した後、画面からマーカーが消えたタイミングでラップタイムが確定します。マーカーのサイズは1辺120mmを目安として、通過スピードに応じて調整してください。
+
+ラップタイムの計測は、レース中のみに行われます。レースのラップ数は、100周に制限されています。いずれかのパイロットが100周に到達した時点で、レースは自動的に終了します。
+
+環境によっては、マーカーの認識処理が重く、動作に支障があるかもしれません。その場合は、機能を無効化してください。
 
 ## OSCによる制御
 
@@ -184,4 +211,4 @@ client.send("/v1/camera/1/laptime", 62.09, function () {});
 
 ## License
 
-Tiny View Plus is distributed under the MIT License. This gives everyone the freedoms to use Tiny View Plus in any context: commercial or non-commercial, public or private, open or closed source. Please see [LICENSE](LICENSE) and [LICENSE_THIRD_PARTY](LICENSE_THIRD_PARTY) for details.
+Tiny View Plus is distributed under the MIT License. This gives everyone the freedoms to use Tiny View Plus in any context: commercial or non-commercial, public or private, open or closed source. Please see [LICENSE](LICENSE) and [LICENSE\_THIRD\_PARTY](LICENSE_THIRD_PARTY) for details.

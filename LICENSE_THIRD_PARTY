@@ -1,27 +1,24 @@
-## M+ FONTS
+## openFrameworks
 
-These fonts are free software.
-Unlimited permission is granted to use, copy, and distribute them, with or without modification, either commercially or noncommercially.
-THESE FONTS ARE PROVIDED "AS IS" WITHOUT WARRANTY.
-
-http://mplus-fonts.osdn.jp/about-en.html#license
+MIT License  
+[http://openframeworks.cc/about/license/](http://openframeworks.cc/about/license/)
 
 ## ofxTrueTypeFontUC
 
-ofxTrueTypeFontUC is distributed under the MIT License. This gives everyone the freedoms to use ofxTrueTypeFontUC in any context: commercial or non-commercial, public or private, open or closed source.
+MIT License  
+[https://github.com/hironishihara/ofxTrueTypeFontUC/blob/master/License.txt](https://github.com/hironishihara/ofxTrueTypeFontUC/blob/master/License.txt)
 
-The MIT License (MIT)
+## M+ FONTS
 
-Copyright (c) 2011- openFrameworks Community and hironishihara
+Unlimited permission is granted to use, copy, and distribute them, with or without modification, either commercially or noncommercially.  
+[http://mplus-fonts.osdn.jp/about-en.html#license](http://mplus-fonts.osdn.jp/about-en.html#license)
 
-https://raw.githubusercontent.com/hironishihara/ofxTrueTypeFontUC/master/License.txt
+## ofxAruco
 
-## openFrameworks
+BSD License  
+[https://github.com/arturoc/ofxAruco](https://github.com/arturoc/ofxAruco)
 
-openFrameworks is distributed under the MIT License. This gives everyone the freedoms to use openFrameworks in any context: commercial or non-commercial, public or private, open or closed source.
+## ofxCv
 
-Copyright (c) 2004- openFrameworks Community
-
-openFrameworks also ships with a mix of the following libraries, depending on your platform, which may have different licenses.
-
-http://openframeworks.cc/about/license/
+MIT License  
+[https://github.com/kylemcdonald/ofxCv/blob/master/license.md](https://github.com/kylemcdonald/ofxCv/blob/master/license.md)

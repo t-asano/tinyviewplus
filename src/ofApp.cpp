@@ -8,14 +8,15 @@
 #define FRAME_RATE      60
 #define MOVE_STEPS      10
 #define VERTICAL_SYNC   true
-#define WALL_FILE       "default_background.png"
+#define WALL_FILE       "system/default_background.png"
 #define CAMERA_MAXNUM   4
 #define CAMERA_WIDTH    640
 #define CAMERA_HEIGHT   480
 #define CAMERA_RATIO    1.3333
-#define FONT_FILE       "mplus-1p-bold.ttf"
-#define ICON_FILE       "default_pilot_icon.png"
-#define ICON_PATH       "pilots/"
+#define FONT_P_FILE     "system/mplus-1p-bold.ttf"
+#define FONT_M_FILE     "system/mplus-1m-bold.ttf"
+#define ICON_FILE       "system/default_pilot_icon.png"
+#define ICON_DIR        "pilots/"
 #define ICON_WIDTH      50
 #define ICON_HEIGHT     50
 #define ICON_MARGIN_X   20
@@ -42,30 +43,52 @@
 #define BASE_4_RED      248
 #define BASE_4_GREEN    128
 #define BASE_4_BLUE     23
-#define LAP_HEIGHT      30
+#define LAP_HEIGHT      20
 #define LAP_MARGIN_X    20
-#define LAP_MARGIN_Y    90
+#define LAP_MARGIN_Y    80
+// AR lap timer
+#define DFLT_ARAP_ENBLD true
+#define DFLT_ARAP_RLAPS 10
+#define DFLT_ARAP_MNLAP 3
+#define SND_BEEP_FILE   "system/beep.wav"
+#define SND_COUNT_FILE  "system/count.wav"
+#define SND_FINISH_FILE "system/finish.wav"
+#define ARAP_MKR_FILE   "system/marker.xml"
+#define ARAP_MNUM_THR   2
+#define ARAP_MAX_RLAPS  100
+#define ARAP_MAX_MNLAP  100
+#define WATCH_COUNT_SEC 5
+#define WATCH_HEIGHT    15
 // osc
 #define OSC_LISTEN_PORT 4000
 // help
 #ifdef FEATURE_SPEECH
-#define HELP_MSG_SPEECH "[S] Toggle speech on/off\n"
+#define HELP_MSG_SPCHLN "[N] Change speech language\n"
+#define HELP_MSG_SPCHOF "[S] OSC speech on/off\n"
 #define DFLT_SPCH_ENBLD false
+#define DFLT_SPCH_JPN   true
 #else /* FEATURE_SPEECH */
 #define HELP_MSG_SPEECH ""
 #endif /* FEATURE_SPEECH */
 #define HELP_MESSAGE    "Keyboard shortcuts:\n"\
                         "[H] Display help\n"\
-                        "[1~4] Toggle camera 1~4 solo mode on/off\n"\
-                        "[Shift + 1~4] Toggle camera 1~4 on/off\n"\
+                        "[1~4] Camera 1~4 solo mode on/off\n"\
+                        "[Shift + 1~4] Camera 1~4 on/off\n"\
                         "[Q,W,E,R] Change camera 1~4 icon\n"\
                         "[L] Change camera label\n"\
                         "[B] Change background image\n"\
-                        HELP_MSG_SPEECH\
+                        "[A] AR lap timer on/off\n"\
+                        "[Space] Start/Stop race\n"\
+                        "[V] Display race results\n"\
+                        "[D] Set race duration (1~100 laps)\n"\
+                        "[M] Set minimum lap time (1~100 sec)\n"\
+                        HELP_MSG_SPCHLN\
+                        HELP_MSG_SPCHOF\
                         "[I] Initialize configuration\n"
 
 void bindCameras();
 void toggleCameraSolo(int);
+void enableCameraSolo(int);
 void toggleCameraVisibility(int);
 int getCameraIdxNthVisibleAll(int);
 int getCameraIdxNthVisibleSub(int);
@@ -85,12 +108,23 @@ void recvOsc();
 void recvOscCameraString(int, string, string);
 void recvOscCameraFloat(int, string, float);
 #ifdef FEATURE_SPEECH
-void toggleSpeech();
+void toggleOscSpeech();
+void toggleSpeechLang();
 void recvOscSpeech(string, string);
 void speakLap(int, float);
-void speakAny(string, string);
 #endif /* FEATURE_SPEECH */
 void drawCamera(int);
+string getWatchString(float);
+void drawWatch();
+void toggleRace();
+bool isRecordedLaps();
+float getBestLap(int);
+int getMaxLaps();
+string getLapStr(float);
+void displayRaceResults();
+void toggleARLap();
+void changeMinLap();
+void changeRaceDuraLaps();
 
 class tvpCamView {
 public:
@@ -135,9 +169,16 @@ public:
     int lapPosY;
     int lapPosXTarget;
     int lapPosYTarget;
-    float lap;
+    float lastLap;
+    // AR lap timer
+    ofxAruco aruco;
+    int foundMarkerNum;
+    float prevElapsedSec;
+    int totalLaps;
+    float lapHistory[ARAP_MAX_RLAPS];
 };
 
+// view
 ofVideoGrabber grabber[CAMERA_MAXNUM];
 ofxTrueTypeFontUC myFontNumber, myFontLabel, myFontLap;
 ofxTrueTypeFontUC myFontNumberSub, myFontLabelSub, myFontLapSub;
@@ -150,13 +191,26 @@ int cameraNum;
 int cameraNumVisible;
 int cameraIdxSolo;
 string helpMessage;
+// osc
 ofxOscReceiver oscReceiver;
+// speech
 #ifdef FEATURE_SPEECH
-bool speechEnabled;
+bool oscSpeechEnabled;
+bool speechLangJpn;
 #endif /* FEATURE_SPEECH */
+// AR lap timer
+ofxTrueTypeFontUC myFontWatch;
+ofSoundPlayer beepSound, countSound, finishSound;
+bool arLapEnabled;
+bool raceStarted;
+float elapsedTime;
+int minLapTime;
+int raceDuraLaps;
 
 //--------------------------------------------------------------
-void ofApp::setup(){
+void ofApp::setup() {
+    // system
+    ofSetEscapeQuitsApp(false);
     // path
     ofDirectory dir;
     if (dir.doesDirectoryExist("../data") == false) {
@@ -170,12 +224,12 @@ void ofApp::setup(){
     ofBackground(0, 0, 0);
     ofSetVerticalSync(VERTICAL_SYNC);
     ofSetFrameRate(FRAME_RATE);
-    myFontNumber.load(FONT_FILE, NUMBER_HEIGHT);
-    myFontLabel.load(FONT_FILE, LABEL_HEIGHT);
-    myFontLap.load(FONT_FILE, LAP_HEIGHT);
-    myFontNumberSub.load(FONT_FILE, NUMBER_HEIGHT / 2);
-    myFontLabelSub.load(FONT_FILE, LABEL_HEIGHT / 2);
-    myFontLapSub.load(FONT_FILE, LAP_HEIGHT / 2);
+    myFontNumber.load(FONT_P_FILE, NUMBER_HEIGHT);
+    myFontLabel.load(FONT_P_FILE, LABEL_HEIGHT);
+    myFontLap.load(FONT_P_FILE, LAP_HEIGHT);
+    myFontNumberSub.load(FONT_P_FILE, NUMBER_HEIGHT / 2);
+    myFontLabelSub.load(FONT_P_FILE, LABEL_HEIGHT / 2);
+    myFontLapSub.load(FONT_P_FILE, LAP_HEIGHT / 2);
     // wallpaper
     wallImage.load(WALL_FILE);
     wallRatio = wallImage.getWidth() / wallImage.getHeight();
@@ -187,20 +241,97 @@ void ofApp::setup(){
     oscReceiver.setup(OSC_LISTEN_PORT);
 #ifdef FEATURE_SPEECH
     // speech
-    speechEnabled = DFLT_SPCH_ENBLD;
+    oscSpeechEnabled = DFLT_SPCH_ENBLD;
+    speechLangJpn = DFLT_SPCH_JPN;
 #endif /* FEATURE_SPEECH */
+    // AR lap timer
+    arLapEnabled = DFLT_ARAP_ENBLD;
+    minLapTime = DFLT_ARAP_MNLAP;
+    raceDuraLaps = DFLT_ARAP_RLAPS;
+    beepSound.load(SND_BEEP_FILE);
+    countSound.load(SND_COUNT_FILE);
+    finishSound.load(SND_FINISH_FILE);
+    myFontWatch.load(FONT_M_FILE, WATCH_HEIGHT);
+    for (int i = 0; i < cameraNum; i++) {
+        camView[i].aruco.setUseHighlyReliableMarker(ARAP_MKR_FILE);
+        camView[i].aruco.setThreaded(true);
+        camView[i].aruco.setup2d(CAMERA_WIDTH, CAMERA_HEIGHT);
+    }
+    raceStarted = false;
+    elapsedTime = 0;
+#if 0
+    // xxx for debug
+    cameraNum = 4;
+    for (int i = 0; i < cameraNum; i++) {
+        camView[i].totalLaps = (i * 33) + 1;
+        camView[i].prevElapsedSec = WATCH_COUNT_SEC + (i * 101);
+        for (int j = 0; j < ARAP_MAX_RLAPS; j++) {
+            camView[i].lapHistory[j] = j + (i * 0.1);
+        }
+    }
+    displayRaceResults();
+#endif /* 0 */
 }
 
 //--------------------------------------------------------------
-void ofApp::update(){
+void ofApp::update() {
     // camera
+    if (raceStarted == true) {
+        elapsedTime = ofGetElapsedTimef();
+    }
     for (int i = 0; i < cameraNum; i++) {
         grabber[i].update();
+        if (raceStarted == false || elapsedTime < WATCH_COUNT_SEC) {
+            continue;
+        }
+        // AR lap timer
+        float elp = elapsedTime;
+        if (grabber[i].isFrameNew() && arLapEnabled == true) {
+            camView[i].aruco.detectMarkers(grabber[i].getPixels());
+            int num = camView[i].aruco.getNumMarkers();
+            if (num == 0 && camView[i].foundMarkerNum >= ARAP_MNUM_THR) {
+                float lap = elp - camView[i].prevElapsedSec;
+                if (lap < minLapTime) {
+                    // ignore too short lap
+                    camView[i].foundMarkerNum = 0;
+                    continue;
+                }
+                if (camView[i].totalLaps >= raceDuraLaps) {
+                    // already finished
+                    continue;
+                }
+                int total = camView[i].totalLaps + 1;
+                camView[i].prevElapsedSec = elp;
+                camView[i].totalLaps = total;
+                camView[i].lastLap = lap;
+                camView[i].lapHistory[total - 1] = lap;
+#ifdef FEATURE_SPEECH
+                speakLap((i + 1), lap);
+#endif /* FEATURE_SPEECH */
+            }
+            if (num == 0) {
+                camView[i].foundMarkerNum = 0;
+            } else if (num > camView[i].foundMarkerNum) {
+                camView[i].foundMarkerNum = num;
+            }
+        }
     }
     // layout
     updateViewParams();
     // osc
     recvOsc();
+    // stop race
+    if (raceStarted == true) {
+        int count = 0;
+        for (int i = 0; i < cameraNum; i++) {
+            if (camView[i].totalLaps >= raceDuraLaps) {
+                count++;
+            }
+        }
+        if (count == cameraNum) {
+            toggleRace();
+        }
+    }
 }
 
 //--------------------------------------------------------------
@@ -239,19 +370,86 @@ void drawCamera(int idx) {
             myFontLabel.drawString(camView[i].labelString, camView[i].labelPosX, camView[i].labelPosY);
         }
     }
-    // laptime
-    if (camView[i].lap != 0) {
+    // lap time
+    if (camView[i].lastLap != 0) {
         string sout;
-        stringstream stream;
-        stream << fixed << setprecision(2) << camView[i].lap;
-        sout = ofToString("Lap:") + stream.str() + "s";
-        ofSetColor(255, 255, 255);
-        if (isSub) {
-            myFontLapSub.drawString(sout, camView[i].lapPosX, camView[i].lapPosY);
+        int laps = camView[i].totalLaps;
+        if (isRecordedLaps() == true && raceStarted == false) {
+            // AR lap timer && race stopped
+            sout = "Laps: " + ofToString(laps);
+            ofSetColor(255, 255, 255);
+            if (isSub) {
+                myFontLapSub.drawString(sout, camView[i].lapPosX, camView[i].lapPosY);
+            } else {
+                myFontLap.drawString(sout, camView[i].lapPosX, camView[i].lapPosY);
+            }
+            float blap = getBestLap(i);
+            if (blap != 0) {
+                sout = "Best Lap: " + getLapStr(blap) + "s";
+                if (isSub) {
+                    myFontLapSub.drawString(sout, camView[i].lapPosX, camView[i].lapPosY + (LAP_HEIGHT / 2) + 5);
+                } else {
+                    myFontLap.drawString(sout, camView[i].lapPosX, camView[i].lapPosY + LAP_HEIGHT + 10);
+                }
+                sout = "Time: " + getWatchString(camView[i].prevElapsedSec - WATCH_COUNT_SEC);
+                if (isSub) {
+                    myFontLapSub.drawString(sout, camView[i].lapPosX, camView[i].lapPosY + LAP_HEIGHT + 10);
+                } else {
+                    myFontLap.drawString(sout, camView[i].lapPosX, camView[i].lapPosY + (LAP_HEIGHT * 2) + 20);
+                }
+            }
         } else {
-            myFontLap.drawString(sout, camView[i].lapPosX, camView[i].lapPosY);
+            // others
+            sout = "Lap" + ((laps > 0) ? ofToString(laps) : "") + ": " + getLapStr(camView[i].lastLap) + "s";
+            ofSetColor(255, 255, 255);
+            if (isSub) {
+                myFontLapSub.drawString(sout, camView[i].lapPosX, camView[i].lapPosY);
+            } else {
+                myFontLap.drawString(sout, camView[i].lapPosX, camView[i].lapPosY);
+            }
         }
     }
+    // AR marker
+    if (arLapEnabled == true) {
+        ofSetColor(255, 215, 0);
+        string lv = "";
+        for (int j = 0; j < camView[i].foundMarkerNum; j++) {
+            lv += "|";
+        }
+        if (isSub) {
+            myFontLapSub.drawString(lv, camView[i].lapPosX, camView[i].lapPosY + (LAP_HEIGHT / 2) + 5);
+        } else {
+            myFontLap.drawString(lv, camView[i].lapPosX, camView[i].lapPosY + LAP_HEIGHT + 20);
+        }
+    }
+}
+
+//--------------------------------------------------------------
+string getWatchString(float sec) {
+    char buf[16];
+    int m = (int)(sec) / 60;
+    int s = (int)(sec) % 60;
+    int ss = (int)(sec * 100) % 100;
+    snprintf(buf, sizeof(buf), "%02d:%02d.%02d", m, s, ss);
+    return ofToString(buf);
+}
+
+//--------------------------------------------------------------
+void drawWatch() {
+    string str;
+    if (raceStarted == false) {
+        str = "Finished";
+    } else if (elapsedTime < 5) {
+        str = ofToString(5 - (int)elapsedTime);
+    } else if (elapsedTime < 7) {
+        str = "Go!";
+    } else {
+        str = getWatchString(elapsedTime - WATCH_COUNT_SEC);
+    }
+    ofSetColor(255, 255, 255);
+    int x = (ofGetWidth() / 2) - (myFontWatch.stringWidth(str) / 2);
+    x = (int)(x / 5) * 5;
+    myFontWatch.drawString(str, x, ofGetHeight() - 10);
 }
 
 //--------------------------------------------------------------
@@ -270,6 +468,15 @@ void ofApp::draw(){
         }
         drawCamera(i);
     }
+    // total time
+    if (raceStarted == true || elapsedTime != 0) {
+        drawWatch();
+    }
+#if 0
+    // xxx for debug
+    ofSetColor(255, 215, 0);
+    myFontLabel.drawString("FPS: " + ofToString(ofGetFrameRate()), 10, 360);
+#endif /* 0 */
 }
 
 //--------------------------------------------------------------
@@ -298,7 +505,9 @@ void ofApp::keyPressed(int key){
         changeCameraLabelAll();
 #ifdef FEATURE_SPEECH
     } else if (key == 's' || key == 'S') {
-        toggleSpeech();
+        toggleOscSpeech();
+    } else if (key == 'n' || key == 'N') {
+        toggleSpeechLang();
 #endif /* FEATURE_SPEECH */
     } else if (key == 'b' || key == 'B') {
         changeWallImage();
@@ -310,6 +519,16 @@ void ofApp::keyPressed(int key){
         changeCameraIcon(3);
     } else if (key == 'r' || key == 'R') {
         changeCameraIcon(4);
+    } else if (key == ' ') {
+        toggleRace();
+    } else if (key == 'v' || key == 'V') {
+        displayRaceResults();
+    } else if (key == 'a' || key == 'A') {
+        toggleARLap();
+    } else if (key == 'm' || key == 'M') {
+        changeMinLap();
+    } else if (key == 'd' || key == 'D') {
+        changeRaceDuraLaps();
     }
 }
 
@@ -400,7 +619,7 @@ void bindCameras() {
                     camView[idx].visible = true;
                     camView[idx].iconImage.load(ICON_FILE);
                     camView[idx].labelString = "Pilot" + ofToString(idx + 1);
-                    camView[idx].lap = 0;
+                    camView[idx].lastLap = 0;
                     cameraNum++;
                 }
             }
@@ -425,6 +644,23 @@ void toggleCameraSolo(int camid) {
     if (idx == cameraIdxSolo) {
         cameraIdxSolo = -1;
     } else {
+        if (camView[idx].visible == false) {
+            toggleCameraVisibility(camid);
+        }
+        cameraIdxSolo = idx;
+    }
+    setViewParams();
+}
+
+//--------------------------------------------------------------
+void enableCameraSolo(int camid) {
+    // xxx under development
+    // for automatic switching!
+    int idx = camid - 1;
+    if (cameraNum == 1 || camid < 1 || camid > cameraNum) {
+        return;
+    }
+    if (idx != cameraIdxSolo) {
         if (camView[idx].visible == false) {
             toggleCameraVisibility(camid);
         }
@@ -566,12 +802,12 @@ void autoSelectCameraIcon(int camid, string pname) {
     if (camid < 1 || camid > cameraNum) {
         return;
     }
-    path = ICON_PATH + pname + ".png";
+    path = ICON_DIR + pname + ".png";
     if (file.doesFileExist(path)) {
         changeCameraIconPath(camid, path);
         return;
     }
-    path = ICON_PATH + pname + ".jpg";
+    path = ICON_DIR + pname + ".jpg";
     if (file.doesFileExist(path)) {
         changeCameraIconPath(camid, path);
     } else {
@@ -879,12 +1115,18 @@ void initConfig() {
         camView[i].iconImage.clear();
         camView[i].iconImage.load(ICON_FILE);
         camView[i].labelString = "Pilot" + ofToString(i + 1);
-        camView[i].lap = 0;
+        camView[i].lastLap = 0;
     }
 #ifdef FEATURE_SPEECH
     // speech
-    speechEnabled = DFLT_SPCH_ENBLD;
+    oscSpeechEnabled = DFLT_SPCH_ENBLD;
+    speechLangJpn = DFLT_SPCH_JPN;
 #endif /* FEATURE_SPEECH */
+    // AR lap timer
+    arLapEnabled = DFLT_ARAP_ENBLD;
+    minLapTime = DFLT_ARAP_MNLAP;
+    raceDuraLaps = DFLT_ARAP_RLAPS;
+    raceStarted = false;
 }
 
 //--------------------------------------------------------------
@@ -980,21 +1222,30 @@ void recvOscCameraFloat(int camid, string method, float argfloat) {
         return;
     }
 #ifdef FEATURE_SPEECH
-    if (speechEnabled == true){
+    if (oscSpeechEnabled == true){
         speakLap(camid, argfloat);
     }
 #endif /* FEATURE_SPEECH */
-    camView[camid - 1].lap = argfloat;
+    camView[camid - 1].lastLap = argfloat;
 }
 
 #ifdef FEATURE_SPEECH
 //--------------------------------------------------------------
-void toggleSpeech() {
-    speechEnabled = !speechEnabled;
-    if (speechEnabled == true) {
+void toggleOscSpeech() {
+    oscSpeechEnabled = !oscSpeechEnabled;
+    if (oscSpeechEnabled == true) {
         ofSystemAlertDialog("Speech ON");
     } else {
         ofSystemAlertDialog("Speech OFF");
+    }
+}
+
+void toggleSpeechLang() {
+    speechLangJpn = !speechLangJpn;
+    if (speechLangJpn == true) {
+        ofSystemAlertDialog("Speech language JAPANESE");
+    } else {
+        ofSystemAlertDialog("Speech language ENGLISH");
     }
 }
 
@@ -1002,7 +1253,7 @@ void toggleSpeech() {
 void recvOscSpeech(string lang, string text) {
     int pid;
     ofLogNotice() << "osc spc(s): " << lang << "," << text;
-    if (speechEnabled == false) {
+    if (oscSpeechEnabled == false) {
         return;
     }
     pid = fork();
@@ -1024,26 +1275,203 @@ void speakLap(int camid, float sec) {
     if (camid < 1 || camid > cameraNum || sec == 0.0) {
         return;
     }
+    beepSound.play();
     pid = fork();
     if (pid == 0) {
         // child process
-        execlp("afplay", "", "/System/Library/Sounds/Ping.aiff", NULL);
-        OF_EXIT_APP(-1);
-    }
-    pid = fork();
-    if (pid == 0) {
-        // child process
-        stringstream stream;
         string ssec, sout;
-        stream << fixed << setprecision(2) << sec;
-        ssec = stream.str();
+        ssec = getLapStr(sec);
         sout = camView[camid - 1].labelString + ", ";
-        sout += ofToString(int(sec)) + "秒";
-        sout += ssec.substr(ssec.length() - 2, 1) + " ";
-        sout += ssec.substr(ssec.length() - 1, 1);
-        system("sleep 0.5");
-        execlp("say", "", "-r", "240", "-v", "Kyoko", sout.c_str(), NULL);
+        if (speechLangJpn == true) {
+            sout += ofToString(int(sec)) + "秒";
+            sout += ssec.substr(ssec.length() - 2, 1) + " ";
+            sout += ssec.substr(ssec.length() - 1, 1);
+            execlp("say", "", "-r", "240", "-v", "Kyoko", sout.c_str(), NULL);
+        } else {
+            sout += ofToString(int(sec)) + ".";
+            sout += ssec.substr(ssec.length() - 2, 1);
+            sout += ssec.substr(ssec.length() - 1, 1) + " seconds";
+            execlp("say", "", "-r", "240", "-v", "Victoria", sout.c_str(), NULL);
+        }
         OF_EXIT_APP(-1);
     }
 }
 #endif /* FEATURE_SPEECH */
+
+//--------------------------------------------------------------
+void toggleRace() {
+    if (raceStarted == false) {
+        // init -> start
+        finishSound.stop();
+        countSound.play();
+        ofResetElapsedTimeCounter();
+        for (int i = 0; i < cameraNum; i++) {
+            camView[i].foundMarkerNum = 0;
+            camView[i].prevElapsedSec = WATCH_COUNT_SEC; // countdown
+            camView[i].totalLaps = 0;
+            camView[i].lastLap = 0;
+            for (int h = 0; h < ARAP_MAX_RLAPS; h++) {
+                camView[i].lapHistory[h] = 0;
+            }
+        }
+        raceStarted = true;
+    } else {
+        // start -> stop
+        raceStarted = false;
+        countSound.stop();
+        finishSound.play();
+        cameraIdxSolo = -1;
+    }
+}
+
+//--------------------------------------------------------------
+bool isRecordedLaps() {
+    bool ret = false;
+    for (int i = 0; i < cameraNum; i++) {
+        camView[i].totalLaps > 0;
+        ret = true;
+        break;
+    }
+    return ret;
+}
+
+//--------------------------------------------------------------
+float getBestLap(int camidx) {
+    float blap = 0;
+    if (camidx < 0 || camidx >= cameraNum) {
+        return blap;
+    }
+    for (int i = 0; i < camView[i].totalLaps; i++) {
+        float h = camView[camidx].lapHistory[i];
+        if (blap == 0) {
+            blap = h;
+        } else if (h < blap) {
+            blap = h;
+        }
+    }
+    return blap;
+}
+
+//--------------------------------------------------------------
+int getMaxLaps() {
+    int laps = 0;
+    for (int i = 0; i < cameraNum; i++) {
+        if (camView[i].totalLaps > laps) {
+            laps = camView[i].totalLaps;
+        }
+    }
+    return laps;
+}
+
+//--------------------------------------------------------------
+string getLapStr(float lap) {
+    stringstream stream;
+    stream << fixed << setprecision(2) << lap; // 2 digits
+    return stream.str();
+}
+
+//--------------------------------------------------------------
+void displayRaceResults() {
+    string strsumm = "Race Results:\n\n";
+    string strlaph = "";
+    string strlapb = "";
+    string sep = "    ";
+    int count = 0;
+    int maxlap = 0;
+
+    if (raceStarted == true) {
+        return;
+    }
+    if (isRecordedLaps() == false) {
+        ofSystemAlertDialog(strsumm + "No record.");
+        return;
+    }
+    // SUMMARY: PILOT LAPS BESTLAP TIME
+    strsumm += "- Summary -\n";
+    strsumm += "PILOT" + sep  + "LAPS" + sep + "BESTLAP" + sep + "TIME\n";
+    for (int i = 0; i < cameraNum; i++) {
+        float blap = getBestLap(i);
+        float total = camView[i].prevElapsedSec - WATCH_COUNT_SEC;
+        string pilot = (camView[i].labelString == "") ? ("Pilot" + ofToString(i + 1)) : camView[i].labelString;
+        strsumm += pilot + sep; // PILOT
+        strsumm += ofToString(camView[i].totalLaps) + sep; // LAPS
+        strsumm += ((blap == 0) ? "-.-" : getLapStr(blap)) + sep; // BESTLAP
+        strsumm += ((total <= 0) ? "-:-.-" : getWatchString(total)) + sep; // TIME
+        strsumm += "\n";
+    }
+    strsumm += "\n";
+    // LAP TIMES: LAP P1 P2 P3 P4
+    strlaph += "- Lap Times -\n";
+    strlaph += "LAP" + sep;
+    for (int i = 0; i < cameraNum; i++) {
+        string pilot = (camView[i].labelString == "") ? ("Pilot" + ofToString(i + 1)) : camView[i].labelString;
+        strlaph += pilot + sep;
+    }
+    strlaph += "\n";
+    maxlap = getMaxLaps();
+    for (int h = 1; h <= maxlap; h++) {
+        strlapb += ofToString(h) + sep;
+        for (int i = 0; i < cameraNum; i++) {
+            // LAPTIME
+            if (h > camView[i].totalLaps) {
+                strlapb += "-.-";
+            } else {
+                strlapb += getLapStr(camView[i].lapHistory[h]);
+            }
+            if (i < (cameraNum - 1)) {
+                strlapb += sep;
+            }
+        }
+        strlapb += "\n";
+        if (h == maxlap) {
+            ofSystemAlertDialog(strsumm + strlaph + strlapb);
+            return;
+        }
+        count++;
+        if (count == 25) {
+            ofSystemAlertDialog(strsumm + strlaph + strlapb);
+            count = 0;
+            strlapb = "";
+        }
+    }
+}
+
+//--------------------------------------------------------------
+void toggleARLap() {
+    arLapEnabled = !arLapEnabled;
+    if (arLapEnabled == true) {
+        ofSystemAlertDialog("AR Lap Timer ON");
+    } else {
+        ofSystemAlertDialog("AR Lap Timer OFF");
+    }
+}
+
+//--------------------------------------------------------------
+void changeMinLap() {
+    string str;
+    int lap;
+    str = ofToString(minLapTime);
+    str = ofSystemTextBoxDialog("Minimum Lap Time (1~" + ofToString(ARAP_MAX_MNLAP) + " sec):", str);
+    lap = ofToInt(str);
+    if (lap == 0 || lap > ARAP_MAX_MNLAP) {
+        ofSystemAlertDialog("Please enter 1~100.");
+        changeMinLap();
+    } else {
+        minLapTime = lap;
+    }
+}
+
+//--------------------------------------------------------------
+void changeRaceDuraLaps() {
+    string str;
+    int laps;
+    str = ofToString(raceDuraLaps);
+    str = ofSystemTextBoxDialog("Race Duration (1~" +  ofToString(ARAP_MAX_RLAPS) + " laps):", str);
+    laps = ofToInt(str);
+    if (laps == 0 || laps > ARAP_MAX_RLAPS) {
+        ofSystemAlertDialog("Please enter 1~100.");
+        changeRaceDuraLaps();
+    } else {
+        raceDuraLaps = laps;
+    }
+}
