@@ -116,7 +116,7 @@ You can measure the lap time using the AR marker. Place the following four types
 - [marker_2.png](bin/data/system/marker/marker_2.png)
 - [marker_3.png](bin/data/system/marker/marker_3.png)
 
-After detecting two or more kinds of markers simultaneously, when the marker disappears from the screen, the lap time will be confirmed.
+After detecting two or more types of markers simultaneously, when the marker disappears from the screen, lap time will be confirmed.
 
 The size of the marker should be 120mm per side.
 
