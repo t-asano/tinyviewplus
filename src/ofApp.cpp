@@ -305,9 +305,16 @@ void ofApp::update() {
                 camView[i].totalLaps = total;
                 camView[i].lastLap = lap;
                 camView[i].lapHistory[total - 1] = lap;
+                if (total == raceDuraLaps) {
+                    // finish
+                    finishSound.play();
+                } else {
+                    // lap
+                    beepSound.play();
 #ifdef FEATURE_SPEECH
-                speakLap((i + 1), lap);
+                    speakLap((i + 1), lap);
 #endif /* FEATURE_SPEECH */
+                }
             }
             if (num == 0) {
                 camView[i].foundMarkerNum = 0;
@@ -1221,6 +1228,7 @@ void recvOscCameraFloat(int camid, string method, float argfloat) {
     if (method != "laptime") {
         return;
     }
+    beepSound.play();
 #ifdef FEATURE_SPEECH
     if (oscSpeechEnabled == true){
         speakLap(camid, argfloat);
@@ -1275,7 +1283,6 @@ void speakLap(int camid, float sec) {
     if (camid < 1 || camid > cameraNum || sec == 0.0) {
         return;
     }
-    beepSound.play();
     pid = fork();
     if (pid == 0) {
         // child process
