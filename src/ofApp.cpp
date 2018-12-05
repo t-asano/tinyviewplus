@@ -419,7 +419,7 @@ void drawCamera(int idx) {
         if (isSub) {
             myFontLapSub.drawString(lv, camView[i].lapPosX, camView[i].lapPosY + (LAP_HEIGHT / 2) + 5);
         } else {
-            myFontLap.drawString(lv, camView[i].lapPosX, camView[i].lapPosY + LAP_HEIGHT + 20);
+            myFontLap.drawString(lv, camView[i].lapPosX, camView[i].lapPosY + LAP_HEIGHT + 10);
         }
     }
 }
@@ -1454,7 +1454,7 @@ void changeMinLap() {
     str = ofSystemTextBoxDialog("Minimum Lap Time (1~" + ofToString(ARAP_MAX_MNLAP) + " sec):", str);
     lap = ofToInt(str);
     if (lap == 0 || lap > ARAP_MAX_MNLAP) {
-        ofSystemAlertDialog("Please enter 1~100.");
+        ofSystemAlertDialog("Please enter 1~" + ofToString(ARAP_MAX_MNLAP));
         changeMinLap();
     } else {
         minLapTime = lap;
@@ -1469,7 +1469,7 @@ void changeRaceDuraLaps() {
     str = ofSystemTextBoxDialog("Race Duration (1~" +  ofToString(ARAP_MAX_RLAPS) + " laps):", str);
     laps = ofToInt(str);
     if (laps == 0 || laps > ARAP_MAX_RLAPS) {
-        ofSystemAlertDialog("Please enter 1~100.");
+        ofSystemAlertDialog("Please enter 1~" + ofToString(ARAP_MAX_RLAPS));
         changeRaceDuraLaps();
     } else {
         raceDuraLaps = laps;
