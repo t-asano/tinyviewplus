@@ -79,7 +79,7 @@ On Windows, you can check the detection status of the camera (receiver) with the
 | A | AR lap timer on/off | on |
 | Space | Start/Stop race | - |
 | V | Display race results | - |
-| X | Set race duration (1~100 laps) | 10 |
+| D | Set race duration (1~100 laps) | 10 |
 | M | Set minimum lap time (1~100 sec) | 3 |
 | N | Change speech language (Japanese/English) (\*2) | Japanese |
 | S | OSC speech on/off (\*2) | off |
