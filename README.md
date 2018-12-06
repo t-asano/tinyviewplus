@@ -89,12 +89,13 @@ Windowsでは、デバイスマネージャーでカメラ(受信機)の検出�
 | L | 全カメラのラベルの変更(※1) | Pilot1~4 |
 | B | 背景画像の変更 | アプリ内蔵の画像 |
 | A | ARラップタイマーのオン/オフ | オン |
+| O | ロックオンエフェクトのオン/オフ(※2) | オン |
 | Space | レースの開始/終了 | - |
 | V | レースの結果の表示 | - |
-| D | レースの周回数(1~100)の設定 | 10 |
-| M | 最小ラップタイム(1~100)の設定 | 3秒 |
-| N | タイム読み上げ言語の変更(日本語/英語)(※2) | 日本語 |
-| S | OSC経由での音声読み上げのオン/オフ(※2) | オフ |
+| D | レースの周回数の設定(1~100周) | 10 |
+| M | 最小ラップタイムの設定(1~100秒) | 3秒 |
+| N | タイム読み上げ言語の変更(日本語/英語)(※3) | 日本語 |
+| S | OSC経由での音声読み上げのオン/オフ(※3) | オフ |
 | I | 設定の初期化 | - |
 
 - (※1) カメラのラベルを変更すると、アイコンが自動的に変更されます
@@ -102,7 +103,8 @@ Windowsでは、デバイスマネージャーでカメラ(受信機)の検出�
 	- 画像ファイルが見つからない場合は、デフォルトアイコンが採用されます
 	- 縦横比は強制的に1:1となります
 - 背景画像は、画面に合わせて拡大縮小され、左上が優先表示されます
-- (※2) macOSのみ対応
+- (※2) ゲート通過タイムの差が1秒未満の場合に、追跡する側のカメラを拡大表示します
+- (※3) macOSのみ対応
 - アプリを終了すると設定は消去されます
 - カメラの音声は出力されません
 
@@ -128,9 +130,9 @@ ARマーカーを利用して、ラップタイムを計測できます。以下
 - [marker_2.png](bin/data/system/marker/marker_2.png)
 - [marker_3.png](bin/data/system/marker/marker_3.png)
 
-4種類のマーカーのうち、同時に2種類以上を検出した後、画面からマーカーが消えたタイミングでラップタイムが確定します。マーカーのサイズは1辺120mmを目安として、通過スピードに応じて調整してください。
+マーカーのサイズは1辺120mmを目安として、通過スピードに応じて調整してください。狭い空間や低速でのレースにおいては、より小さなゲート及びマーカーが適しています。
 
-ラップタイムの計測は、レース中のみに行われます。
+ラップタイムの計測は、レース中にのみ行われます。4種類のマーカーのうち、同時に2種類以上を検出した後、画面からマーカーが消えたタイミングでラップタイムが確定します。マーカーの検出数に応じて、画面上に黄色い縦線が表示されます。
 
 環境によっては、マーカーの認識処理が重く、動作に支障があるかもしれません。その場合は、機能を無効化してください。
 
@@ -211,4 +213,4 @@ client.send("/v1/camera/1/laptime", 62.09, function () {});
 
 ## License
 
-Tiny View Plus is distributed under the MIT License. This gives everyone the freedoms to use Tiny View Plus in any context: commercial or non-commercial, public or private, open or closed source. Please see [LICENSE](LICENSE) and [LICENSE\_THIRD\_PARTY](LICENSE_THIRD_PARTY) for details.
+Tiny View Plus is distributed under the MIT License. This gives everyone the freedoms to use Tiny View Plus in any context: commercial or non-commercial, public or private, open or closed source. Please see [LICENSE.md](LICENSE.md) and [LICENSE\_THIRD\_PARTY.md](LICENSE_THIRD_PARTY.md) for details.

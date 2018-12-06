@@ -50,6 +50,7 @@
 #define DFLT_ARAP_ENBLD true
 #define DFLT_ARAP_RLAPS 10
 #define DFLT_ARAP_MNLAP 3
+#define DFLT_ARAP_LCKON true
 #define SND_BEEP_FILE   "system/beep.wav"
 #define SND_COUNT_FILE  "system/count.wav"
 #define SND_FINISH_FILE "system/finish.wav"
@@ -57,6 +58,7 @@
 #define ARAP_MNUM_THR   2
 #define ARAP_MAX_RLAPS  100
 #define ARAP_MAX_MNLAP  100
+#define ARAP_LOCKON_SEC 1
 #define WATCH_COUNT_SEC 5
 #define WATCH_HEIGHT    15
 // osc
@@ -78,6 +80,7 @@
                         "[L] Change camera label\n"\
                         "[B] Change background image\n"\
                         "[A] AR lap timer on/off\n"\
+                        "[O] Lock on effect on/off\n"\
                         "[Space] Start/Stop race\n"\
                         "[V] Display race results\n"\
                         "[D] Set race duration (1~100 laps)\n"\
@@ -112,6 +115,7 @@ void toggleOscSpeech();
 void toggleSpeechLang();
 void recvOscSpeech(string, string);
 void speakLap(int, float);
+void speakAny(string);
 #endif /* FEATURE_SPEECH */
 void drawCamera(int);
 string getWatchString(float);
@@ -123,6 +127,7 @@ int getMaxLaps();
 string getLapStr(float);
 void displayRaceResults();
 void toggleARLap();
+void toggleLockOnEffect();
 void changeMinLap();
 void changeRaceDuraLaps();
 
@@ -202,10 +207,11 @@ bool speechLangJpn;
 ofxTrueTypeFontUC myFontWatch;
 ofSoundPlayer beepSound, countSound, finishSound;
 bool arLapEnabled;
+bool lockOnEnabled;
 bool raceStarted;
-float elapsedTime;
-int minLapTime;
 int raceDuraLaps;
+int minLapTime;
+float elapsedTime;
 
 //--------------------------------------------------------------
 void ofApp::setup() {
@@ -246,6 +252,7 @@ void ofApp::setup() {
 #endif /* FEATURE_SPEECH */
     // AR lap timer
     arLapEnabled = DFLT_ARAP_ENBLD;
+    lockOnEnabled = DFLT_ARAP_LCKON;
     minLapTime = DFLT_ARAP_MNLAP;
     raceDuraLaps = DFLT_ARAP_RLAPS;
     beepSound.load(SND_BEEP_FILE);
@@ -259,18 +266,6 @@ void ofApp::setup() {
     }
     raceStarted = false;
     elapsedTime = 0;
-#if 0
-    // xxx for debug
-    cameraNum = 4;
-    for (int i = 0; i < cameraNum; i++) {
-        camView[i].totalLaps = (i * 33) + 1;
-        camView[i].prevElapsedSec = WATCH_COUNT_SEC + (i * 101);
-        for (int j = 0; j < ARAP_MAX_RLAPS; j++) {
-            camView[i].lapHistory[j] = j + (i * 0.1);
-        }
-    }
-    displayRaceResults();
-#endif /* 0 */
 }
 
 //--------------------------------------------------------------
@@ -279,6 +274,8 @@ void ofApp::update() {
     if (raceStarted == true) {
         elapsedTime = ofGetElapsedTimef();
     }
+    int lapcnt = 0;
+    int lockcnt = 0;
     for (int i = 0; i < cameraNum; i++) {
         grabber[i].update();
         if (raceStarted == false || elapsedTime < WATCH_COUNT_SEC) {
@@ -307,9 +304,31 @@ void ofApp::update() {
                 camView[i].lapHistory[total - 1] = lap;
                 if (total == raceDuraLaps) {
                     // finish
+                    camView[i].foundMarkerNum = 0;
                     finishSound.play();
-                } else {
-                    // lap
+                    continue;
+                }
+                // lap
+                bool locked = false;
+                if (lockOnEnabled == true) {
+                    for (int j = 0; j < cameraNum; j++) {
+                        if (j == i) {
+                            continue;
+                        }
+                        float diff = elp - camView[j].prevElapsedSec;
+                        if (diff >= 0 && diff < ARAP_LOCKON_SEC) {
+                            // lock on!
+                            locked = true;
+                            lockcnt++;
+                            enableCameraSolo(i + 1);
+                            beepSound.play();
+                            speakAny(speechLangJpn ? "ロックオン" : "lock on");
+                            break;
+                        }
+                    }
+                }
+                if (locked == false) {
+                    lapcnt++;
                     beepSound.play();
 #ifdef FEATURE_SPEECH
                     speakLap((i + 1), lap);
@@ -322,6 +341,10 @@ void ofApp::update() {
                 camView[i].foundMarkerNum = num;
             }
         }
+    }
+    if (lockOnEnabled == true && lapcnt > 0 && lockcnt == 0) {
+        // xxx under development
+        cameraIdxSolo = -1;
     }
     // layout
     updateViewParams();
@@ -392,7 +415,7 @@ void drawCamera(int idx) {
             }
             float blap = getBestLap(i);
             if (blap != 0) {
-                sout = "Best Lap: " + getLapStr(blap) + "s";
+                sout = "BestLap: " + getLapStr(blap) + "s";
                 if (isSub) {
                     myFontLapSub.drawString(sout, camView[i].lapPosX, camView[i].lapPosY + (LAP_HEIGHT / 2) + 5);
                 } else {
@@ -417,7 +440,7 @@ void drawCamera(int idx) {
         }
     }
     // AR marker
-    if (arLapEnabled == true) {
+    if (arLapEnabled == true && raceStarted == true && camView[i].totalLaps < raceDuraLaps) {
         ofSetColor(255, 215, 0);
         string lv = "";
         for (int j = 0; j < camView[i].foundMarkerNum; j++) {
@@ -536,6 +559,8 @@ void ofApp::keyPressed(int key){
         changeMinLap();
     } else if (key == 'd' || key == 'D') {
         changeRaceDuraLaps();
+    } else if (key == 'o' || key == 'O') {
+        toggleLockOnEffect();
     }
 }
 
@@ -661,8 +686,7 @@ void toggleCameraSolo(int camid) {
 
 //--------------------------------------------------------------
 void enableCameraSolo(int camid) {
-    // xxx under development
-    // for automatic switching!
+    // for automatic switching
     int idx = camid - 1;
     if (cameraNum == 1 || camid < 1 || camid > cameraNum) {
         return;
@@ -1131,6 +1155,7 @@ void initConfig() {
 #endif /* FEATURE_SPEECH */
     // AR lap timer
     arLapEnabled = DFLT_ARAP_ENBLD;
+    lockOnEnabled = DFLT_ARAP_LCKON;
     minLapTime = DFLT_ARAP_MNLAP;
     raceDuraLaps = DFLT_ARAP_RLAPS;
     raceStarted = false;
@@ -1304,6 +1329,20 @@ void speakLap(int camid, float sec) {
         OF_EXIT_APP(-1);
     }
 }
+
+//--------------------------------------------------------------
+void speakAny(string text) {
+    int pid = fork();
+    if (pid == 0) {
+        // child process
+        if (speechLangJpn == true) {
+            execlp("say", "", "-r", "240", "-v", "Kyoko", text.c_str(), NULL);
+        } else {
+            execlp("say", "", "-r", "240", "-v", "Victoria", text.c_str(), NULL);
+        }
+        OF_EXIT_APP(-1);
+    }
+}
 #endif /* FEATURE_SPEECH */
 
 //--------------------------------------------------------------
@@ -1451,6 +1490,17 @@ void toggleARLap() {
         ofSystemAlertDialog("AR Lap Timer ON");
     } else {
         ofSystemAlertDialog("AR Lap Timer OFF");
+    }
+}
+
+//--------------------------------------------------------------
+void toggleLockOnEffect() {
+    lockOnEnabled = !lockOnEnabled;
+    if (lockOnEnabled == true) {
+        ofSystemAlertDialog("Lock On Effect ON");
+    } else {
+        ofSystemAlertDialog("Lock On Effect OFF");
+        cameraIdxSolo = -1;
     }
 }
 

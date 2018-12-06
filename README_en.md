@@ -77,12 +77,13 @@ On Windows, you can check the detection status of the camera (receiver) with the
 | L | Change all camera label (\*1) | Pilot1~4 |
 | B | Change background image | built-in image |
 | A | AR lap timer on/off | on |
+| O | Lock on effect on/off (\*2) | on |
 | Space | Start/Stop race | - |
 | V | Display race results | - |
 | D | Set race duration (1~100 laps) | 10 |
 | M | Set minimum lap time (1~100 sec) | 3 |
-| N | Change speech language (Japanese/English) (\*2) | Japanese |
-| S | OSC speech on/off (\*2) | off |
+| N | Change speech language (Japanese/English) (\*3) | Japanese |
+| S | OSC speech on/off (\*3) | off |
 | I | Initialize configuration | Default value of each setting |
 
 - (\*1) Camera icon will be automatically changed according to camera label.
@@ -90,7 +91,8 @@ On Windows, you can check the detection status of the camera (receiver) with the
 	- If no image file is found, the default icon will be adopted.
 	- The aspect ratio is forced to 1:1.
 - The background image is scaled according to the screen, and the upper left is displayed in priority.
-- (\*2) Only supported on macOS.
+- (\*2) If the difference in gate passing time is less than 1 second, tracking side camera display will be enlarged.
+- (\*3) Only supported on macOS.
 - When you exit the application settings will be initialized.
 - Camera audio is not supported.
 
@@ -116,11 +118,9 @@ You can measure the lap time using the AR marker. Place the following four types
 - [marker_2.png](bin/data/system/marker/marker_2.png)
 - [marker_3.png](bin/data/system/marker/marker_3.png)
 
-After detecting two or more types of markers simultaneously, when the marker disappears from the screen, lap time will be confirmed.
+The size of the marker should be 120mm per side. Smaller gate and markers may be suitable for low speed race in narrow space.
 
-The size of the marker should be 120mm per side.
-
-Lap time is measured only during the race.
+Lap time will be measured only during the race. After detecting two or more types of markers simultaneously, when the marker disappears from the screen, lap time will be confirmed. Yellow vertical lines will be displayed on the screen according to the number of detected markers.
 
 Depending on the environment, recognition processing of markers might be heavy. In that case, please disable the function.
 
@@ -201,4 +201,4 @@ client.send("/v1/camera/1/laptime", 62.09, function () {});
 
 ## License
 
-Tiny View Plus is distributed under the MIT License. This gives everyone the freedoms to use Tiny View Plus in any context: commercial or non-commercial, public or private, open or closed source. Please see [LICENSE](LICENSE) and [LICENSE\_THIRD\_PARTY](LICENSE_THIRD_PARTY) for details.
+Tiny View Plus is distributed under the MIT License. This gives everyone the freedoms to use Tiny View Plus in any context: commercial or non-commercial, public or private, open or closed source. Please see [LICENSE.md](LICENSE.md) and [LICENSE\_THIRD\_PARTY.md](LICENSE_THIRD_PARTY.md) for details.
