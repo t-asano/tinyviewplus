@@ -71,7 +71,8 @@
 #define DFLT_SPCH_ENBLD false
 #define DFLT_SPCH_JPN   true
 #else /* FEATURE_SPEECH */
-#define HELP_MSG_SPEECH ""
+#define HELP_MSG_SPCHLN ""
+#define HELP_MSG_SPCHOF ""
 #endif /* FEATURE_SPEECH */
 #define HELP_MESSAGE    "Keyboard shortcuts:\n"\
                         "[H] Display help\n"\
