@@ -8,14 +8,14 @@
 #define FRAME_RATE      60
 #define MOVE_STEPS      10
 #define VERTICAL_SYNC   true
-#define WALL_FILE       "system/default_background.png"
+#define WALL_FILE       "system/background.png"
 #define CAMERA_MAXNUM   4
 #define CAMERA_WIDTH    640
 #define CAMERA_HEIGHT   480
 #define CAMERA_RATIO    1.3333
 #define FONT_P_FILE     "system/mplus-1p-bold.ttf"
 #define FONT_M_FILE     "system/mplus-1m-bold.ttf"
-#define ICON_FILE       "system/default_pilot_icon.png"
+#define ICON_FILE       "system/pilot_icon.png"
 #define ICON_DIR        "pilots/"
 #define ICON_WIDTH      50
 #define ICON_HEIGHT     50
@@ -50,10 +50,11 @@
 #define DFLT_ARAP_ENBLD true
 #define DFLT_ARAP_RLAPS 10
 #define DFLT_ARAP_MNLAP 3
-#define DFLT_ARAP_LCKON true
+#define DFLT_ARAP_LCKON false
 #define SND_BEEP_FILE   "system/beep.wav"
 #define SND_COUNT_FILE  "system/count.wav"
 #define SND_FINISH_FILE "system/finish.wav"
+#define SND_LOCKON_FILE "system/lockon.wav"
 #define ARAP_MKR_FILE   "system/marker.xml"
 #define ARAP_MNUM_THR   2
 #define ARAP_MAX_RLAPS  100
@@ -92,6 +93,7 @@
 void bindCameras();
 void toggleCameraSolo(int);
 void enableCameraSolo(int);
+void resetCameraSolo();
 void toggleCameraVisibility(int);
 int getCameraIdxNthVisibleAll(int);
 int getCameraIdxNthVisibleSub(int);
@@ -205,7 +207,7 @@ bool speechLangJpn;
 #endif /* FEATURE_SPEECH */
 // AR lap timer
 ofxTrueTypeFontUC myFontWatch;
-ofSoundPlayer beepSound, countSound, finishSound;
+ofSoundPlayer beepSound, countSound, finishSound, lockonSound;
 bool arLapEnabled;
 bool lockOnEnabled;
 bool raceStarted;
@@ -258,6 +260,7 @@ void ofApp::setup() {
     beepSound.load(SND_BEEP_FILE);
     countSound.load(SND_COUNT_FILE);
     finishSound.load(SND_FINISH_FILE);
+    lockonSound.load(SND_LOCKON_FILE);
     myFontWatch.load(FONT_M_FILE, WATCH_HEIGHT);
     for (int i = 0; i < cameraNum; i++) {
         camView[i].aruco.setUseHighlyReliableMarker(ARAP_MKR_FILE);
@@ -306,6 +309,9 @@ void ofApp::update() {
                     // finish
                     camView[i].foundMarkerNum = 0;
                     finishSound.play();
+#ifdef FEATURE_SPEECH
+                    speakLap((i + 1), lap);
+#endif /* FEATURE_SPEECH */
                     continue;
                 }
                 // lap
@@ -316,13 +322,12 @@ void ofApp::update() {
                             continue;
                         }
                         float diff = elp - camView[j].prevElapsedSec;
-                        if (diff >= 0 && diff < ARAP_LOCKON_SEC) {
+                        if (diff > 0 && diff < ARAP_LOCKON_SEC) {
                             // lock on!
                             locked = true;
                             lockcnt++;
                             enableCameraSolo(i + 1);
-                            beepSound.play();
-                            speakAny(speechLangJpn ? "ロックオン" : "lock on");
+                            lockonSound.play();
                             break;
                         }
                     }
@@ -330,10 +335,10 @@ void ofApp::update() {
                 if (locked == false) {
                     lapcnt++;
                     beepSound.play();
-#ifdef FEATURE_SPEECH
-                    speakLap((i + 1), lap);
-#endif /* FEATURE_SPEECH */
                 }
+#ifdef FEATURE_SPEECH
+                speakLap((i + 1), lap);
+#endif /* FEATURE_SPEECH */
             }
             if (num == 0) {
                 camView[i].foundMarkerNum = 0;
@@ -343,14 +348,14 @@ void ofApp::update() {
         }
     }
     if (lockOnEnabled == true && lapcnt > 0 && lockcnt == 0) {
-        // xxx under development
-        cameraIdxSolo = -1;
+        // xxx experimental
+        resetCameraSolo();
     }
     // layout
     updateViewParams();
     // osc
     recvOsc();
-    // stop race
+    // finish race
     if (raceStarted == true) {
         int count = 0;
         for (int i = 0; i < cameraNum; i++) {
@@ -686,7 +691,6 @@ void toggleCameraSolo(int camid) {
 
 //--------------------------------------------------------------
 void enableCameraSolo(int camid) {
-    // for automatic switching
     int idx = camid - 1;
     if (cameraNum == 1 || camid < 1 || camid > cameraNum) {
         return;
@@ -697,6 +701,12 @@ void enableCameraSolo(int camid) {
         }
         cameraIdxSolo = idx;
     }
+    setViewParams();
+}
+
+//--------------------------------------------------------------
+void resetCameraSolo() {
+    cameraIdxSolo = -1;
     setViewParams();
 }
 
@@ -1347,6 +1357,9 @@ void speakAny(string text) {
 
 //--------------------------------------------------------------
 void toggleRace() {
+    if (lockOnEnabled == true) {
+        resetCameraSolo();
+    }
     if (raceStarted == false) {
         // init -> start
         finishSound.stop();
@@ -1367,7 +1380,6 @@ void toggleRace() {
         raceStarted = false;
         countSound.stop();
         finishSound.play();
-        cameraIdxSolo = -1;
     }
 }
 
@@ -1496,11 +1508,11 @@ void toggleARLap() {
 //--------------------------------------------------------------
 void toggleLockOnEffect() {
     lockOnEnabled = !lockOnEnabled;
+    resetCameraSolo();
     if (lockOnEnabled == true) {
         ofSystemAlertDialog("Lock On Effect ON");
     } else {
         ofSystemAlertDialog("Lock On Effect OFF");
-        cameraIdxSolo = -1;
     }
 }
 

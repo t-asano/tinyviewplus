@@ -77,7 +77,7 @@ On Windows, you can check the detection status of the camera (receiver) with the
 | L | Change all camera label (\*1) | Pilot1~4 |
 | B | Change background image | built-in image |
 | A | AR lap timer on/off | on |
-| O | Lock on effect on/off (\*2) | on |
+| O | Lock on effect on/off (\*2) | off |
 | Space | Start/Stop race | - |
 | V | Display race results | - |
 | D | Set race duration (1~100 laps) | 10 |
