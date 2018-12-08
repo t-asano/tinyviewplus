@@ -1469,21 +1469,21 @@ void displayRaceResults() {
     }
     strlaph += "\n";
     maxlap = getMaxLaps();
-    for (int h = 1; h <= maxlap; h++) {
-        strlapb += ofToString(h) + sep;
+    for (int lap = 1; lap <= maxlap; lap++) {
+        strlapb += ofToString(lap) + sep;
         for (int i = 0; i < cameraNum; i++) {
             // LAPTIME
-            if (h > camView[i].totalLaps) {
+            if (lap > camView[i].totalLaps) {
                 strlapb += "-.-";
             } else {
-                strlapb += getLapStr(camView[i].lapHistory[h]);
+                strlapb += getLapStr(camView[i].lapHistory[lap - 1]);
             }
             if (i < (cameraNum - 1)) {
                 strlapb += sep;
             }
         }
         strlapb += "\n";
-        if (h == maxlap) {
+        if (lap == maxlap) {
             ofSystemAlertDialog(strsumm + strlaph + strlapb);
             return;
         }
