@@ -109,7 +109,7 @@ Some functions can also be operated with the mouse.
 
 ### AR lap timer
 
-![docs/argate.jpg](docs/argate.jpg)
+![docs/argate.png](docs/argate.png)
 
 You can measure the lap time using the AR marker. Place the following four types of markers around the gate.
 

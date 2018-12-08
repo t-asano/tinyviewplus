@@ -121,7 +121,7 @@ Windowsでは、デバイスマネージャーでカメラ(受信機)の検出�
 
 ### ARラップタイマー
 
-![docs/argate.jpg](docs/argate.jpg)
+![docs/argate.png](docs/argate.png)
 
 ARマーカーを利用して、ラップタイムを計測できます。以下の4種類のマーカーを、ゲートの周囲に配置してください。
 
