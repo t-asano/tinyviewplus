@@ -77,22 +77,27 @@ On Windows, you can check the detection status of the camera (receiver) with the
 | L | Change all camera label (\*1) | Pilot1~4 |
 | B | Change background image | built-in image |
 | A | AR lap timer on/off | on |
-| O | Lock on effect on/off (\*2) | off |
+| O | Lock-on effect on/off (\*2) | off |
 | Space | Start/Stop race | - |
-| V | Display race results | - |
-| D | Set race duration (1~100 laps) | 10 |
-| M | Set minimum lap time (1~100 sec) | 3 |
-| N | Change speech language (Japanese/English) (\*3) | Japanese |
-| S | OSC speech on/off (\*3) | off |
+| V | Display race results (\*3) | - |
+| D | Set race duration time (1~3600sec) and laps (1~100) | no limit, 10 |
+| M | Set minimum lap time (1~100sec) | 3 |
+| N | Change speech language (Japanese/English) (\*4) | Japanese |
+| S | OSC speech on/off (\*4) | off |
 | I | Initialize configuration | Default value of each setting |
 
 - (\*1) Camera icon will be automatically changed according to camera label.
-	- If {label string}.png or {label string}.jpg was found under "Tiny View Plus.app / Contents / Presents / data / pilots" folder (on macOS binary), otherwise under the "data / pilots" folder,	it is adopted as an icon image in this priority order.
+	- If {label string}.png or {label string}.jpg was found under predefined folder, it will be adopted as an icon image in this priority order.
+		- macOS binary: Tiny View Plus.app/Contents/ Resources/data/pilots
+		- others: data/pilots
 	- If no image file is found, the default icon will be adopted.
 	- The aspect ratio is forced to 1:1.
 - The background image is scaled according to the screen, and the upper left is displayed in priority.
 - (\*2) If the difference in gate passing time is less than 1 second, tracking side camera display will be enlarged.
-- (\*3) Only supported on macOS.
+- (\*3) Race results will be saved under predefined folder when race finish.
+	- macOS binary: Tiny View Plus.app/Contents/ Resources/data/pilots
+	- others: data/pilots
+- (\*4) Only supported on macOS.
 - When you exit the application settings will be initialized.
 - Camera audio is not supported.
 

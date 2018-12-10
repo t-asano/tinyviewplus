@@ -49,6 +49,7 @@
 // AR lap timer
 #define DFLT_ARAP_ENBLD true
 #define DFLT_ARAP_RLAPS 10
+#define DFLT_ARAP_RSECS 0
 #define DFLT_ARAP_MNLAP 3
 #define DFLT_ARAP_LCKON false
 #define SND_BEEP_FILE   "system/beep.wav"
@@ -60,6 +61,7 @@
 #define ARAP_MNUM_THR   2
 #define ARAP_MAX_RLAPS  100
 #define ARAP_MAX_MNLAP  100
+#define ARAP_MAX_RSECS  3600
 #define ARAP_LOCKON_SEC 1
 #define WATCH_COUNT_SEC 5
 #define WATCH_HEIGHT    15
@@ -83,11 +85,11 @@
                         "[L] Change camera label\n"\
                         "[B] Change background image\n"\
                         "[A] AR lap timer on/off\n"\
-                        "[O] Lock on effect on/off\n"\
+                        "[O] Lock-on effect on/off\n"\
                         "[Space] Start/Stop race\n"\
                         "[V] Display race results\n"\
-                        "[D] Set race duration (1~100 laps)\n"\
-                        "[M] Set minimum lap time (1~100 sec)\n"\
+                        "[D] Set race duration (time/laps)\n"\
+                        "[M] Set minimum lap time (1~100sec)\n"\
                         HELP_MSG_SPCHLN\
                         HELP_MSG_SPCHOF\
                         "[I] Initialize configuration\n"
@@ -133,7 +135,7 @@ void printRaceResults(bool);
 void toggleARLap();
 void toggleLockOnEffect();
 void changeMinLap();
-void changeRaceDuraLaps();
+void changeRaceDuration();
 
 class tvpCamView {
 public:
@@ -214,6 +216,7 @@ ofFile resultsFile;
 bool arLapEnabled;
 bool lockOnEnabled;
 bool raceStarted;
+int raceDuraSecs;
 int raceDuraLaps;
 int minLapTime;
 float elapsedTime;
@@ -259,6 +262,7 @@ void ofApp::setup() {
     arLapEnabled = DFLT_ARAP_ENBLD;
     lockOnEnabled = DFLT_ARAP_LCKON;
     minLapTime = DFLT_ARAP_MNLAP;
+    raceDuraSecs = DFLT_ARAP_RSECS;
     raceDuraLaps = DFLT_ARAP_RLAPS;
     beepSound.load(SND_BEEP_FILE);
     countSound.load(SND_COUNT_FILE);
@@ -276,10 +280,23 @@ void ofApp::setup() {
 
 //--------------------------------------------------------------
 void ofApp::update() {
-    // camera
+    // timer
     if (raceStarted == true) {
         elapsedTime = ofGetElapsedTimef();
+        // finish race by time
+        if (raceDuraSecs > 0 && (elapsedTime - WATCH_COUNT_SEC) > raceDuraSecs) {
+            for (int i = 0; i < cameraNum; i++) {
+                grabber[i].update();
+                camView[i].foundMarkerNum = 0;
+                camView[i].prevElapsedSec = raceDuraSecs + WATCH_COUNT_SEC;
+            }
+            toggleRace();
+            recvOsc();
+            updateViewParams();
+            return;
+        }
     }
+    // camera, lap
     int lapcnt = 0;
     int lockcnt = 0;
     for (int i = 0; i < cameraNum; i++) {
@@ -317,7 +334,7 @@ void ofApp::update() {
 #endif /* FEATURE_SPEECH */
                     continue;
                 }
-                // lap
+                // lap with lock-on
                 bool locked = false;
                 if (lockOnEnabled == true) {
                     for (int j = 0; j < cameraNum; j++) {
@@ -335,6 +352,7 @@ void ofApp::update() {
                         }
                     }
                 }
+                // lap without lock-on
                 if (locked == false) {
                     lapcnt++;
                     beepSound.play();
@@ -354,11 +372,7 @@ void ofApp::update() {
         // xxx experimental
         resetCameraSolo();
     }
-    // layout
-    updateViewParams();
-    // osc
-    recvOsc();
-    // finish race
+    // finish race by laps
     if (raceStarted == true) {
         int count = 0;
         for (int i = 0; i < cameraNum; i++) {
@@ -370,6 +384,10 @@ void ofApp::update() {
             toggleRace();
         }
     }
+    // osc
+    recvOsc();
+    // view layout
+    updateViewParams();
 }
 
 //--------------------------------------------------------------
@@ -482,7 +500,13 @@ void drawWatch() {
     } else if (elapsedTime < 7) {
         str = "Go!";
     } else {
-        str = getWatchString(elapsedTime - WATCH_COUNT_SEC);
+        float sec;
+        if (raceDuraSecs > 0) {
+            sec = elapsedTime - WATCH_COUNT_SEC;
+        } else {
+            sec = raceDuraSecs - (elapsedTime - WATCH_COUNT_SEC);
+        }
+        str = getWatchString(sec);
     }
     ofSetColor(255, 255, 255);
     int x = (ofGetWidth() / 2) - (myFontWatch.stringWidth(str) / 2);
@@ -566,7 +590,7 @@ void ofApp::keyPressed(int key){
     } else if (key == 'm' || key == 'M') {
         changeMinLap();
     } else if (key == 'd' || key == 'D') {
-        changeRaceDuraLaps();
+        changeRaceDuration();
     } else if (key == 'o' || key == 'O') {
         toggleLockOnEffect();
     }
@@ -797,7 +821,7 @@ void changeCameraLabel(int camid) {
         return;
     }
     str = camView[camid - 1].labelString;
-    str = ofSystemTextBoxDialog("camera" + ofToString(camid) + " label:", str);
+    str = ofSystemTextBoxDialog("Camera" + ofToString(camid) + " label:", str);
     camView[camid - 1].labelString = str;
     autoSelectCameraIcon(camid, str);
 }
@@ -815,7 +839,7 @@ void changeCameraIcon(int camid) {
     if (camid < 1 || camid > cameraNum) {
         return;
     }
-    str = "change camera" + ofToString(camid) + " icon";
+    str = "Camera" + ofToString(camid) + " icon";
     ofFileDialogResult result = ofSystemLoadDialog(str);
     if (result.bSuccess) {
         string path = result.getPath();
@@ -835,7 +859,7 @@ void changeCameraIconPath(int camid, string path) {
         camView[idx].iconImage.clear();
         camView[idx].iconImage.load(path);
     } else {
-        ofSystemAlertDialog("unsupported file type");
+        ofSystemAlertDialog("Unsupported file type");
     }
 }
 
@@ -861,7 +885,7 @@ void autoSelectCameraIcon(int camid, string pname) {
 
 //--------------------------------------------------------------
 void changeWallImage() {
-    ofFileDialogResult result = ofSystemLoadDialog("change wallpaper");
+    ofFileDialogResult result = ofSystemLoadDialog("Wallpaper");
     if (result.bSuccess) {
         string path = result.getPath();
         ofFile file(path);
@@ -872,7 +896,7 @@ void changeWallImage() {
             wallRatio = wallImage.getWidth() / wallImage.getHeight();
             setWallParams();
         } else {
-            ofSystemAlertDialog("unsupported file type");
+            ofSystemAlertDialog("Unsupported file type");
         }
     }
 }
@@ -1171,8 +1195,9 @@ void initConfig() {
     lockOnEnabled = DFLT_ARAP_LCKON;
     minLapTime = DFLT_ARAP_MNLAP;
     raceDuraLaps = DFLT_ARAP_RLAPS;
+    raceDuraSecs = DFLT_ARAP_RSECS;
     raceStarted = false;
-    ofSystemAlertDialog("Configuration Initialized");
+    ofSystemAlertDialog("Configuration initialized");
 }
 
 //--------------------------------------------------------------
@@ -1281,18 +1306,19 @@ void recvOscCameraFloat(int camid, string method, float argfloat) {
 void toggleOscSpeech() {
     oscSpeechEnabled = !oscSpeechEnabled;
     if (oscSpeechEnabled == true) {
-        ofSystemAlertDialog("Speech ON");
+        ofSystemAlertDialog("Speech on");
     } else {
-        ofSystemAlertDialog("Speech OFF");
+        ofSystemAlertDialog("Speech off");
     }
 }
 
+//--------------------------------------------------------------
 void toggleSpeechLang() {
     speechLangJpn = !speechLangJpn;
     if (speechLangJpn == true) {
-        ofSystemAlertDialog("Speech language JAPANESE");
+        ofSystemAlertDialog("Speech language japanese");
     } else {
-        ofSystemAlertDialog("Speech language ENGLISH");
+        ofSystemAlertDialog("Speech language english");
     }
 }
 
@@ -1518,9 +1544,9 @@ void printRaceResults(bool file) {
 void toggleARLap() {
     arLapEnabled = !arLapEnabled;
     if (arLapEnabled == true) {
-        ofSystemAlertDialog("AR Lap Timer ON");
+        ofSystemAlertDialog("AR lap timer on");
     } else {
-        ofSystemAlertDialog("AR Lap Timer OFF");
+        ofSystemAlertDialog("AR lap timer off");
     }
 }
 
@@ -1529,9 +1555,9 @@ void toggleLockOnEffect() {
     lockOnEnabled = !lockOnEnabled;
     resetCameraSolo();
     if (lockOnEnabled == true) {
-        ofSystemAlertDialog("Lock On Effect ON");
+        ofSystemAlertDialog("Lock-on effect on");
     } else {
-        ofSystemAlertDialog("Lock On Effect OFF");
+        ofSystemAlertDialog("Lock-on effect off");
     }
 }
 
@@ -1540,7 +1566,7 @@ void changeMinLap() {
     string str;
     int lap;
     str = ofToString(minLapTime);
-    str = ofSystemTextBoxDialog("Minimum Lap Time (1~" + ofToString(ARAP_MAX_MNLAP) + " sec):", str);
+    str = ofSystemTextBoxDialog("Min. lap time(1~" + ofToString(ARAP_MAX_MNLAP) + "sec):", str);
     lap = ofToInt(str);
     if (lap == 0 || lap > ARAP_MAX_MNLAP) {
         ofSystemAlertDialog("Please enter 1~" + ofToString(ARAP_MAX_MNLAP));
@@ -1551,16 +1577,41 @@ void changeMinLap() {
 }
 
 //--------------------------------------------------------------
-void changeRaceDuraLaps() {
+void changeRaceDuration() {
     string str;
-    int laps;
-    str = ofToString(raceDuraLaps);
-    str = ofSystemTextBoxDialog("Race Duration (1~" +  ofToString(ARAP_MAX_RLAPS) + " laps):", str);
-    laps = ofToInt(str);
-    if (laps == 0 || laps > ARAP_MAX_RLAPS) {
-        ofSystemAlertDialog("Please enter 1~" + ofToString(ARAP_MAX_RLAPS));
-        changeRaceDuraLaps();
-    } else {
-        raceDuraLaps = laps;
+    // time (seconds)
+    while (true) {
+        int sec;
+        str = ofToString(raceDuraSecs);
+        if (str == "0") {
+            str = "";
+        }
+        str = ofSystemTextBoxDialog("Race time(sec):", str);
+        sec = ofToInt(str);
+        if (sec <= 0) {
+            // no limit
+            raceDuraSecs = 0;
+            break;
+        } else if (sec <= ARAP_MAX_RSECS) {
+            raceDuraSecs = sec;
+            break;
+        } else {
+            ofSystemAlertDialog("Please enter 0~" + ofToString(ARAP_MAX_RSECS) + "(0/empty means no limit)");
+            // retry
+        }
+    }
+    // laps
+    while (true) {
+        int laps;
+        str = ofToString(raceDuraLaps);
+        str = ofSystemTextBoxDialog("Race laps:", str);
+        laps = ofToInt(str);
+        if (laps > 0 && laps <= ARAP_MAX_RLAPS) {
+            raceDuraLaps = laps;
+            break;
+        } else {
+            ofSystemAlertDialog("Please enter 1~" + ofToString(ARAP_MAX_RLAPS));
+            // retry
+        }
     }
 }
