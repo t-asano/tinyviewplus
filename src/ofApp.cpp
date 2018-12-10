@@ -56,6 +56,7 @@
 #define SND_FINISH_FILE "system/finish.wav"
 #define SND_LOCKON_FILE "system/lockon.wav"
 #define ARAP_MKR_FILE   "system/marker.xml"
+#define ARAP_RESULT_DIR "results/"
 #define ARAP_MNUM_THR   2
 #define ARAP_MAX_RLAPS  100
 #define ARAP_MAX_MNLAP  100
@@ -128,7 +129,7 @@ bool isRecordedLaps();
 float getBestLap(int);
 int getMaxLaps();
 string getLapStr(float);
-void displayRaceResults();
+void printRaceResults(bool);
 void toggleARLap();
 void toggleLockOnEffect();
 void changeMinLap();
@@ -209,6 +210,7 @@ bool speechLangJpn;
 // AR lap timer
 ofxTrueTypeFontUC myFontWatch;
 ofSoundPlayer beepSound, countSound, finishSound, lockonSound;
+ofFile resultsFile;
 bool arLapEnabled;
 bool lockOnEnabled;
 bool raceStarted;
@@ -558,7 +560,7 @@ void ofApp::keyPressed(int key){
     } else if (key == ' ') {
         toggleRace();
     } else if (key == 'v' || key == 'V') {
-        displayRaceResults();
+        printRaceResults(false);
     } else if (key == 'a' || key == 'A') {
         toggleARLap();
     } else if (key == 'm' || key == 'M') {
@@ -1381,6 +1383,7 @@ void toggleRace() {
         raceStarted = false;
         countSound.stop();
         finishSound.play();
+        printRaceResults(true);
     }
 }
 
@@ -1431,11 +1434,12 @@ string getLapStr(float lap) {
 }
 
 //--------------------------------------------------------------
-void displayRaceResults() {
+void printRaceResults(bool file) {
     string strsumm = "Race Results:\n\n";
     string strlaph = "";
     string strlapb = "";
-    string sep = "    ";
+    string strlapbfile = "";
+    string sep = "  ";
     int count = 0;
     int maxlap = 0;
 
@@ -1443,12 +1447,16 @@ void displayRaceResults() {
         return;
     }
     if (isRecordedLaps() == false) {
-        ofSystemAlertDialog(strsumm + "No record.");
+        if (file == false) {
+            ofSystemAlertDialog(strsumm + "No record.");
+        }
         return;
     }
     // SUMMARY: PILOT LAPS BESTLAP TIME
+    // - head
     strsumm += "- Summary -\n";
     strsumm += "PILOT" + sep  + "LAPS" + sep + "BESTLAP" + sep + "TIME\n";
+    // - body
     for (int i = 0; i < cameraNum; i++) {
         float blap = getBestLap(i);
         float total = camView[i].prevElapsedSec - WATCH_COUNT_SEC;
@@ -1461,6 +1469,7 @@ void displayRaceResults() {
     }
     strsumm += "\n";
     // LAP TIMES: LAP P1 P2 P3 P4
+    // - head
     strlaph += "- Lap Times -\n";
     strlaph += "LAP" + sep;
     for (int i = 0; i < cameraNum; i++) {
@@ -1469,6 +1478,7 @@ void displayRaceResults() {
     }
     strlaph += "\n";
     maxlap = getMaxLaps();
+    // - body
     for (int lap = 1; lap <= maxlap; lap++) {
         strlapb += ofToString(lap) + sep;
         for (int i = 0; i < cameraNum; i++) {
@@ -1483,16 +1493,24 @@ void displayRaceResults() {
             }
         }
         strlapb += "\n";
-        if (lap == maxlap) {
+        strlapbfile += strlapb;
+        if (file == false && lap == maxlap) {
             ofSystemAlertDialog(strsumm + strlaph + strlapb);
-            return;
+            break;
         }
         count++;
-        if (count == 25) {
+        // pagination
+        if (file == false && count == 25) {
             ofSystemAlertDialog(strsumm + strlaph + strlapb);
             count = 0;
             strlapb = "";
         }
+    }
+    // write to file
+    if (file == true) {
+        resultsFile.open(ARAP_RESULT_DIR + ofGetTimestampString() + ".txt" , ofFile::WriteOnly);
+        resultsFile << (strsumm + strlaph + strlapbfile);
+        resultsFile.close();
     }
 }
 
