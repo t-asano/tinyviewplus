@@ -63,6 +63,8 @@
 #define ARAP_MAX_MNLAP  100
 #define ARAP_MAX_RSECS  3600
 #define ARAP_LOCKON_SEC 1
+#define ARAP_RSLT_SCRN  0
+#define ARAP_RSLT_FILE  1
 #define WATCH_COUNT_SEC 5
 #define WATCH_HEIGHT    15
 // osc
@@ -131,7 +133,7 @@ bool isRecordedLaps();
 float getBestLap(int);
 int getMaxLaps();
 string getLapStr(float);
-void printRaceResults(bool);
+void printRaceResults(int);
 void toggleARLap();
 void toggleLockOnEffect();
 void changeMinLap();
@@ -584,7 +586,7 @@ void ofApp::keyPressed(int key){
     } else if (key == ' ') {
         toggleRace();
     } else if (key == 'v' || key == 'V') {
-        printRaceResults(false);
+        printRaceResults(ARAP_RSLT_SCRN);
     } else if (key == 'a' || key == 'A') {
         toggleARLap();
     } else if (key == 'm' || key == 'M') {
@@ -695,6 +697,7 @@ void bindCameras() {
     cameraNumVisible = cameraNum;
     if (cameraNum == 0) {
         ofSystemAlertDialog("no FPV receiver detected");
+        ofExit();
     }
     setupBaseColors();
 }
@@ -1409,7 +1412,10 @@ void toggleRace() {
         raceStarted = false;
         countSound.stop();
         finishSound.play();
-        printRaceResults(true);
+        if (isRecordedLaps() == true) {
+            printRaceResults(ARAP_RSLT_FILE);
+            printRaceResults(ARAP_RSLT_SCRN);
+        }
     }
 }
 
@@ -1460,7 +1466,18 @@ string getLapStr(float lap) {
 }
 
 //--------------------------------------------------------------
-void printRaceResults(bool file) {
+void printRaceResults(int dest) {
+    bool file;
+    switch (dest) {
+        case ARAP_RSLT_SCRN:
+            file = false;
+            break;
+        case ARAP_RSLT_FILE:
+            file = true;
+            break;
+        default:
+            return;
+    }
     string strsumm = "Race Results:\n\n";
     string strlaph = "";
     string strlapb = "";
@@ -1566,13 +1583,13 @@ void changeMinLap() {
     string str;
     int lap;
     str = ofToString(minLapTime);
-    str = ofSystemTextBoxDialog("Min. lap time(1~" + ofToString(ARAP_MAX_MNLAP) + "sec):", str);
-    lap = ofToInt(str);
-    if (lap == 0 || lap > ARAP_MAX_MNLAP) {
+    str = ofSystemTextBoxDialog("Min. lap time (1~" + ofToString(ARAP_MAX_MNLAP) + "sec):", str);
+    lap = (str == "") ? 0 : ofToInt(str);
+    if (lap > 0 && lap <= ARAP_MAX_MNLAP) {
+        minLapTime = lap;
+    } else {
         ofSystemAlertDialog("Please enter 1~" + ofToString(ARAP_MAX_MNLAP));
         changeMinLap();
-    } else {
-        minLapTime = lap;
     }
 }
 
@@ -1582,12 +1599,9 @@ void changeRaceDuration() {
     // time (seconds)
     while (true) {
         int sec;
-        str = ofToString(raceDuraSecs);
-        if (str == "0") {
-            str = "";
-        }
-        str = ofSystemTextBoxDialog("Race time(sec):", str);
-        sec = ofToInt(str);
+        str = (raceDuraSecs == 0) ? "" : ofToString(raceDuraSecs);
+        str = ofSystemTextBoxDialog("Race time (sec):", str);
+        sec = (str == "") ? 0 : ofToInt(str);
         if (sec <= 0) {
             // no limit
             raceDuraSecs = 0;
@@ -1596,16 +1610,16 @@ void changeRaceDuration() {
             raceDuraSecs = sec;
             break;
         } else {
-            ofSystemAlertDialog("Please enter 0~" + ofToString(ARAP_MAX_RSECS) + "(0/empty means no limit)");
+            ofSystemAlertDialog("Please enter 0~" + ofToString(ARAP_MAX_RSECS) + " (0/empty means no limit)");
             // retry
         }
     }
     // laps
     while (true) {
         int laps;
-        str = ofToString(raceDuraLaps);
+        str = (raceDuraLaps == 0) ? "" : ofToString(raceDuraLaps);
         str = ofSystemTextBoxDialog("Race laps:", str);
-        laps = ofToInt(str);
+        laps = (str == "") ? 0 : ofToInt(str);
         if (laps > 0 && laps <= ARAP_MAX_RLAPS) {
             raceDuraLaps = laps;
             break;
