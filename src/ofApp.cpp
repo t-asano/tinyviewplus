@@ -503,7 +503,7 @@ void drawWatch() {
         str = "Go!";
     } else {
         float sec;
-        if (raceDuraSecs > 0) {
+        if (raceDuraSecs <= 0) {
             sec = elapsedTime - WATCH_COUNT_SEC;
         } else {
             sec = raceDuraSecs - (elapsedTime - WATCH_COUNT_SEC);
