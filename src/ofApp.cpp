@@ -1412,10 +1412,7 @@ void toggleRace() {
         raceStarted = false;
         countSound.stop();
         finishSound.play();
-        if (isRecordedLaps() == true) {
-            printRaceResults(ARAP_RSLT_FILE);
-            printRaceResults(ARAP_RSLT_SCRN);
-        }
+        printRaceResults(ARAP_RSLT_FILE);
     }
 }
 
