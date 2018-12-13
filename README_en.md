@@ -24,7 +24,10 @@ Attention. We are not responsible for any problems caused by running the applica
 ### Case 1: Prebuilt binary
 
 1. Download a zip file from [Release page](https://github.com/t-asano/tinyviewplus/releases).
-2. Extract it.
+2. (Only for macOS) Remove extended attributes.
+  - $ cd ~/Downloads
+  - $ xattr -c tinyviewplus_\*_macos64bit.zip
+3. Extract it.
 
 ### Case 2: Build from source code (for experts)
 

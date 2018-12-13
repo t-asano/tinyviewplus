@@ -26,7 +26,10 @@ Tiny View Plusは、FPV映像を手軽に表示するためのアプリです。
 ### ビルド済みバイナリを使用する場合(通常はこちら)
 
 1. [リリースページ](https://github.com/t-asano/tinyviewplus/releases)よりzipファイルをダウンロード
-2. zipファイルを適当な場所に展開
+2. (macOSのみ)ターミナルを開いてzipファイルの拡張属性を削除する
+  - $ cd ~/Downloads
+  - $ xattr -c tinyviewplus_\*_macos64bit.zip
+3. zipファイルを適当な場所に展開
 
 バイナリの作成にあたっては細心の注意を払っていますが、アプリを実行することで起こる不具合については、一切責任を負いません。
 
