@@ -94,7 +94,8 @@
                         "[M] Set minimum lap time (1~100sec)\n"\
                         HELP_MSG_SPCHLN\
                         HELP_MSG_SPCHOF\
-                        "[I] Initialize configuration\n"
+                        "[I] Initialize configuration\n"\
+                        "[.] Exit application\n"
 
 void bindCameras();
 void toggleCameraSolo(int);
@@ -595,6 +596,9 @@ void ofApp::keyPressed(int key){
         changeRaceDuration();
     } else if (key == 'o' || key == 'O') {
         toggleLockOnEffect();
+    } else if (key == '.') {
+        ofSystemAlertDialog("Exit application");
+        ofExit();
     }
 }
 

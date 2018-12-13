@@ -25,8 +25,8 @@ Attention. We are not responsible for any problems caused by running the applica
 
 1. Download a zip file from [Release page](https://github.com/t-asano/tinyviewplus/releases).
 2. (Only for macOS) Remove extended attributes.
-  - $ cd ~/Downloads
-  - $ xattr -c tinyviewplus_\*_macos64bit.zip
+	- $ cd ~/Downloads
+	- $ xattr -c tinyviewplus_\*_macos64bit.zip
 3. Extract it.
 
 ### Case 2: Build from source code (for experts)
@@ -87,7 +87,8 @@ On Windows, you can check the detection status of the camera (receiver) with the
 | M | Set minimum lap time (1~100sec) | 3 |
 | N | Change speech language (Japanese/English) (\*4) | Japanese |
 | S | OSC speech on/off (\*4) | off |
-| I | Initialize configuration | Default value of each setting |
+| I | Initialize configuration | - |
+| . | Exit application | - |
 
 - (\*1) Camera icon will be automatically changed according to camera label.
 	- If {label string}.png or {label string}.jpg was found under predefined folder, it will be adopted as an icon image in this priority order.
