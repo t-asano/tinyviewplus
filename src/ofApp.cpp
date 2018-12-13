@@ -1433,7 +1433,7 @@ float getBestLap(int camidx) {
     if (camidx < 0 || camidx >= cameraNum) {
         return blap;
     }
-    for (int i = 0; i < camView[i].totalLaps; i++) {
+    for (int i = 0; i < camView[camidx].totalLaps; i++) {
         float h = camView[camidx].lapHistory[i];
         if (blap == 0) {
             blap = h;
