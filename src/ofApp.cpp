@@ -1355,7 +1355,7 @@ void speakLap(int camid, float sec) {
     if (speechLangJpn == true) {
 #ifdef TARGET_WIN32
         sout += ofToString(int(sec)) + "びょう";
-#elif
+#else
         sout += ofToString(int(sec)) + "秒";
 #endif
         sout += ssec.substr(ssec.length() - 2, 1) + " ";
