@@ -1,4 +1,4 @@
-#include "ofApp.h"
+﻿#include "ofApp.h"
 
 // view
 #define FRAME_RATE      60
@@ -1353,11 +1353,7 @@ void speakLap(int camid, float sec) {
     ssec = getLapStr(sec);
     sout = camView[camid - 1].labelString + ", ";
     if (speechLangJpn == true) {
-#ifdef TARGET_WIN32
-        sout += ofToString(int(sec)) + "びょう";
-#elif
         sout += ofToString(int(sec)) + "秒";
-#endif
         sout += ssec.substr(ssec.length() - 2, 1) + " ";
         sout += ssec.substr(ssec.length() - 1, 1);
     }
