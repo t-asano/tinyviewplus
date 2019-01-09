@@ -1,9 +1,5 @@
 #include "ofApp.h"
 
-#ifdef TARGET_OSX
-#define FEATURE_SPEECH
-#endif /* TARGET_OSX */
-
 // view
 #define FRAME_RATE      60
 #define MOVE_STEPS      10
@@ -69,16 +65,11 @@
 #define WATCH_HEIGHT    15
 // osc
 #define OSC_LISTEN_PORT 4000
-// help
-#ifdef FEATURE_SPEECH
-#define HELP_MSG_SPCHLN "[N] Change speech language\n"
-#define HELP_MSG_SPCHOF "[S] OSC speech on/off\n"
+// speech
 #define DFLT_SPCH_ENBLD false
 #define DFLT_SPCH_JPN   true
-#else /* FEATURE_SPEECH */
-#define HELP_MSG_SPCHLN ""
-#define HELP_MSG_SPCHOF ""
-#endif /* FEATURE_SPEECH */
+#define SPCH_SLOT_NUM	8
+// help
 #define HELP_MESSAGE    "Keyboard shortcuts:\n"\
                         "[H] Display help\n"\
                         "[1~4] Camera 1~4 solo mode on/off\n"\
@@ -92,8 +83,8 @@
                         "[V] Display race results\n"\
                         "[D] Set race duration (time/laps)\n"\
                         "[M] Set minimum lap time (1~100sec)\n"\
-                        HELP_MSG_SPCHLN\
-                        HELP_MSG_SPCHOF\
+                        "[N] Change speech language\n"\
+                        "[S] OSC speech on/off\n"\
                         "[I] Initialize configuration\n"\
                         "[.] Exit application\n"
 
@@ -119,13 +110,10 @@ void initConfig();
 void recvOsc();
 void recvOscCameraString(int, string, string);
 void recvOscCameraFloat(int, string, float);
-#ifdef FEATURE_SPEECH
 void toggleOscSpeech();
 void toggleSpeechLang();
 void recvOscSpeech(string, string);
 void speakLap(int, float);
-void speakAny(string);
-#endif /* FEATURE_SPEECH */
 void drawCamera(int);
 string getWatchString(float);
 void drawWatch();
@@ -192,6 +180,20 @@ public:
     float lapHistory[ARAP_MAX_RLAPS];
 };
 
+// speech
+class sayWin : public ofThread {
+public:
+    void exec(string text) {
+        this->text = text;
+        startThread();
+    }
+private:
+    void threadedFunction() {
+        ofSystem("cscript data\\system\\saywin.js \"" + text + "\"");
+    }
+    string text;
+};
+
 // view
 ofVideoGrabber grabber[CAMERA_MAXNUM];
 ofxTrueTypeFontUC myFontNumber, myFontLabel, myFontLap;
@@ -208,10 +210,9 @@ string helpMessage;
 // osc
 ofxOscReceiver oscReceiver;
 // speech
-#ifdef FEATURE_SPEECH
 bool oscSpeechEnabled;
 bool speechLangJpn;
-#endif /* FEATURE_SPEECH */
+sayWin mySayWin[SPCH_SLOT_NUM];
 // AR lap timer
 ofxTrueTypeFontUC myFontWatch;
 ofSoundPlayer beepSound, countSound, finishSound, lockonSound;
@@ -256,11 +257,9 @@ void ofApp::setup() {
     setViewParams();
     // osc
     oscReceiver.setup(OSC_LISTEN_PORT);
-#ifdef FEATURE_SPEECH
     // speech
     oscSpeechEnabled = DFLT_SPCH_ENBLD;
     speechLangJpn = DFLT_SPCH_JPN;
-#endif /* FEATURE_SPEECH */
     // AR lap timer
     arLapEnabled = DFLT_ARAP_ENBLD;
     lockOnEnabled = DFLT_ARAP_LCKON;
@@ -332,9 +331,7 @@ void ofApp::update() {
                     // finish
                     camView[i].foundMarkerNum = 0;
                     finishSound.play();
-#ifdef FEATURE_SPEECH
                     speakLap((i + 1), lap);
-#endif /* FEATURE_SPEECH */
                     continue;
                 }
                 // lap with lock-on
@@ -360,9 +357,7 @@ void ofApp::update() {
                     lapcnt++;
                     beepSound.play();
                 }
-#ifdef FEATURE_SPEECH
                 speakLap((i + 1), lap);
-#endif /* FEATURE_SPEECH */
             }
             if (num == 0) {
                 camView[i].foundMarkerNum = 0;
@@ -568,12 +563,10 @@ void ofApp::keyPressed(int key){
         initConfig();
     } else if (key == 'l' || key == 'L') {
         changeCameraLabelAll();
-#ifdef FEATURE_SPEECH
     } else if (key == 's' || key == 'S') {
         toggleOscSpeech();
     } else if (key == 'n' || key == 'N') {
         toggleSpeechLang();
-#endif /* FEATURE_SPEECH */
     } else if (key == 'b' || key == 'B') {
         changeWallImage();
     } else if (key == 'q' || key == 'Q') {
@@ -1192,11 +1185,9 @@ void initConfig() {
         camView[i].labelString = "Pilot" + ofToString(i + 1);
         camView[i].lastLap = 0;
     }
-#ifdef FEATURE_SPEECH
     // speech
     oscSpeechEnabled = DFLT_SPCH_ENBLD;
     speechLangJpn = DFLT_SPCH_JPN;
-#endif /* FEATURE_SPEECH */
     // AR lap timer
     arLapEnabled = DFLT_ARAP_ENBLD;
     lockOnEnabled = DFLT_ARAP_LCKON;
@@ -1247,7 +1238,6 @@ void recvOsc() {
                     break;
             }
         }
-#ifdef FEATURE_SPEECH
         else if (addr.find("/v1/speech/") == 0) {
             if (oscm.getNumArgs() != 1 || oscm.getArgType(0) != OFXOSC_TYPE_STRING) {
                 continue;
@@ -1259,7 +1249,6 @@ void recvOsc() {
                 recvOscSpeech("jp", oscm.getArgAsString(0));
             }
         }
-#endif /* FEATURE_SPEECH */
     }
 }
 
@@ -1300,15 +1289,12 @@ void recvOscCameraFloat(int camid, string method, float argfloat) {
         return;
     }
     beepSound.play();
-#ifdef FEATURE_SPEECH
     if (oscSpeechEnabled == true){
         speakLap(camid, argfloat);
     }
-#endif /* FEATURE_SPEECH */
     camView[camid - 1].lastLap = argfloat;
 }
 
-#ifdef FEATURE_SPEECH
 //--------------------------------------------------------------
 void toggleOscSpeech() {
     oscSpeechEnabled = !oscSpeechEnabled;
@@ -1331,12 +1317,12 @@ void toggleSpeechLang() {
 
 //--------------------------------------------------------------
 void recvOscSpeech(string lang, string text) {
-    int pid;
     ofLogNotice() << "osc spc(s): " << lang << "," << text;
     if (oscSpeechEnabled == false) {
         return;
     }
-    pid = fork();
+#ifdef TARGET_OSX
+    int pid = fork();
     if (pid == 0) {
         // child process
         if (lang == "en") {
@@ -1347,49 +1333,60 @@ void recvOscSpeech(string lang, string text) {
         }
         OF_EXIT_APP(-1);
     }
+#endif /* TARGET_OSX */
+#ifdef TARGET_WIN32
+    for (int i = 0; i < SPCH_SLOT_NUM; i++) {
+        if (mySayWin[i].isThreadRunning() == false) {
+            mySayWin[i].exec(text);
+            break;
+        }
+    }
+#endif /* TARGET_WIN32 */
 }
 
 //--------------------------------------------------------------
 void speakLap(int camid, float sec) {
-    int pid;
     if (camid < 1 || camid > cameraNum || sec == 0.0) {
         return;
     }
-    pid = fork();
-    if (pid == 0) {
-        // child process
-        string ssec, sout;
-        ssec = getLapStr(sec);
-        sout = camView[camid - 1].labelString + ", ";
-        if (speechLangJpn == true) {
-            sout += ofToString(int(sec)) + "秒";
-            sout += ssec.substr(ssec.length() - 2, 1) + " ";
-            sout += ssec.substr(ssec.length() - 1, 1);
-            execlp("say", "", "-r", "240", "-v", "Kyoko", sout.c_str(), NULL);
-        } else {
-            sout += ofToString(int(sec)) + ".";
-            sout += ssec.substr(ssec.length() - 2, 1);
-            sout += ssec.substr(ssec.length() - 1, 1) + " seconds";
-            execlp("say", "", "-r", "240", "-v", "Victoria", sout.c_str(), NULL);
-        }
-        OF_EXIT_APP(-1);
+    string ssec, sout;
+    ssec = getLapStr(sec);
+    sout = camView[camid - 1].labelString + ", ";
+    if (speechLangJpn == true) {
+#ifdef TARGET_WIN32
+        sout += ofToString(int(sec)) + "びょう";
+#elif
+        sout += ofToString(int(sec)) + "秒";
+#endif
+        sout += ssec.substr(ssec.length() - 2, 1) + " ";
+        sout += ssec.substr(ssec.length() - 1, 1);
     }
-}
-
-//--------------------------------------------------------------
-void speakAny(string text) {
+    else {
+        sout += ofToString(int(sec)) + ".";
+        sout += ssec.substr(ssec.length() - 2, 1);
+        sout += ssec.substr(ssec.length() - 1, 1) + " seconds";
+    }
+#ifdef TARGET_OSX
     int pid = fork();
     if (pid == 0) {
         // child process
         if (speechLangJpn == true) {
-            execlp("say", "", "-r", "240", "-v", "Kyoko", text.c_str(), NULL);
+            execlp("say", "", "-r", "240", "-v", "Kyoko", sout.c_str(), NULL);
         } else {
-            execlp("say", "", "-r", "240", "-v", "Victoria", text.c_str(), NULL);
+            execlp("say", "", "-r", "240", "-v", "Victoria", sout.c_str(), NULL);
         }
         OF_EXIT_APP(-1);
     }
+#endif /* TARGET_OSX */
+#ifdef TARGET_WIN32
+    for (int i = 0; i < SPCH_SLOT_NUM; i++) {
+        if (mySayWin[i].isThreadRunning() == false) {
+            mySayWin[i].exec(sout);
+            break;
+        }
+    }
+#endif /* TARGET_WIN32 */
 }
-#endif /* FEATURE_SPEECH */
 
 //--------------------------------------------------------------
 void toggleRace() {
