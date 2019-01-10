@@ -1,4 +1,7 @@
-﻿#include "ofApp.h"
+#include "ofApp.h"
+#ifdef TARGET_WIN32
+#include <regex>
+#endif /* TARGET_WIN32 */
 
 // view
 #define FRAME_RATE      60
@@ -183,15 +186,17 @@ public:
 // speech
 class sayWin : public ofThread {
 public:
-    void exec(string text) {
+    void exec(string lang, string text) {
         this->text = text;
+        this->lang = lang;
         startThread();
     }
 private:
     void threadedFunction() {
-        ofSystem("cscript data\\system\\saywin.js \"" + text + "\"");
+        ofSystem("cscript data\\system\\saywin.js " + lang + " \"" + text + "\"");
     }
     string text;
+    string lang;
 };
 
 // view
@@ -1337,7 +1342,7 @@ void recvOscSpeech(string lang, string text) {
 #ifdef TARGET_WIN32
     for (int i = 0; i < SPCH_SLOT_NUM; i++) {
         if (mySayWin[i].isThreadRunning() == false) {
-            mySayWin[i].exec(text);
+            mySayWin[i].exec(lang, text);
             break;
         }
     }
@@ -1352,8 +1357,11 @@ void speakLap(int camid, float sec) {
     string ssec, sout;
     ssec = getLapStr(sec);
     sout = camView[camid - 1].labelString + ", ";
+#ifdef TARGET_WIN32
+    sout = regex_replace(sout, regex("(Pilot)(\\d)"), "$1 $2");
+#endif /* TARGET_WIN32 */
     if (speechLangJpn == true) {
-        sout += ofToString(int(sec)) + "秒";
+        sout += ofToString(int(sec)) + "秒"; // UTF-8
         sout += ssec.substr(ssec.length() - 2, 1) + " ";
         sout += ssec.substr(ssec.length() - 1, 1);
     }
@@ -1377,7 +1385,7 @@ void speakLap(int camid, float sec) {
 #ifdef TARGET_WIN32
     for (int i = 0; i < SPCH_SLOT_NUM; i++) {
         if (mySayWin[i].isThreadRunning() == false) {
-            mySayWin[i].exec(sout);
+            mySayWin[i].exec(speechLangJpn ? "jp" : "en", sout);
             break;
         }
     }
