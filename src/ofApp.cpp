@@ -494,7 +494,8 @@ void bindCameras() {
     cameraIdxSolo = -1;
     vector<ofVideoDevice> devices = grabber[0].listDevices();
     for (vector<ofVideoDevice>::iterator it = devices.begin(); it != devices.end(); ++it) {
-        if (regex_search(it->deviceName, regex("USB2")) == true) {
+        if (regex_search(it->deviceName, regex("USB2.0 PC CAMERA")) == true
+            || regex_search(it->deviceName, regex("GV-USB2")) == true) {
             if (cameraNum < CAMERA_MAXNUM) {
                 int idx = cameraNum;
                 grabber[idx].setDeviceID(it->id);
