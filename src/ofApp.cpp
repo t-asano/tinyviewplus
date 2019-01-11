@@ -1,203 +1,6 @@
 #include "ofApp.h"
-#ifdef TARGET_WIN32
-#include <regex>
-#endif /* TARGET_WIN32 */
 
-// view
-#define FRAME_RATE      60
-#define MOVE_STEPS      10
-#define VERTICAL_SYNC   true
-#define WALL_FILE       "system/background.png"
-#define CAMERA_MAXNUM   4
-#define CAMERA_WIDTH    640
-#define CAMERA_HEIGHT   480
-#define CAMERA_RATIO    1.3333
-#define FONT_P_FILE     "system/mplus-1p-bold.ttf"
-#define FONT_M_FILE     "system/mplus-1m-bold.ttf"
-#define ICON_FILE       "system/pilot_icon.png"
-#define ICON_DIR        "pilots/"
-#define ICON_WIDTH      50
-#define ICON_HEIGHT     50
-#define ICON_MARGIN_X   20
-#define ICON_MARGIN_Y   0
-#define NUMBER_HEIGHT   20
-#define NUMBER_MARGIN_X 1
-#define NUMBER_MARGIN_Y 35
-#define LABEL_HEIGHT    30
-#define LABEL_MARGIN_X  75
-#define LABEL_MARGIN_Y  40
-#define BASE_MARGIN_X   0
-#define BASE_MARGIN_Y   0
-#define BASE_WIDTH      20
-#define BASE_HEIGHT     50
-#define BASE_1_RED      201
-#define BASE_1_GREEN    58
-#define BASE_1_BLUE     64
-#define BASE_2_RED      160
-#define BASE_2_GREEN    194
-#define BASE_2_BLUE     56
-#define BASE_3_RED      0
-#define BASE_3_GREEN    116
-#define BASE_3_BLUE     191
-#define BASE_4_RED      248
-#define BASE_4_GREEN    128
-#define BASE_4_BLUE     23
-#define LAP_HEIGHT      20
-#define LAP_MARGIN_X    20
-#define LAP_MARGIN_Y    80
-// AR lap timer
-#define DFLT_ARAP_ENBLD true
-#define DFLT_ARAP_RLAPS 10
-#define DFLT_ARAP_RSECS 0
-#define DFLT_ARAP_MNLAP 3
-#define DFLT_ARAP_LCKON false
-#define SND_BEEP_FILE   "system/beep.wav"
-#define SND_COUNT_FILE  "system/count.wav"
-#define SND_FINISH_FILE "system/finish.wav"
-#define SND_LOCKON_FILE "system/lockon.wav"
-#define ARAP_MKR_FILE   "system/marker.xml"
-#define ARAP_RESULT_DIR "results/"
-#define ARAP_MNUM_THR   2
-#define ARAP_MAX_RLAPS  100
-#define ARAP_MAX_MNLAP  100
-#define ARAP_MAX_RSECS  3600
-#define ARAP_LOCKON_SEC 1
-#define ARAP_RSLT_SCRN  0
-#define ARAP_RSLT_FILE  1
-#define WATCH_COUNT_SEC 5
-#define WATCH_HEIGHT    15
-// osc
-#define OSC_LISTEN_PORT 4000
-// speech
-#define DFLT_SPCH_ENBLD false
-#define DFLT_SPCH_JPN   true
-#define SPCH_SLOT_NUM	8
-// help
-#define HELP_MESSAGE    "Keyboard shortcuts:\n"\
-                        "[H] Display help\n"\
-                        "[1~4] Camera 1~4 solo mode on/off\n"\
-                        "[Shift + 1~4] Camera 1~4 on/off\n"\
-                        "[Q,W,E,R] Change camera 1~4 icon\n"\
-                        "[L] Change camera label\n"\
-                        "[B] Change background image\n"\
-                        "[A] AR lap timer on/off\n"\
-                        "[O] Lock-on effect on/off\n"\
-                        "[Space] Start/Stop race\n"\
-                        "[V] Display race results\n"\
-                        "[D] Set race duration (time/laps)\n"\
-                        "[M] Set minimum lap time (1~100sec)\n"\
-                        "[N] Change speech language\n"\
-                        "[S] OSC speech on/off\n"\
-                        "[I] Initialize configuration\n"\
-                        "[.] Exit application\n"
-
-void bindCameras();
-void toggleCameraSolo(int);
-void enableCameraSolo(int);
-void resetCameraSolo();
-void toggleCameraVisibility(int);
-int getCameraIdxNthVisibleAll(int);
-int getCameraIdxNthVisibleSub(int);
-void setupBaseColors();
-void changeCameraLabel(int);
-void changeCameraLabelAll();
-void changeCameraIcon(int);
-void changeCameraIconPath(int, string);
-void autoSelectCameraIcon(int, string);
-void changeWallImage();
-void setWallParams();
-void setViewParams();
-int calcViewParam(int, int, int);
-void updateViewParams();
-void initConfig();
-void recvOsc();
-void recvOscCameraString(int, string, string);
-void recvOscCameraFloat(int, string, float);
-void toggleOscSpeech();
-void toggleSpeechLang();
-void recvOscSpeech(string, string);
-void speakLap(int, float);
-void drawCamera(int);
-string getWatchString(float);
-void drawWatch();
-void toggleRace();
-bool isRecordedLaps();
-float getBestLap(int);
-int getMaxLaps();
-string getLapStr(float);
-void printRaceResults(int);
-void toggleARLap();
-void toggleLockOnEffect();
-void changeMinLap();
-void changeRaceDuration();
-
-class tvpCamView {
-public:
-    // camera
-    bool visible;
-    int moveSteps;
-    int width;
-    int height;
-    int widthTarget;
-    int heightTarget;
-    int posX;
-    int posY;
-    int posXTarget;
-    int posYTarget;
-    // base
-    ofColor baseColor;
-    int basePosX;
-    int basePosY;
-    int basePosXTarget;
-    int basePosYTarget;
-    int baseWidth;
-    int baseHeight;
-    // number
-    int numberPosX;
-    int numberPosY;
-    int numberPosXTarget;
-    int numberPosYTarget;
-    // icon
-    ofImage iconImage;
-    int iconPosX;
-    int iconPosY;
-    int iconPosXTarget;
-    int iconPosYTarget;
-    // label
-    string labelString;
-    int labelPosX;
-    int labelPosY;
-    int labelPosXTarget;
-    int labelPosYTarget;
-    // lap
-    int lapPosX;
-    int lapPosY;
-    int lapPosXTarget;
-    int lapPosYTarget;
-    float lastLap;
-    // AR lap timer
-    ofxAruco aruco;
-    int foundMarkerNum;
-    float prevElapsedSec;
-    int totalLaps;
-    float lapHistory[ARAP_MAX_RLAPS];
-};
-
-// speech
-class sayWin : public ofThread {
-public:
-    void exec(string lang, string text) {
-        this->text = text;
-        this->lang = lang;
-        startThread();
-    }
-private:
-    void threadedFunction() {
-        ofSystem("cscript data\\system\\saywin.js " + lang + " \"" + text + "\"");
-    }
-    string text;
-    string lang;
-};
+/* ---------- variables ---------- */
 
 // view
 ofVideoGrabber grabber[CAMERA_MAXNUM];
@@ -212,12 +15,17 @@ int cameraNum;
 int cameraNumVisible;
 int cameraIdxSolo;
 string helpMessage;
+
 // osc
 ofxOscReceiver oscReceiver;
+
 // speech
 bool oscSpeechEnabled;
 bool speechLangJpn;
+#ifdef TARGET_WIN32
 sayWin mySayWin[SPCH_SLOT_NUM];
+#endif /* TARGET_WIN32 */
+
 // AR lap timer
 ofxTrueTypeFontUC myFontWatch;
 ofSoundPlayer beepSound, countSound, finishSound, lockonSound;
@@ -234,12 +42,23 @@ float elapsedTime;
 void ofApp::setup() {
     // system
     ofSetEscapeQuitsApp(false);
-    // path
     ofDirectory dir;
     if (dir.doesDirectoryExist("../data") == false) {
         // macOS binary release
         ofSetDataPathRoot("../Resources/data");
     }
+#ifdef TARGET_WIN32
+    HWND handleWindow;
+    AllocConsole();
+    handleWindow = FindWindowA("ConsoleWindowClass", NULL);
+    ShowWindow(handleWindow, 0);
+#endif /* TARGET_WIN32 */
+    // speech
+    oscSpeechEnabled = DFLT_SPCH_ENBLD;
+    speechLangJpn = DFLT_SPCH_JPN;
+#ifdef TARGET_WIN32
+    speakAny("en", ""); // warmup
+#endif /* TARGET_WIN32 */
     // help
     helpMessage = ofToString(HELP_MESSAGE);
     // screen
@@ -262,9 +81,6 @@ void ofApp::setup() {
     setViewParams();
     // osc
     oscReceiver.setup(OSC_LISTEN_PORT);
-    // speech
-    oscSpeechEnabled = DFLT_SPCH_ENBLD;
-    speechLangJpn = DFLT_SPCH_JPN;
     // AR lap timer
     arLapEnabled = DFLT_ARAP_ENBLD;
     lockOnEnabled = DFLT_ARAP_LCKON;
@@ -678,7 +494,7 @@ void bindCameras() {
     cameraIdxSolo = -1;
     vector<ofVideoDevice> devices = grabber[0].listDevices();
     for (vector<ofVideoDevice>::iterator it = devices.begin(); it != devices.end(); ++it) {
-        if (it->deviceName.substr(0, 16) == "USB2.0 PC CAMERA") {
+        if (regex_search(it->deviceName, regex("USB2")) == true) {
             if (cameraNum < CAMERA_MAXNUM) {
                 int idx = cameraNum;
                 grabber[idx].setDeviceID(it->id);
@@ -698,7 +514,7 @@ void bindCameras() {
     }
     cameraNumVisible = cameraNum;
     if (cameraNum == 0) {
-        ofSystemAlertDialog("no FPV receiver detected");
+        ofSystemAlertDialog("No FPV receiver");
         ofExit();
     }
     setupBaseColors();
@@ -813,7 +629,7 @@ void setupBaseColors() {
                 camView[i].baseColor.g = BASE_4_GREEN;
                 camView[i].baseColor.b = BASE_4_BLUE;
                 break;
-            defaut:
+            default:
                 break;
         }
     }
@@ -1315,7 +1131,8 @@ void toggleSpeechLang() {
     speechLangJpn = !speechLangJpn;
     if (speechLangJpn == true) {
         ofSystemAlertDialog("Speech language japanese");
-    } else {
+    }
+    else {
         ofSystemAlertDialog("Speech language english");
     }
 }
@@ -1326,27 +1143,7 @@ void recvOscSpeech(string lang, string text) {
     if (oscSpeechEnabled == false) {
         return;
     }
-#ifdef TARGET_OSX
-    int pid = fork();
-    if (pid == 0) {
-        // child process
-        if (lang == "en") {
-            execlp("say", "", "-r", "240", "-v", "Victoria", text.c_str(), NULL);
-        }
-        else if (lang == "jp") {
-            execlp("say", "", "-r", "240", "-v", "Kyoko", text.c_str(), NULL);
-        }
-        OF_EXIT_APP(-1);
-    }
-#endif /* TARGET_OSX */
-#ifdef TARGET_WIN32
-    for (int i = 0; i < SPCH_SLOT_NUM; i++) {
-        if (mySayWin[i].isThreadRunning() == false) {
-            mySayWin[i].exec(lang, text);
-            break;
-        }
-    }
-#endif /* TARGET_WIN32 */
+    speakAny(lang, text);
 }
 
 //--------------------------------------------------------------
@@ -1370,14 +1167,20 @@ void speakLap(int camid, float sec) {
         sout += ssec.substr(ssec.length() - 2, 1);
         sout += ssec.substr(ssec.length() - 1, 1) + " seconds";
     }
+    speakAny(speechLangJpn ? "jp" : "en", sout);
+}
+
+//--------------------------------------------------------------
+void speakAny(string lang, string text) {
 #ifdef TARGET_OSX
     int pid = fork();
     if (pid == 0) {
         // child process
-        if (speechLangJpn == true) {
-            execlp("say", "", "-r", "240", "-v", "Kyoko", sout.c_str(), NULL);
-        } else {
-            execlp("say", "", "-r", "240", "-v", "Victoria", sout.c_str(), NULL);
+        if (lang == "en") {
+            execlp("say", "", "-r", "240", "-v", "Victoria", text.c_str(), NULL);
+        }
+        else if (lang == "jp") {
+            execlp("say", "", "-r", "240", "-v", "Kyoko", text.c_str(), NULL);
         }
         OF_EXIT_APP(-1);
     }
@@ -1385,7 +1188,7 @@ void speakLap(int camid, float sec) {
 #ifdef TARGET_WIN32
     for (int i = 0; i < SPCH_SLOT_NUM; i++) {
         if (mySayWin[i].isThreadRunning() == false) {
-            mySayWin[i].exec(speechLangJpn ? "jp" : "en", sout);
+            mySayWin[i].exec(lang, text);
             break;
         }
     }
@@ -1412,7 +1215,8 @@ void toggleRace() {
             }
         }
         raceStarted = true;
-    } else {
+    }
+    else {
         // start -> stop
         raceStarted = false;
         countSound.stop();
@@ -1425,9 +1229,10 @@ void toggleRace() {
 bool isRecordedLaps() {
     bool ret = false;
     for (int i = 0; i < cameraNum; i++) {
-        camView[i].totalLaps > 0;
-        ret = true;
-        break;
+        if (camView[i].totalLaps > 0) {
+            ret = true;
+            break;
+        }
     }
     return ret;
 }
