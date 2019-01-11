@@ -85,8 +85,8 @@ On Windows, you can check the detection status of the camera (receiver) with the
 | V | Display race results (\*3) | - |
 | D | Set race duration time (1~3600sec) and laps (1~100) | no limit, 10 |
 | M | Set minimum lap time (1~100sec) | 3 |
-| N | Change speech language (Japanese/English) (\*4) | Japanese |
-| S | OSC speech on/off (\*4) | off |
+| N | Change speech language (Japanese/English) | Japanese |
+| S | OSC speech on/off | off |
 | I | Initialize configuration | - |
 | . | Exit application | - |
 
@@ -101,7 +101,6 @@ On Windows, you can check the detection status of the camera (receiver) with the
 - (\*3) Race results will be saved under predefined folder when race finish.
 	- macOS binary: Tiny View Plus.app/Contents/ Resources/data/pilots
 	- others: data/pilots
-- (\*4) Only supported on macOS.
 - When you exit the application settings will be initialized.
 - Camera audio is not supported.
 
@@ -187,7 +186,7 @@ Camera icon is also automatically changed in conjunction with the camera label c
 - [Example] Clear the lap time of camera 4
 	- /v1/camera/4/laptime 0
 
-#### Speech synthesis (only for macOS)
+#### Speech synthesis
 
 /v1/speech/{language}/say {text}
 
