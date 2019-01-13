@@ -1286,7 +1286,13 @@ void printRaceResults(int dest) {
         default:
             return;
     }
-    string strsumm = "Race Results:\n\n";
+    string newline;
+#ifdef TARGET_WIN32
+    newline = "\r\n";
+#else /* TARGET_WIN32 */
+    newline = "\n";
+#endif /* TARGET_WIN32 */
+    string strsumm = "Race Results:" + newline + newline;
     string strlaph = "";
     string strlapb = "";
     string strlapbfile = "";
@@ -1305,8 +1311,8 @@ void printRaceResults(int dest) {
     }
     // SUMMARY: PILOT LAPS BESTLAP TIME
     // - head
-    strsumm += "- Summary -\n";
-    strsumm += "PILOT" + sep  + "LAPS" + sep + "BESTLAP" + sep + "TIME\n";
+    strsumm += "- Summary -" + newline;
+    strsumm += "PILOT" + sep  + "LAPS" + sep + "BESTLAP" + sep + "TIME" + newline;
     // - body
     for (int i = 0; i < cameraNum; i++) {
         float blap = getBestLap(i);
@@ -1316,18 +1322,18 @@ void printRaceResults(int dest) {
         strsumm += ofToString(camView[i].totalLaps) + sep; // LAPS
         strsumm += ((blap == 0) ? "-.-" : getLapStr(blap)) + sep; // BESTLAP
         strsumm += ((total <= 0) ? "-:-.-" : getWatchString(total)) + sep; // TIME
-        strsumm += "\n";
+        strsumm += newline;
     }
-    strsumm += "\n";
+    strsumm += newline;
     // LAP TIMES: LAP P1 P2 P3 P4
     // - head
-    strlaph += "- Lap Times -\n";
+    strlaph += "- Lap Times -" + newline;
     strlaph += "LAP" + sep;
     for (int i = 0; i < cameraNum; i++) {
         string pilot = (camView[i].labelString == "") ? ("Pilot" + ofToString(i + 1)) : camView[i].labelString;
         strlaph += pilot + sep;
     }
-    strlaph += "\n";
+    strlaph += newline;
     maxlap = getMaxLaps();
     // - body
     for (int lap = 1; lap <= maxlap; lap++) {
@@ -1343,8 +1349,7 @@ void printRaceResults(int dest) {
                 strlapb += sep;
             }
         }
-        strlapb += "\n";
-        strlapbfile += strlapb;
+        strlapb += newline;
         if (file == false && lap == maxlap) {
             ofSystemAlertDialog(strsumm + strlaph + strlapb);
             break;
@@ -1353,10 +1358,11 @@ void printRaceResults(int dest) {
         // pagination
         if (file == false && count == 25) {
             ofSystemAlertDialog(strsumm + strlaph + strlapb);
-            count = 0;
             strlapb = "";
+            count = 0;
         }
     }
+    strlapbfile += strlapb;
     // write to file
     if (file == true) {
         resultsFile.open(ARAP_RESULT_DIR + ofGetTimestampString() + ".txt" , ofFile::WriteOnly);
