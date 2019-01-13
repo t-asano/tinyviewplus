@@ -83,7 +83,7 @@ On Windows, you can check the detection status of the camera (receiver) with the
 | O | Lock-on effect on/off (\*2) | off |
 | Space | Start/Stop race | - |
 | V | Display race results (\*3) | - |
-| D | Set race duration time (1~3600sec) and laps (1~100) | no limit, 10 |
+| D | Set race duration time (1\~3600sec) and laps (1\~100) | no limit, 10 |
 | M | Set minimum lap time (1~100sec) | 3 |
 | N | Change speech language (Japanese/English) | Japanese |
 | S | OSC speech on/off | off |
