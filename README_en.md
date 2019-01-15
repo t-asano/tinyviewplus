@@ -74,11 +74,13 @@ On Windows, you can check the detection status of the camera (receiver) with the
 | key | Function | Default value |
 |---|---|---|
 | H | Display help | - |
-| 1~4 | Camera 1~4 solo mode on/off | off |
+| 1~4 | Camera 1~4 solo view on/off | off |
+| T | Solo view triming on/off | on |
 | Shift + 1~4 | Camera 1~4 display on/off | on |
 | Q,W,E,R | Change camera 1~4 icon (\*1) | built-in image |
-| L | Change all camera label (\*1) | Pilot1~4 |
+| L | Change all camera labels (\*1) | Pilot1~4 |
 | B | Change background image | built-in image |
+| F | Fullscreen mode on/off | off |
 | A | AR lap timer on/off | on |
 | O | Lock-on effect on/off (\*2) | off |
 | Space | Start/Stop race | - |

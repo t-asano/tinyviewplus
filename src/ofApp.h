@@ -51,6 +51,7 @@
 #define LAP_HEIGHT      20
 #define LAP_MARGIN_X    20
 #define LAP_MARGIN_Y    80
+#define DFLT_SOLO_TRIM  true
 #define DFLT_FSCR_ENBLD false
 // AR lap timer
 #define DFLT_ARAP_ENBLD true
@@ -82,12 +83,13 @@
 // help
 #define HELP_MESSAGE    "Keyboard shortcuts:\n"\
                         "[H] Display help\n"\
-                        "[1~4] Camera 1~4 solo mode on/off\n"\
+                        "[1~4] Camera 1~4 solo view on/off\n"\
+                        "[T] Solo view trimming on/off\n"\
                         "[Shift + 1~4] Camera 1~4 on/off\n"\
                         "[Q,W,E,R] Change camera 1~4 icon\n"\
-                        "[L] Change camera label\n"\
+                        "[L] Change all camera labels\n"\
                         "[B] Change background image\n"\
-                        "[F] Fullscreen mode on/off"\
+                        "[F] Fullscreen mode on/off\n"\
                         "[A] AR lap timer on/off\n"\
                         "[O] Lock-on effect on/off\n"\
                         "[Space] Start/Stop race\n"\
@@ -97,7 +99,7 @@
                         "[N] Change speech language\n"\
                         "[S] OSC speech on/off\n"\
                         "[I] Initialize configuration\n"\
-                        "[.] Exit application\n"
+                        "[.] Exit application"
 
 /* ---------- classes ---------- */
 
@@ -232,3 +234,4 @@ void toggleLockOnEffect();
 void changeMinLap();
 void changeRaceDuration();
 void toggleFullscreen();
+void toggleSoloTrim();
