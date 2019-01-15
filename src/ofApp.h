@@ -51,6 +51,7 @@
 #define LAP_HEIGHT      20
 #define LAP_MARGIN_X    20
 #define LAP_MARGIN_Y    80
+#define DFLT_FSCR_ENBLD false
 // AR lap timer
 #define DFLT_ARAP_ENBLD true
 #define DFLT_ARAP_RLAPS 10
@@ -86,6 +87,7 @@
                         "[Q,W,E,R] Change camera 1~4 icon\n"\
                         "[L] Change camera label\n"\
                         "[B] Change background image\n"\
+                        "[F] Fullscreen mode on/off"\
                         "[A] AR lap timer on/off\n"\
                         "[O] Lock-on effect on/off\n"\
                         "[Space] Start/Stop race\n"\
@@ -229,3 +231,4 @@ void toggleARLap();
 void toggleLockOnEffect();
 void changeMinLap();
 void changeRaceDuration();
+void toggleFullscreen();

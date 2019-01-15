@@ -15,6 +15,7 @@ int cameraNum;
 int cameraNumVisible;
 int cameraIdxSolo;
 string helpMessage;
+bool fullscreenEnabled;
 
 // osc
 ofxOscReceiver oscReceiver;
@@ -72,6 +73,7 @@ void ofApp::setup() {
     myFontNumberSub.load(FONT_P_FILE, NUMBER_HEIGHT / 2);
     myFontLabelSub.load(FONT_P_FILE, LABEL_HEIGHT / 2);
     myFontLapSub.load(FONT_P_FILE, LAP_HEIGHT / 2);
+    fullscreenEnabled = DFLT_FSCR_ENBLD;
     // wallpaper
     wallImage.load(WALL_FILE);
     wallRatio = wallImage.getWidth() / wallImage.getHeight();
@@ -410,6 +412,8 @@ void ofApp::keyPressed(int key){
         changeRaceDuration();
     } else if (key == 'o' || key == 'O') {
         toggleLockOnEffect();
+    } else if (key == 'f' || key == 'F') {
+        toggleFullscreen();
     } else if (key == '.') {
         ofSystemAlertDialog("Exit application");
         ofExit();
@@ -1007,6 +1011,8 @@ void initConfig() {
         camView[i].labelString = "Pilot" + ofToString(i + 1);
         camView[i].lastLap = 0;
     }
+    // view mode
+    fullscreenEnabled = DFLT_FSCR_ENBLD;
     // speech
     oscSpeechEnabled = DFLT_SPCH_ENBLD;
     speechLangJpn = DFLT_SPCH_JPN;
@@ -1442,4 +1448,10 @@ void changeRaceDuration() {
             // retry
         }
     }
+}
+
+//--------------------------------------------------------------
+void toggleFullscreen() {
+    fullscreenEnabled = !fullscreenEnabled;
+    ofSetFullscreen(fullscreenEnabled);
 }
