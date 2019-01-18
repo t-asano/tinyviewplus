@@ -338,6 +338,11 @@ void drawWatch() {
 }
 
 //--------------------------------------------------------------
+void drawRaceResult() {
+    // xxx under development
+}
+
+//--------------------------------------------------------------
 void ofApp::draw(){
     // wallpaper
     ofSetColor(255, 255, 255);
@@ -405,7 +410,7 @@ void ofApp::keyPressed(int key){
     } else if (key == ' ') {
         toggleRace();
     } else if (key == 'v' || key == 'V') {
-        printRaceResults(ARAP_RSLT_SCRN);
+        drawRaceResult(); // xxx
     } else if (key == 'a' || key == 'A') {
         toggleARLap();
     } else if (key == 'm' || key == 'M') {
@@ -1265,7 +1270,7 @@ void toggleRace() {
         raceStarted = false;
         countSound.stop();
         finishSound.play();
-        printRaceResults(ARAP_RSLT_FILE);
+        fwriteRaceResult();
     }
 }
 
@@ -1317,41 +1322,23 @@ string getLapStr(float lap) {
 }
 
 //--------------------------------------------------------------
-void printRaceResults(int dest) {
-    bool file;
-    switch (dest) {
-        case ARAP_RSLT_SCRN:
-            file = false;
-            break;
-        case ARAP_RSLT_FILE:
-            file = true;
-            break;
-        default:
-            return;
-    }
+void fwriteRaceResult() {
     string newline;
 #ifdef TARGET_WIN32
     newline = "\r\n";
 #else /* TARGET_WIN32 */
     newline = "\n";
 #endif /* TARGET_WIN32 */
-    string strsumm = "Race Results:" + newline + newline;
+    string strsumm = "Race Result:" + newline + newline;
     string strlaph = "";
     string strlapb = "";
-    string strlapbfile = "";
     string sep = "  ";
-    int count = 0;
     int maxlap = 0;
 
-    if (raceStarted == true) {
+    if (raceStarted == true || isRecordedLaps() == false) {
         return;
     }
-    if (isRecordedLaps() == false) {
-        if (file == false) {
-            ofSystemAlertDialog(strsumm + "No record.");
-        }
-        return;
-    }
+
     // SUMMARY: PILOT LAPS BESTLAP TIME
     // - head
     strsumm += "- Summary -" + newline;
@@ -1368,6 +1355,7 @@ void printRaceResults(int dest) {
         strsumm += newline;
     }
     strsumm += newline;
+
     // LAP TIMES: LAP P1 P2 P3 P4
     // - head
     strlaph += "- Lap Times -" + newline;
@@ -1393,25 +1381,12 @@ void printRaceResults(int dest) {
             }
         }
         strlapb += newline;
-        if (file == false && lap == maxlap) {
-            ofSystemAlertDialog(strsumm + strlaph + strlapb);
-            break;
-        }
-        count++;
-        // pagination
-        if (file == false && count == 25) {
-            ofSystemAlertDialog(strsumm + strlaph + strlapb);
-            strlapb = "";
-            count = 0;
-        }
     }
-    strlapbfile += strlapb;
+
     // write to file
-    if (file == true) {
-        resultsFile.open(ARAP_RESULT_DIR + ofGetTimestampString() + ".txt" , ofFile::WriteOnly);
-        resultsFile << (strsumm + strlaph + strlapbfile);
-        resultsFile.close();
-    }
+    resultsFile.open(ARAP_RESULT_DIR + ofGetTimestampString() + ".txt" , ofFile::WriteOnly);
+    resultsFile << (strsumm + strlaph + strlapb);
+    resultsFile.close();
 }
 
 //--------------------------------------------------------------
