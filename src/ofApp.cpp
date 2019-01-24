@@ -31,7 +31,7 @@ sayWin mySayWin[SPCH_SLOT_NUM];
 
 // AR lap timer
 ofxTrueTypeFontUC myFontWatch;
-ofSoundPlayer beepSound, countSound, finishSound, lockonSound;
+ofSoundPlayer beepSound, beep3Sound, countSound, finishSound;
 ofFile resultsFile;
 bool arLapEnabled;
 bool lockOnEnabled;
@@ -100,9 +100,9 @@ void ofApp::setup() {
     raceDuraSecs = DFLT_ARAP_RSECS;
     raceDuraLaps = DFLT_ARAP_RLAPS;
     beepSound.load(SND_BEEP_FILE);
+    beep3Sound.load(SND_BEEP3_FILE);
     countSound.load(SND_COUNT_FILE);
     finishSound.load(SND_FINISH_FILE);
-    lockonSound.load(SND_LOCKON_FILE);
     myFontWatch.load(FONT_M_FILE, WATCH_HEIGHT);
     for (int i = 0; i < cameraNum; i++) {
         camView[i].aruco.setUseHighlyReliableMarker(ARAP_MKR_FILE);
@@ -172,7 +172,7 @@ void ofApp::update() {
                     // finish
                     camView[i].foundMarkerNum = 0;
                     finishSound.play();
-                    speakLap((i + 1), lap);
+                    speakLap((i + 1), lap, total);
                     continue;
                 }
                 // lap with lock-on
@@ -188,7 +188,7 @@ void ofApp::update() {
                             locked = true;
                             lockcnt++;
                             enableCameraSolo(i + 1);
-                            lockonSound.play();
+                            beep3Sound.play();
                             break;
                         }
                     }
@@ -196,9 +196,13 @@ void ofApp::update() {
                 // lap without lock-on
                 if (locked == false) {
                     lapcnt++;
-                    beepSound.play();
+                    if (total == (raceDuraSecs - 1)) {
+                        beep3Sound.play();
+                    } else {
+                        beepSound.play();
+                    }
                 }
-                speakLap((i + 1), lap);
+                speakLap((i + 1), lap, total);
             }
             if (num == 0) {
                 camView[i].foundMarkerNum = 0;
@@ -1190,7 +1194,7 @@ void recvOscCameraFloat(int camid, string method, float argfloat) {
     }
     beepSound.play();
     if (oscSpeechEnabled == true){
-        speakLap(camid, argfloat);
+        speakLap(camid, argfloat, 0);
     }
     camView[camid - 1].lastLap = argfloat;
 }
@@ -1226,7 +1230,7 @@ void recvOscSpeech(string lang, string text) {
 }
 
 //--------------------------------------------------------------
-void speakLap(int camid, float sec) {
+void speakLap(int camid, float sec, int num) {
     if (camid < 1 || camid > cameraNum || sec == 0.0) {
         return;
     }
@@ -1236,6 +1240,10 @@ void speakLap(int camid, float sec) {
 #ifdef TARGET_WIN32
     sout = regex_replace(sout, regex("(Pilot)(\\d)"), "$1 $2");
 #endif /* TARGET_WIN32 */
+    if (num > 0) {
+        sout += (speechLangJpn == true) ? "ラップ" : "lap";
+        sout += " " + ofToString(num) + ", ";
+    }
     if (speechLangJpn == true) {
         sout += ofToString(int(sec)) + "秒"; // UTF-8
         sout += ssec.substr(ssec.length() - 2, 1) + " ";

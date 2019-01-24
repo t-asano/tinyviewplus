@@ -62,9 +62,9 @@
 #define DFLT_ARAP_MNLAP 3
 #define DFLT_ARAP_LCKON false
 #define SND_BEEP_FILE   "system/beep.wav"
+#define SND_BEEP3_FILE  "system/beep3.wav"
 #define SND_COUNT_FILE  "system/count.wav"
 #define SND_FINISH_FILE "system/finish.wav"
-#define SND_LOCKON_FILE "system/lockon.wav"
 #define ARAP_MKR_FILE   "system/marker.xml"
 #define ARAP_RESULT_DIR "results/"
 #define ARAP_MNUM_THR   2
@@ -225,7 +225,7 @@ void recvOscCameraFloat(int, string, float);
 void toggleOscSpeech();
 void toggleSpeechLang();
 void recvOscSpeech(string, string);
-void speakLap(int, float);
+void speakLap(int, float, int);
 void speakAny(string, string);
 void drawCamera(int);
 string getWatchString(float);
