@@ -162,24 +162,6 @@ public:
     float lapHistory[ARAP_MAX_RLAPS];
 };
 
-#ifdef TARGET_WIN32
-// speech
-class sayWin : public ofThread {
-public:
-    void exec(string lang, string text) {
-        this->text = text;
-        this->lang = lang;
-        startThread();
-    }
-private:
-    void threadedFunction() {
-        ofSystem("cscript data\\system\\saywin.js " + lang + " \"" + text + "\"");
-    }
-    string text;
-    string lang;
-};
-#endif /* TARAGET_WIN32 */
-
 class ofApp : public ofBaseApp {
 public:
     void setup();

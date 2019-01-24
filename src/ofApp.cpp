@@ -1,4 +1,8 @@
 #include "ofApp.h"
+#ifdef TARGET_WIN32
+#include <sapi.h>
+#include <atlcomcli.h>
+#endif /* TARGET_WIN32 */
 
 /* ---------- variables ---------- */
 
@@ -25,9 +29,6 @@ ofxOscReceiver oscReceiver;
 // speech
 bool oscSpeechEnabled;
 bool speechLangJpn;
-#ifdef TARGET_WIN32
-sayWin mySayWin[SPCH_SLOT_NUM];
-#endif /* TARGET_WIN32 */
 
 // AR lap timer
 ofxTrueTypeFontUC myFontWatch;
@@ -64,9 +65,6 @@ void ofApp::setup() {
     // speech
     oscSpeechEnabled = DFLT_SPCH_ENBLD;
     speechLangJpn = DFLT_SPCH_JPN;
-#ifdef TARGET_WIN32
-    speakAny("en", ""); // warmup
-#endif /* TARGET_WIN32 */
     // help
     helpMessage = ofToString(HELP_MESSAGE);
     // screen
@@ -1229,6 +1227,40 @@ void recvOscSpeech(string lang, string text) {
     speakAny(lang, text);
 }
 
+#ifdef TARGET_WIN32
+HRESULT cpVicehr = E_NOINTERFACE;
+CComPtr<ISpVoice> cpVoice;
+
+class sayWin : public ofThread {
+public:
+    void exec(string lang, string text) {
+        if (FAILED(cpVicehr)) {
+            cpVicehr = cpVoice.CoCreateInstance(CLSID_SpVoice);
+        }
+        if (SUCCEEDED(cpVicehr)) {
+            if (lang == "en") {
+                this->text = "<xml><lang langid=\"409\">" + text + "</lang></xml>"; // 409:English
+            }
+            else if (lang == "jp") {
+                this->text = "<xml><lang langid=\"411\">" + text + "</lang></xml>"; // 411:Japanese
+            }
+            startThread();
+        }
+    }
+private:
+    void threadedFunction() {
+        int iBufferSize = ::MultiByteToWideChar(CP_ACP, 0, text.c_str(), -1, (wchar_t *)NULL, 0);
+        wchar_t* wpBufWString = (wchar_t*)new wchar_t[iBufferSize];
+        ::MultiByteToWideChar(CP_ACP, 0, text.c_str(), -1, wpBufWString, iBufferSize);
+        cpVoice->Speak(wpBufWString, SPF_DEFAULT, NULL);
+        delete[] wpBufWString;
+    }
+    string text;
+};
+
+sayWin mySayWin[SPCH_SLOT_NUM];
+#endif /* TARAGET_WIN32 */
+
 //--------------------------------------------------------------
 void speakLap(int camid, float sec, int num) {
     // written in UTF-8
@@ -1588,7 +1620,7 @@ void processRaceResultDisplay() {
 
 //--------------------------------------------------------------
 void drawRaceResult(int pageidx) {
-    int szb = ARAP_RSLT_BLKS;
+    int szb = ARAP_RSLT_BLKS - (CAMERA_MAXNUM - cameraNum);
     int szl = ARAP_RSLT_LINES;
     int pages, line;
 
