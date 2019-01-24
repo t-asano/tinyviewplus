@@ -196,7 +196,7 @@ void ofApp::update() {
                 // lap without lock-on
                 if (locked == false) {
                     lapcnt++;
-                    if (total == (raceDuraSecs - 1)) {
+                    if (total == (raceDuraLaps - 1)) {
                         beep3Sound.play();
                     } else {
                         beepSound.play();
@@ -273,8 +273,8 @@ void drawCamera(int idx) {
     if (camView[i].lastLap != 0) {
         string sout;
         int laps = camView[i].totalLaps;
-        if (isRecordedLaps() == true && raceStarted == false) {
-            // AR lap timer && race stopped
+        if (isRecordedLaps() == true && (raceStarted == false || camView[i].totalLaps == raceDuraLaps)) {
+            // race/laps finished
             sout = "Laps: " + ofToString(laps);
             ofSetColor(myColorWhite);
             if (isSub) {
@@ -1231,21 +1231,24 @@ void recvOscSpeech(string lang, string text) {
 
 //--------------------------------------------------------------
 void speakLap(int camid, float sec, int num) {
+    // written in UTF-8
     if (camid < 1 || camid > cameraNum || sec == 0.0) {
         return;
     }
     string ssec, sout;
     ssec = getLapStr(sec);
     sout = camView[camid - 1].labelString + ", ";
-#ifdef TARGET_WIN32
-    sout = regex_replace(sout, regex("(Pilot)(\\d)"), "$1 $2");
-#endif /* TARGET_WIN32 */
+    if (speechLangJpn == true) {
+        sout = regex_replace(sout, regex("(Pilot)(\\d)"), "パイロット $2");
+    } else {
+        sout = regex_replace(sout, regex("(Pilot)(\\d)"), "$1 $2");
+    }
     if (num > 0) {
         sout += (speechLangJpn == true) ? "ラップ" : "lap";
         sout += " " + ofToString(num) + ", ";
     }
     if (speechLangJpn == true) {
-        sout += ofToString(int(sec)) + "秒"; // UTF-8
+        sout += ofToString(int(sec)) + "秒";
         sout += ssec.substr(ssec.length() - 2, 1) + " ";
         sout += ssec.substr(ssec.length() - 1, 1);
     }
