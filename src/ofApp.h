@@ -9,6 +9,13 @@
 
 /* ---------- definitions ---------- */
 
+// system
+#define APP_INFO        "Tiny View Plus v0.9.10"
+#define DEBUG_ENABLED   false
+#define COLOR_YELLOW    255,215,0
+#define COLOR_WHITE     255,255,255
+#define COLOR_LGRAY     127,127,127
+#define COLOR_LAYER     0,0,0,223
 // view
 #define FRAME_RATE      60
 #define MOVE_STEPS      10
@@ -36,23 +43,18 @@
 #define BASE_MARGIN_Y   0
 #define BASE_WIDTH      20
 #define BASE_HEIGHT     50
-#define BASE_1_RED      201
-#define BASE_1_GREEN    58
-#define BASE_1_BLUE     64
-#define BASE_2_RED      160
-#define BASE_2_GREEN    194
-#define BASE_2_BLUE     56
-#define BASE_3_RED      0
-#define BASE_3_GREEN    116
-#define BASE_3_BLUE     191
-#define BASE_4_RED      248
-#define BASE_4_GREEN    128
-#define BASE_4_BLUE     23
+#define BASE_1_COLOR    201,58,64
+#define BASE_2_COLOR    160,194,56
+#define BASE_3_COLOR    0,116,191
+#define BASE_4_COLOR    248,128,23
 #define LAP_HEIGHT      20
 #define LAP_MARGIN_X    20
 #define LAP_MARGIN_Y    80
 #define DFLT_SOLO_TRIM  true
 #define DFLT_FSCR_ENBLD false
+#define ALIGN_LEFT      0
+#define ALIGN_CENTER    1
+#define ALIGN_RIGHT     2
 // AR lap timer
 #define DFLT_ARAP_ENBLD true
 #define DFLT_ARAP_RLAPS 10
@@ -74,6 +76,10 @@
 #define ARAP_RSLT_FILE  1
 #define WATCH_COUNT_SEC 5
 #define WATCH_HEIGHT    15
+#define ARAP_RSLT_BLKS  12
+#define ARAP_RSLT_LINES 34
+#define ARAP_RSLT_LAPS  25
+#define ARAP_RSLT_MARG  10
 // osc
 #define OSC_LISTEN_PORT 4000
 // speech
@@ -81,7 +87,8 @@
 #define DFLT_SPCH_JPN   true
 #define SPCH_SLOT_NUM	8
 // help
-#define HELP_MESSAGE    "Keyboard shortcuts:\n"\
+#define HELP_MESSAGE    APP_INFO"\n\n"\
+                        "Keyboard shortcuts:\n"\
                         "[H] Display help\n"\
                         "[1~4] Camera 1~4 solo view on/off\n"\
                         "[T] Solo view trimming on/off\n"\
@@ -93,7 +100,7 @@
                         "[A] AR lap timer on/off\n"\
                         "[O] Lock-on effect on/off\n"\
                         "[Space] Start/Stop race\n"\
-                        "[V] Display race results\n"\
+                        "[V] Display race result\n"\
                         "[D] Set race duration (time/laps)\n"\
                         "[M] Set minimum lap time (1~100sec)\n"\
                         "[N] Change speech language\n"\
@@ -200,7 +207,7 @@ void resetCameraSolo();
 void toggleCameraVisibility(int);
 int getCameraIdxNthVisibleAll(int);
 int getCameraIdxNthVisibleSub(int);
-void setupBaseColors();
+void setupColors();
 void changeCameraLabel(int);
 void changeCameraLabelAll();
 void changeCameraIcon(int);
@@ -223,16 +230,23 @@ void speakAny(string, string);
 void drawCamera(int);
 string getWatchString(float);
 void drawWatch();
-void drawRaceResult();
 void toggleRace();
 bool isRecordedLaps();
 float getBestLap(int);
 int getMaxLaps();
 string getLapStr(float);
-void fwriteRaceResult();
 void toggleARLap();
 void toggleLockOnEffect();
 void changeMinLap();
 void changeRaceDuration();
 void toggleFullscreen();
 void toggleSoloTrim();
+// race result
+void generateDummyData();
+void fwriteRaceResult();
+void loadResultFont();
+int getRaceResultPages();
+void processRaceResultDisplay();
+void drawRaceResult(int);
+void drawStringBlock(ofxTrueTypeFontUC*, string, int , int, int, int, int);
+void drawLineBlock(int, int, int, int, int);
