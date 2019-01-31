@@ -1,3 +1,5 @@
+// charcter encoding is UTF-8
+
 #include "ofApp.h"
 #ifdef TARGET_WIN32
 #include <sapi.h>
@@ -32,12 +34,13 @@ bool speechLangJpn;
 
 // AR lap timer
 ofxTrueTypeFontUC myFontWatch;
-ofSoundPlayer beepSound, beep3Sound, countSound, finishSound;
+ofSoundPlayer beepSound, beep3Sound, countSound, finishSound, notifySound;
 ofFile resultsFile;
 bool arLapEnabled;
 bool lockOnEnabled;
 bool raceStarted;
 int raceDuraSecs;
+int nextSpeechRemainSecs;
 int raceDuraLaps;
 int minLapTime;
 float elapsedTime;
@@ -96,11 +99,13 @@ void ofApp::setup() {
     lockOnEnabled = DFLT_ARAP_LCKON;
     minLapTime = DFLT_ARAP_MNLAP;
     raceDuraSecs = DFLT_ARAP_RSECS;
+    nextSpeechRemainSecs = -1;
     raceDuraLaps = DFLT_ARAP_RLAPS;
     beepSound.load(SND_BEEP_FILE);
     beep3Sound.load(SND_BEEP3_FILE);
     countSound.load(SND_COUNT_FILE);
     finishSound.load(SND_FINISH_FILE);
+    notifySound.load(SND_NOTIFY_FILE);
     myFontWatch.load(FONT_M_FILE, WATCH_HEIGHT);
     for (int i = 0; i < cameraNum; i++) {
         camView[i].aruco.setUseHighlyReliableMarker(ARAP_MKR_FILE);
@@ -124,17 +129,27 @@ void ofApp::update() {
     // timer
     if (raceStarted == true) {
         elapsedTime = ofGetElapsedTimef();
-        // finish race by time
-        if (raceDuraSecs > 0 && (elapsedTime - WATCH_COUNT_SEC) > raceDuraSecs) {
-            for (int i = 0; i < cameraNum; i++) {
-                grabber[i].update();
-                camView[i].foundMarkerNum = 0;
-                camView[i].prevElapsedSec = raceDuraSecs + WATCH_COUNT_SEC;
+        // time limited race
+        if (raceDuraSecs > 0) {
+            float relp = elapsedTime - WATCH_COUNT_SEC;
+            // speak remaining time
+            if (nextSpeechRemainSecs > 0 && raceDuraSecs - relp <= nextSpeechRemainSecs) {
+                notifySound.play();
+                speakRemainTime(nextSpeechRemainSecs);
+                setNextSpeechRemainSecs(nextSpeechRemainSecs);
             }
-            toggleRace();
-            recvOsc();
-            updateViewParams();
-            return;
+            // finish race by time
+            if (relp >= raceDuraSecs) {
+                for (int i = 0; i < cameraNum; i++) {
+                    grabber[i].update();
+                    camView[i].foundMarkerNum = 0;
+                    camView[i].prevElapsedSec = raceDuraSecs + WATCH_COUNT_SEC;
+                }
+                toggleRace();
+                recvOsc();
+                updateViewParams();
+                return;
+            }
         }
     }
     // camera, lap
@@ -1096,6 +1111,7 @@ void initConfig() {
     minLapTime = DFLT_ARAP_MNLAP;
     raceDuraLaps = DFLT_ARAP_RLAPS;
     raceDuraSecs = DFLT_ARAP_RSECS;
+    nextSpeechRemainSecs = -1;
     raceStarted = false;
     ofSystemAlertDialog("Configuration initialized");
 }
@@ -1263,7 +1279,6 @@ sayWin mySayWin[SPCH_SLOT_NUM];
 
 //--------------------------------------------------------------
 void speakLap(int camid, float sec, int num) {
-    // written in UTF-8
     if (camid < 1 || camid > cameraNum || sec == 0.0) {
         return;
     }
@@ -1290,6 +1305,61 @@ void speakLap(int camid, float sec, int num) {
         sout += ssec.substr(ssec.length() - 1, 1) + " seconds";
     }
     speakAny(speechLangJpn ? "jp" : "en", sout);
+}
+
+//--------------------------------------------------------------
+void setNextSpeechRemainSecs(int curr) {
+    int next;
+    // ...180,120,60,30
+    if (curr > 60) {
+        if (curr % 60 == 0) {
+            next = curr - 60;
+        } else {
+            next = (curr / 60) * 60;
+        }
+    } else if (curr > 30) {
+        next = 30;
+    } else {
+        next = -1;
+    }
+    nextSpeechRemainSecs = next;
+}
+
+//--------------------------------------------------------------
+void speakRemainTime(int sec) {
+    bool jp = speechLangJpn;
+    string str = "";
+    if (jp == true) {
+        str += "残り";
+    }
+    if (sec >= 60 && sec % 60 == 0) {
+        // minute
+        int min = sec / 60;
+        str += ofToString(min);
+        if (jp == true) {
+            str += "分";
+        } else {
+            str += " minute";
+            if (min != 1) {
+                str += "s";
+            }
+        }
+    } else {
+        // second
+        str += ofToString(sec);
+        if (jp == true) {
+            str += "秒";
+        } else {
+            str += " second";
+            if (sec != 1) {
+                str += "s";
+            }
+        }
+    }
+    if (jp == false) {
+        str += " to go";
+    }
+    speakAny(jp == true ? "jp" : "en", str);
 }
 
 //--------------------------------------------------------------
@@ -1336,6 +1406,9 @@ void toggleRace() {
                 camView[i].lapHistory[h] = 0;
             }
         }
+        if (raceDuraSecs > 0) {
+            setNextSpeechRemainSecs(raceDuraSecs);
+        }
         raceStarted = true;
     }
     else {
@@ -1343,6 +1416,11 @@ void toggleRace() {
         raceStarted = false;
         countSound.stop();
         finishSound.play();
+        if (speechLangJpn == true) {
+            speakAny("jp", "レース終了");
+        } else {
+            speakAny("en", "race finished.");
+        }
         processRaceResultDisplay();
         fwriteRaceResult();
     }
@@ -1510,12 +1588,21 @@ void changeRaceDuration() {
         if (sec <= 0) {
             // no limit
             raceDuraSecs = 0;
+            nextSpeechRemainSecs = -1;
             break;
         } else if (sec <= ARAP_MAX_RSECS) {
             raceDuraSecs = sec;
+            int remain;
+            if (raceStarted == true) {
+                remain = raceDuraSecs - (elapsedTime - WATCH_COUNT_SEC);
+            } else {
+                remain = raceDuraSecs;
+            }
+            setNextSpeechRemainSecs(remain);
             break;
         } else {
-            ofSystemAlertDialog("Please enter 0~" + ofToString(ARAP_MAX_RSECS) + " (0/empty means no limit)");
+            ofSystemAlertDialog("Please enter 0~" + ofToString(ARAP_MAX_RSECS)
+                                + " (0/empty means no limit)");
             // retry
         }
     }

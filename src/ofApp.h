@@ -10,7 +10,7 @@
 /* ---------- definitions ---------- */
 
 // system
-#define APP_INFO        "Tiny View Plus v0.9.10"
+#define APP_INFO        "Tiny View Plus v0.9.11"
 #define DEBUG_ENABLED   false
 #define COLOR_YELLOW    255,215,0
 #define COLOR_WHITE     255,255,255
@@ -65,6 +65,7 @@
 #define SND_BEEP3_FILE  "system/beep3.wav"
 #define SND_COUNT_FILE  "system/count.wav"
 #define SND_FINISH_FILE "system/finish.wav"
+#define SND_NOTIFY_FILE "system/notify.wav"
 #define ARAP_MKR_FILE   "system/marker.xml"
 #define ARAP_RESULT_DIR "results/"
 #define ARAP_MNUM_THR   2
@@ -208,6 +209,8 @@ void toggleOscSpeech();
 void toggleSpeechLang();
 void recvOscSpeech(string, string);
 void speakLap(int, float, int);
+void setNextSpeechRemainSecs(int);
+void speakRemainTime(int);
 void speakAny(string, string);
 void drawCamera(int);
 string getWatchString(float);
