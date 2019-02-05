@@ -36,21 +36,22 @@ Tiny View Plusは、FPV映像を手軽に表示するためのアプリです。
 ### ソースコードからビルドする場合(上級者向け)
 
 1. [openFrameworks](http://openframeworks.cc/ja/) v0.10.1 をインストール
-2. 以下のアドオンを addon/ の下に配置
-	- [ofxTrueTypeFontUC](https://github.com/hironishihara/ofxTrueTypeFontUC)
-	- [ofxAruco](https://github.com/arturoc/ofxAruco)
-	- [ofxCv](https://github.com/kylemcdonald/ofxCv/)
-3. ofxTrueTypeFontUCアドオンに[修正パッチ](https://github.com/hironishihara/ofxTrueTypeFontUC/pull/29/commits/297e75e9cdccb6d29b507eccf16b84d8fef86a88)を適用
-4. ofxArucoアドオンに[setup2d()](https://github.com/arturoc/ofxAruco/tree/7af4eb215e53cce26e5bc30d3c8834167ed39c22/src)を追加
-5. プロジェクトジェネレーターで、以下のアドオンを含むプロジェクトを作成
+2. アドオンをインストール
+```
+$ cd addons/
+$ git clone -b fix-of_v0.10 https://github.com/t-asano/ofxTrueTypeFontUC/tree/fix-of_v0.10 # 修正版
+$ git clone https://github.com/t-asano/ofxAruco # 改造版
+$ git clone https://github.com/kylemcdonald/ofxCv
+```
+3. プロジェクトジェネレーターで、以下のアドオンを含むプロジェクトを作成
 	- ofxOsc
 	- ofxTrueTypeFontUC
 	- ofxAruco
 	- ofxCv
 	- ofxOpenCv
 	- ofxPoco
-6. Tiny View Plusのソースコード(src/)とアセット(bin/data/)を上書き
-7. ビルド
+4. Tiny View Plusのソースコード(src/)とアセット(bin/data/)を上書き
+5. ビルド
 
 ## 使い方
 
@@ -81,14 +82,12 @@ Windowsでは、デバイスマネージャーでカメラ(受信機)の検出�
 | 1~4 | カメラ1~4のソロ表示のオン/オフ | オフ |
 | T | ソロ表示のトリミングのオン/オフ | オン |
 | Shift + 1~4 | カメラ1~4の表示のオン/オフ | オン |
-| Q,W,E,R | カメラ1~4のアイコンの変更 | アプリ内蔵の画像 |
-| L | 全カメラのラベルの変更(※1) | Pilot1~4 |
 | B | 背景画像の変更 | アプリ内蔵の画像 |
 | F | フルスクリーン表示のオン/オフ | オフ |
 | A | ARラップタイマーのオン/オフ | オン |
-| O | ロックオンエフェクトのオン/オフ(※2) | オフ |
+| O | ロックオンエフェクトのオン/オフ(※1) | オフ |
 | Space | レースの開始/終了 | - |
-| V | レースの結果の表示(※3) | - |
+| V | レースの結果の表示(※2) | - |
 | D | レースの制限時間(1\~3600秒)、周回数(1\~100)の設定 | 制限なし、10 |
 | M | 最小ラップタイムの設定(1~100秒) | 3秒 |
 | N | タイム読み上げ言語の変更(日本語/英語) | 日本語 |
@@ -96,15 +95,9 @@ Windowsでは、デバイスマネージャーでカメラ(受信機)の検出�
 | I | 設定の初期化 | - |
 | . | アプリの終了 | - |
 
-- (※1) カメラのラベルを変更すると、アイコンが自動的に変更されます
-	- 既定フォルダ内に、ラベル文字列.png または ラベル文字列.jpg という画像ファイルが見つかると、この優先順でアイコン画像として採用されます
-		- macOSバイナリ版: Tiny View Plus.app/Contents/Resources/data/pilots
-		- それ以外: data/pilots
-	- 画像ファイルが見つからない場合は、デフォルトアイコンが採用されます
-	- 縦横比は強制的に1:1となります
 - 背景画像は、画面に合わせて拡大縮小され、左上が優先表示されます
-- (※2) ゲート通過タイムの差が1秒未満の場合に、追跡する側のカメラを拡大表示します
-- (※3) レースの結果は、レース終了時に既定フォルダ内へも出力されます
+- (※1) ゲート通過タイムの差が1秒未満の場合に、追跡する側のカメラを拡大表示します
+- (※2) レースの結果は、レース終了時に既定フォルダ内へも出力されます
 	- macOSバイナリ版: Tiny View Plus.app/Contents/Resources/data/results
 	- それ以外: data/results
 - アプリを終了すると設定は消去されます
@@ -112,14 +105,19 @@ Windowsでは、デバイスマネージャーでカメラ(受信機)の検出�
 
 ### マウス操作
 
-一部の機能は、マウスでも操作できます。
+一部の機能は、マウスで操作できます。
 
 | クリック箇所 | 機能 |
 |---|---|
 | カメラ1~4のアイコン | カメラ1~4のアイコンの変更 |
 | カメラ1~4のラベル | カメラ1~4のラベルの変更(※1) |
 
-(※1)ラベルに合わせて、アイコンも自動的に変更されます。任意のアイコンを使用したい場合は、ラベル、アイコンの順で変更してください。
+- (※1) カメラのラベルを変更すると、アイコンが自動的に変更されます
+	- 既定フォルダ内に、ラベル文字列.png または ラベル文字列.jpg という画像ファイルが見つかると、この優先順でアイコン画像として採用されます
+		- macOSバイナリ版: Tiny View Plus.app/Contents/Resources/data/pilots
+		- それ以外: data/pilots
+	- 画像ファイルが見つからない場合は、デフォルトアイコンが採用されます
+	- 縦横比は強制的に1:1となります
 
 ### ARラップタイマー
 

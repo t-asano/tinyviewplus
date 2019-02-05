@@ -430,8 +430,6 @@ void ofApp::keyPressed(int key) {
         ofSystemAlertDialog(helpMessage);
     } else if (key == 'i' || key == 'I') {
         initConfig();
-    } else if (key == 'l' || key == 'L') {
-        changeCameraLabelAll();
     } else if (key == 's' || key == 'S') {
         toggleOscSpeech();
     } else if (key == 'n' || key == 'N') {
@@ -439,13 +437,7 @@ void ofApp::keyPressed(int key) {
     } else if (key == 'b' || key == 'B') {
         changeWallImage();
     } else if (key == 'q' || key == 'Q') {
-        changeCameraIcon(1);
-    } else if (key == 'w' || key == 'W') {
-        changeCameraIcon(2);
-    } else if (key == 'e' || key == 'E') {
-        changeCameraIcon(3);
-    } else if (key == 'r' || key == 'R') {
-        changeCameraIcon(4);
+        // for QR code reader
     } else if (key == ' ') {
         toggleRace();
     } else if (key == 'v' || key == 'V') {
@@ -706,13 +698,6 @@ void changeCameraLabel(int camid) {
     str = ofSystemTextBoxDialog("Camera" + ofToString(camid) + " label:", str);
     camView[camid - 1].labelString = str;
     autoSelectCameraIcon(camid, str);
-}
-
-//--------------------------------------------------------------
-void changeCameraLabelAll() {
-    for (int i = 0; i < cameraNum; i++) {
-        changeCameraLabel(i + 1);
-    }
 }
 
 //--------------------------------------------------------------

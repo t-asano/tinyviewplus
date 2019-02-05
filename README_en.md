@@ -32,21 +32,22 @@ Attention. We are not responsible for any problems caused by running the applica
 ### Case 2: Build from source code (for experts)
 
 1. Install [openFrameworks](http://openframeworks.cc/ja/) v0.10.1.
-2. Install addons:
-	- [ofxTrueTypeFontUC](https://github.com/hironishihara/ofxTrueTypeFontUC)
-	- [ofxAruco](https://github.com/arturoc/ofxAruco)
-	- [ofxCv](https://github.com/kylemcdonald/ofxCv/)
-3. Apply [patches for ofxTrueTypeFontUC addon](https://github.com/hironishihara/ofxTrueTypeFontUC/pull/29/commits/297e75e9cdccb6d29b507eccf16b84d8fef86a88).
-4. Add [setup2d() for ofxAruco](https://github.com/arturoc/ofxAruco/tree/7af4eb215e53cce26e5bc30d3c8834167ed39c22/src).
-4. Create a project with addons:
+2. Install addons.
+```
+$ cd addons/
+$ git clone -b fix-of_v0.10 https://github.com/t-asano/ofxTrueTypeFontUC/tree/fix-of_v0.10 # fixed
+$ git clone https://github.com/t-asano/ofxAruco # modified
+$ git clone https://github.com/kylemcdonald/ofxCv
+```
+3. Create a project with addons.
 	- ofxOsc
 	- ofxTrueTypeFontUC
 	- ofxAruco
 	- ofxCv
 	- ofxOpenCv
 	- ofxPoco
-5. Overwrite src/ and bin/data/ of Tiny View Plus.
-6. Build.
+4. Overwrite src/ and bin/data/ of Tiny View Plus.
+5. Build.
 
 ## Usage
 
@@ -77,14 +78,12 @@ On Windows, you can check the detection status of the camera (receiver) with the
 | 1~4 | Camera 1~4 solo view on/off | off |
 | T | Solo view triming on/off | on |
 | Shift + 1~4 | Camera 1~4 display on/off | on |
-| Q,W,E,R | Change camera 1~4 icon (\*1) | built-in image |
-| L | Change all camera labels (\*1) | Pilot1~4 |
 | B | Change background image | built-in image |
 | F | Fullscreen mode on/off | off |
 | A | AR lap timer on/off | on |
-| O | Lock-on effect on/off (\*2) | off |
+| O | Lock-on effect on/off (\*1) | off |
 | Space | Start/Stop race | - |
-| V | Display race results (\*3) | - |
+| V | Display race results (\*2) | - |
 | D | Set race duration time (1\~3600sec) and laps (1\~100) | no limit, 10 |
 | M | Set minimum lap time (1~100sec) | 3 |
 | N | Change speech language (Japanese/English) | Japanese |
@@ -92,15 +91,9 @@ On Windows, you can check the detection status of the camera (receiver) with the
 | I | Initialize configuration | - |
 | . | Exit application | - |
 
-- (\*1) Camera icon will be automatically changed according to camera label.
-	- If {label string}.png or {label string}.jpg was found under predefined folder, it will be adopted as an icon image in this priority order.
-		- macOS binary: Tiny View Plus.app/Contents/ Resources/data/pilots
-		- others: data/pilots
-	- If no image file is found, the default icon will be adopted.
-	- The aspect ratio is forced to 1:1.
 - The background image is scaled according to the screen, and the upper left is displayed in priority.
-- (\*2) If the difference in gate passing time is less than 1 second, tracking side camera display will be enlarged.
-- (\*3) Race results will be saved under predefined folder when race finish.
+- (\*1) If the difference in gate passing time is less than 1 second, tracking side camera display will be enlarged.
+- (\*2) Race results will be saved under predefined folder when race finish.
 	- macOS binary: Tiny View Plus.app/Contents/ Resources/data/pilots
 	- others: data/pilots
 - When you exit the application settings will be initialized.
@@ -113,9 +106,14 @@ Some functions can also be operated with the mouse.
 | Click location | Function |
 | --- | --- |
 | Camera 1~4 icon | Change camera 1~4 icon |
-| Camera 1~4 label | Change camera 1~4 label (*1) |
+| Camera 1~4 label | Change camera 1~4 label (\*1) |
 
-(*1) Camera icon will be automatically changed according to label.
+- (\*1) Camera icon will be automatically changed according to camera label.
+	- If {label string}.png or {label string}.jpg was found under predefined folder, it will be adopted as an icon image in this priority order.
+		- macOS binary: Tiny View Plus.app/Contents/ Resources/data/pilots
+		- others: data/pilots
+	- If no image file is found, the default icon will be adopted.
+	- The aspect ratio is forced to 1:1.
 
 ### AR lap timer
 

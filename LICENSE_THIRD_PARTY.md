@@ -8,7 +8,8 @@ MIT License
 ## ofxTrueTypeFontUC
 
 MIT License  
-[https://github.com/hironishihara/ofxTrueTypeFontUC/blob/master/License.txt](https://github.com/hironishihara/ofxTrueTypeFontUC/blob/master/License.txt)
+[https://github.com/hironishihara/ofxTrueTypeFontUC/blob/master/License.txt](https://github.com/hironishihara/ofxTrueTypeFontUC/blob/master/License.txt)  
+[https://github.com/kr15h/ofxTrueTypeFontUC/blob/fix-of_v0.10/License.txt](https://github.com/kr15h/ofxTrueTypeFontUC/blob/fix-of_v0.10/License.txt)
 
 ## M+ FONTS
 
@@ -18,7 +19,8 @@ Unlimited permission is granted to use, copy, and distribute them, with or witho
 ## ofxAruco
 
 BSD License  
-[https://github.com/arturoc/ofxAruco](https://github.com/arturoc/ofxAruco)
+[https://github.com/arturoc/ofxAruco](https://github.com/arturoc/ofxAruco)  
+[https://github.com/chparsons/ofxAruco](https://github.com/chparsons/ofxAruco)
 
 ## ofxCv
 

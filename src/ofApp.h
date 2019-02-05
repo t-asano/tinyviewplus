@@ -94,8 +94,6 @@
                         "[1~4] Camera 1~4 solo view on/off\n"\
                         "[T] Solo view trimming on/off\n"\
                         "[Shift + 1~4] Camera 1~4 on/off\n"\
-                        "[Q,W,E,R] Change camera 1~4 icon\n"\
-                        "[L] Change all camera labels\n"\
                         "[B] Change background image\n"\
                         "[F] Fullscreen mode on/off\n"\
                         "[A] AR lap timer on/off\n"\
