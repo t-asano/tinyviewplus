@@ -50,6 +50,11 @@ ofxTrueTypeFontUC myFontResultP, myFontResultP2x, myFontResultM;
 int raceResultPage;
 bool raceResultDisplay;
 
+// QR code reader
+bool qrEnabled;
+int qrUpdCount;
+int qrCamIndex;
+
 //--------------------------------------------------------------
 void ofApp::setup() {
     // system
@@ -118,6 +123,8 @@ void ofApp::setup() {
     loadResultFont();
     raceResultDisplay = false;
     raceResultPage = 0;
+    // QR reader
+    qrEnabled = false;
     // debug
     if (DEBUG_ENABLED == true) {
         generateDummyData();
@@ -152,11 +159,18 @@ void ofApp::update() {
             }
         }
     }
-    // camera, lap
+    // camera
+    for (int i = 0; i < cameraNum; i++) {
+        grabber[i].update();
+    }
+    // QR reader
+    if (qrEnabled == true) {
+        processQrReader();
+    }
+    // lap
     int lapcnt = 0;
     int lockcnt = 0;
     for (int i = 0; i < cameraNum; i++) {
-        grabber[i].update();
         if (raceStarted == false || elapsedTime < WATCH_COUNT_SEC) {
             continue;
         }
@@ -390,6 +404,13 @@ void ofApp::draw(){
     if (raceStarted == true || elapsedTime != 0) {
         drawWatch();
     }
+    // QR reader
+    if (qrEnabled == true) {
+        string str = "Scanning QR code...";
+        ofSetColor(myColorYellow);
+        int x = (ofGetWidth() / 2) - (myFontWatch.stringWidth(str) / 2);
+        myFontWatch.drawString(str, x, ofGetHeight() - 10);
+    }
     // race result
     if (raceResultDisplay == true) {
         drawRaceResult(raceResultPage);
@@ -437,11 +458,14 @@ void ofApp::keyPressed(int key) {
     } else if (key == 'b' || key == 'B') {
         changeWallImage();
     } else if (key == 'q' || key == 'Q') {
-        // for QR code reader
+        if (raceStarted == false && raceResultDisplay == false) {
+            toggleQrReader();
+        }
     } else if (key == ' ') {
         toggleRace();
     } else if (key == 'v' || key == 'V') {
         if (raceStarted == false) {
+            qrEnabled = false;
             processRaceResultDisplay();
         }
     } else if (key == 'a' || key == 'A') {
@@ -1395,6 +1419,7 @@ void toggleRace() {
             setNextSpeechRemainSecs(raceDuraSecs);
         }
         raceStarted = true;
+        qrEnabled = false;
     }
     else {
         // start -> stop
@@ -1836,4 +1861,90 @@ void drawLineBlock(int xblock1, int xblock2, int yline, int blocks, int lines) {
     h = 2;
 
     ofDrawRectangle(x, y, w, h);
+}
+
+#ifdef TARGET_WIN32
+//--------------------------------------------------------------
+string utf8ToAnsi(string utf8) {
+    int ulen, alen;
+    wchar_t* ubuf;
+    char* abuf;
+    string ansi;
+
+    // utf8 -> wchar
+    ulen = MultiByteToWideChar(CP_UTF8, 0, utf8.c_str(), utf8.size() + 1, NULL, 0);
+    ubuf = new wchar_t[ulen];
+    MultiByteToWideChar(CP_UTF8, 0, utf8.c_str(), utf8.size() + 1, ubuf, ulen);
+    // wchar -> ansi
+    alen = WideCharToMultiByte(CP_ACP, 0, ubuf, -1, NULL, 0, NULL, NULL);
+    abuf = new char[alen];
+    WideCharToMultiByte(CP_ACP, 0, ubuf, ulen, abuf, alen, NULL, NULL);
+    ansi = abuf;
+
+    delete[] ubuf;
+    delete[] abuf;
+    return ansi;
+}
+#endif /* TARGET_WIN32 */
+
+//--------------------------------------------------------------
+void toggleQrReader() {
+    if (qrEnabled == false) {
+        // start
+        qrUpdCount = 1;
+        qrCamIndex = 0;
+        for (int i = 0; i < cameraNum; i++) {
+            camView[i].qrScanned = false;
+        }
+        qrEnabled = true;
+    }
+    else {
+        // stop
+        qrEnabled = false;
+    }
+    elapsedTime = 0;
+}
+
+//--------------------------------------------------------------
+void processQrReader() {
+    if (qrUpdCount == QR_CYCLE) {
+        bool scanned = false;
+        if (camView[qrCamIndex].qrScanned == false) {
+            ofxZxing::Result zxres;
+            zxres = ofxZxing::decode(grabber[qrCamIndex].getPixels(), true);
+            if (zxres.getFound()) {
+                scanned = true;
+                camView[qrCamIndex].qrScanned = true;
+                beepSound.play();
+                string label = zxres.getText();
+#ifdef TARGET_WIN32
+                label = utf8ToAnsi(label);
+#endif /* TARGET_WIN32 */
+                camView[qrCamIndex].labelString = label;
+                autoSelectCameraIcon(qrCamIndex + 1, label);
+            }
+        }
+        qrCamIndex++;
+        if (qrCamIndex == cameraNum) {
+            qrCamIndex = 0;
+        }
+        qrUpdCount = 1;
+        if (scanned == false) {
+            return;
+        }
+    }
+    else {
+        qrUpdCount++;
+        return;
+    }
+    // scanned
+    int count = 0;
+    for (int i = 0; i < cameraNum; i++) {
+        if (camView[i].qrScanned == true) {
+            count++;
+        }
+    }
+    if (count == cameraNum) {
+        toggleQrReader(); // finished
+    }
 }

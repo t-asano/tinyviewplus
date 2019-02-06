@@ -6,6 +6,7 @@
 #include "ofxOsc.h"
 #include "ofxAruco.h"
 #include "highlyreliablemarkers.h"
+#include "ofxZxing.h"
 
 /* ---------- definitions ---------- */
 
@@ -87,6 +88,8 @@
 #define DFLT_SPCH_ENBLD false
 #define DFLT_SPCH_JPN   true
 #define SPCH_SLOT_NUM	8
+// QR code reader
+#define QR_CYCLE        6
 // help
 #define HELP_MESSAGE    APP_INFO"\n\n"\
                         "Keyboard shortcuts:\n"\
@@ -94,6 +97,7 @@
                         "[1~4] Camera 1~4 solo view on/off\n"\
                         "[T] Solo view trimming on/off\n"\
                         "[Shift + 1~4] Camera 1~4 on/off\n"\
+                        "[Q] Start/Stop QR reader for camera label\n"\
                         "[B] Change background image\n"\
                         "[F] Fullscreen mode on/off\n"\
                         "[A] AR lap timer on/off\n"\
@@ -159,6 +163,8 @@ public:
     float prevElapsedSec;
     int totalLaps;
     float lapHistory[ARAP_MAX_RLAPS];
+    // QR reader
+    bool qrScanned;
 };
 
 class ofApp : public ofBaseApp {
@@ -233,3 +239,9 @@ void processRaceResultDisplay();
 void drawRaceResult(int);
 void drawStringBlock(ofxTrueTypeFontUC*, string, int , int, int, int, int);
 void drawLineBlock(int, int, int, int, int);
+// QR code reader
+#ifdef TARGET_WIN32
+string utf8ToAnsi(string);
+#endif /* TARGET_WIN32 */
+void toggleQrReader();
+void processQrReader();

@@ -78,12 +78,13 @@ On Windows, you can check the detection status of the camera (receiver) with the
 | 1~4 | Camera 1~4 solo view on/off | off |
 | T | Solo view triming on/off | on |
 | Shift + 1~4 | Camera 1~4 display on/off | on |
+| Q | Start/Stop QR code reader (\*1) | - |
 | B | Change background image | built-in image |
 | F | Fullscreen mode on/off | off |
 | A | AR lap timer on/off | on |
-| O | Lock-on effect on/off (\*1) | off |
+| O | Lock-on effect on/off (\*2) | off |
 | Space | Start/Stop race | - |
-| V | Display race results (\*2) | - |
+| V | Display race results (\*3) | - |
 | D | Set race duration time (1\~3600sec) and laps (1\~100) | no limit, 10 |
 | M | Set minimum lap time (1~100sec) | 3 |
 | N | Change speech language (Japanese/English) | Japanese |
@@ -91,9 +92,10 @@ On Windows, you can check the detection status of the camera (receiver) with the
 | I | Initialize configuration | - |
 | . | Exit application | - |
 
+- (\*1) Sets the characters scanned from the QR code to the camera label.
 - The background image is scaled according to the screen, and the upper left is displayed in priority.
-- (\*1) If the difference in gate passing time is less than 1 second, tracking side camera display will be enlarged.
-- (\*2) Race results will be saved under predefined folder when race finish.
+- (\*2) If the difference in gate passing time is less than 1 second, tracking side camera display will be enlarged.
+- (\*3) Race results will be saved under predefined folder when race finish.
 	- macOS binary: Tiny View Plus.app/Contents/ Resources/data/pilots
 	- others: data/pilots
 - When you exit the application settings will be initialized.
@@ -115,11 +117,27 @@ Some functions can also be operated with the mouse.
 	- If no image file is found, the default icon will be adopted.
 	- The aspect ratio is forced to 1:1.
 
+### QR code reader
+
+You can set the camera label by the QR code.
+
+![docs/qr_screen.png](docs/qr_screen.png)
+
+You can use Google Charts API to create QR codes. An example of URL is as follows.
+
+[https://chart.apis.google.com/chart?cht=qr&chs=500x500&chl=TinyViewPlus](https://chart.apis.google.com/chart?cht=qr&chs=500x500&chl=TinyViewPlus)
+
+It is convenient to embed the QR code in the OSD. An example of an image for the Betaflight is as follows.
+
+![docs/qr_betaflight.png](docs/qr_betaflight.png)
+
 ### AR lap timer
+
+You can measure the lap time using the AR marker.
 
 ![docs/argate.png](docs/argate.png)
 
-You can measure the lap time using the AR marker. Place the following four types of markers around the gate.
+Place the following four types of markers around the gate.
 
 - [marker_0.png](bin/data/system/marker/marker_0.png)
 - [marker_1.png](bin/data/system/marker/marker_1.png)
