@@ -2,9 +2,11 @@
 
 [English version](./README_en.md)
 
-Tiny View Plusは、FPV映像を手軽に表示するためのアプリです。UVC対応の受信機を、MacBook等のコンピューターに接続して使用します。受信機は4台まで接続できます。openFrameworksを使って実装されており、高速に動作します。
+Tiny View Plusは、FPV映像を手軽に表示するためのアプリです。UVC対応の受信機を、MacBook等のコンピューターに接続して使用します。受信機は4台まで(※)接続できます。
 
 ![tinyviewplus](docs/overview.jpg)
+
+<font color="crimson">(※) Windowsの場合、USBハブに複数の受信機を接続することは不可能です。PC本体のUSBポートに1つにつき、受信機1台のみを接続してください。</font>
 
 ## 動作環境
 

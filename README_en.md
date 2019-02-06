@@ -1,8 +1,10 @@
 # Tiny View Plus
 
-Tiny View Plus is an application to display FPV video easily by using receivers compatible with UVC. Up to 4 receivers can be connected. It is implemented using openFrameworks and it operates at high speed.
+Tiny View Plus is an application to display FPV video easily with USB receivers. Up to 4 receivers(\*) can be connected.
 
 ![tinyviewplus](docs/overview.jpg)
+
+<font color="crimson">(\*) On Windows, it is impossible to connect multiple receivers to the USB hub. Please connect only one receiver to each USB port built in PC.</font>
 
 ## Environment
 
