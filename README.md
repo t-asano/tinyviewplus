@@ -6,7 +6,7 @@ Tiny View Plusは、FPV映像を手軽に表示するためのアプリです。
 
 ![tinyviewplus](docs/overview.jpg)
 
-<font color="crimson">(※) Windowsの場合、USBハブに複数の受信機を接続することは不可能です。PC本体のUSBポートに1つにつき、受信機1台のみを接続してください。</font>
+<font color="crimson">(※) Windowsの場合、USBハブに複数の受信機を接続することはできません。PC本体のUSBポートに1つにつき、受信機1台のみを接続してください。</font>
 
 ## 動作環境
 
@@ -28,10 +28,11 @@ Tiny View Plusは、FPV映像を手軽に表示するためのアプリです。
 ### ビルド済みバイナリを使用する場合(通常はこちら)
 
 1. [リリースページ](https://github.com/t-asano/tinyviewplus/releases)よりzipファイルをダウンロード
-2. (macOSのみ)ターミナルを開いてzipファイルの拡張属性を削除する
-	- $ cd ~/Downloads
-	- $ xattr -c tinyviewplus_\*_macos64bit.zip
-3. zipファイルを適当な場所に展開
+2. zipファイルを展開して適当な場所に配置
+
+<font color="crimson">macOSの場合、必ず「アプリケーション」フォルダの下に配置してください。それ以外の場所に配置すると、ファイルの書き込みを伴う機能が正しく動作しません。</font>
+
+![docs/install_mac.png](docs/install_mac.png)
 
 バイナリの作成にあたっては細心の注意を払っていますが、アプリを実行することで起こる不具合については、一切責任を負いません。
 

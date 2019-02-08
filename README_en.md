@@ -21,15 +21,16 @@ To build from source code, [openFrameworks](http://openframeworks.cc/ja/) v0.10.
 
 ## Install
 
-Attention. We are not responsible for any problems caused by running the application.
-
 ### Case 1: Prebuilt binary
 
 1. Download a zip file from [Release page](https://github.com/t-asano/tinyviewplus/releases).
-2. (Only for macOS) Remove extended attributes.
-	- $ cd ~/Downloads
-	- $ xattr -c tinyviewplus_\*_macos64bit.zip
-3. Extract it.
+2. Extract it and place its contents in the proper place.
+
+<font color="crimson">On macOS, be sure to put the application under the "Application" folder. If you place it anywhere else, functions that writing to file will not work correctly.</font>
+
+![docs/install_mac.png](docs/install_mac.png)
+
+Attention. We are not responsible for any problems caused by running the application.
 
 ### Case 2: Build from source code (for experts)
 
