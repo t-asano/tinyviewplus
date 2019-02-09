@@ -1,10 +1,14 @@
 <?xml version="1.0"?>
 <opencv_storage>
-<nmarkers>4</nmarkers>
+<nmarkers>8</nmarkers>
 <markersize>4</markersize>
 <tau0>4</tau0>
-<marker_0>"0100001111011101"</marker_0>
-<marker_1>"1001011010010100"</marker_1>
-<marker_2>"1110111010001001"</marker_2>
-<marker_3>"0110101100010011"</marker_3>
+<marker_0>"1011010100110010"</marker_0>
+<marker_1>"0000111110011010"</marker_1>
+<marker_2>"0011001100101101"</marker_2>
+<marker_3>"1001100101000110"</marker_3>
+<marker_4>"0100001111011101"</marker_4>
+<marker_5>"1001011010010100"</marker_5>
+<marker_6>"1110111010001001"</marker_6>
+<marker_7>"0110101100010011"</marker_7>
 </opencv_storage>
