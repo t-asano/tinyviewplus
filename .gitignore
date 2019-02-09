@@ -100,3 +100,8 @@ openFrameworks-Info.plist
 tinyviewplus.xcodeproj/
 bin/data/results/*
 !.gitkeep
+.vs/
+icon.rc
+*.db
+*.sln
+*vcxproj*
