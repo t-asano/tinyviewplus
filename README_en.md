@@ -4,7 +4,7 @@ Tiny View Plus is an application to display FPV video easily with USB receivers.
 
 ![tinyviewplus](docs/overview.jpg)
 
-<font color="crimson">(\*) On Windows, it is impossible to connect multiple receivers to the USB hub. Please connect only one receiver to each USB port built in PC.</font>
+**(\*)On Windows, it is impossible to connect multiple receivers to the USB hub. Please connect only one receiver to each USB port built in PC.**
 
 ## Environment
 
@@ -26,7 +26,7 @@ To build from source code, [openFrameworks](http://openframeworks.cc/ja/) v0.10.
 1. Download a zip file from [Release page](https://github.com/t-asano/tinyviewplus/releases).
 2. Extract it and place its contents in the proper place.
 
-<font color="crimson">On macOS, be sure to put the application under the "Application" folder. If you place it anywhere else, functions that writing to file will not work correctly.</font>
+**On macOS, be sure to put the application under the "Application" folder. If you place it anywhere else, functions that writing to file will not work correctly.**
 
 ![docs/install_mac.png](docs/install_mac.png)
 
@@ -38,9 +38,10 @@ Attention. We are not responsible for any problems caused by running the applica
 2. Install addons.
 ```
 $ cd addons/
-$ git clone -b fix-of_v0.10 https://github.com/t-asano/ofxTrueTypeFontUC/tree/fix-of_v0.10 # fixed
-$ git clone https://github.com/t-asano/ofxAruco # modified
+$ git clone -b fix-of_v0.10 https://github.com/t-asano/ofxTrueTypeFontUC.git
+$ git clone https://github.com/t-asano/ofxAruco
 $ git clone https://github.com/kylemcdonald/ofxCv
+$ git clone https://github.com/t-asano/ofxZxing.git
 ```
 3. Create a project with addons.
 	- ofxOsc
@@ -49,6 +50,7 @@ $ git clone https://github.com/kylemcdonald/ofxCv
 	- ofxCv
 	- ofxOpenCv
 	- ofxPoco
+    - ofxZxing
 4. Overwrite src/ and bin/data/ of Tiny View Plus.
 5. Build.
 
@@ -201,7 +203,7 @@ Camera icon is also automatically changed in conjunction with the camera label c
 
 - Parameters
 	- id ... Number from 1 to 4
-	- label ... Number indicating the lap time (seconds)
+	- time ... Number indicating the lap time (seconds)
 - [Example] Set the lap time of camera 3 to 128.64 seconds
 	- /v1/camera/3/laptime 128.64
 - [Example] Clear the lap time of camera 4
@@ -216,17 +218,6 @@ Camera icon is also automatically changed in conjunction with the camera label c
 	- text ... sentence to speak
 - [Example] Say "We can fly!" in English
 	- /v1/speeech/en/say "We can fly!"
-
-### Test
-
-You can check the operation with Node.js as follows.
-
-```js
-var osc = require('node-osc');
-var client = new osc.Client('127.0.0.1', 4000);
-client.send("/v1/camera/1/label", "Whooper1", function () {});
-client.send("/v1/camera/1/laptime", 62.09, function () {});
-```
 
 ## License
 

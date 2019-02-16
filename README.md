@@ -6,7 +6,7 @@ Tiny View Plusは、FPV映像を手軽に表示するためのアプリです。
 
 ![tinyviewplus](docs/overview.jpg)
 
-<font color="crimson">(※) Windowsの場合、USBハブに複数の受信機を接続することはできません。PC本体のUSBポートに1つにつき、受信機1台のみを接続してください。</font>
+**(※)Windowsの場合、USBハブに複数の受信機を接続すると正しく動作しません。PC本体のUSBポートに1つにつき、受信機1台のみを接続してください。**
 
 ## 動作環境
 
@@ -30,7 +30,7 @@ Tiny View Plusは、FPV映像を手軽に表示するためのアプリです。
 1. [リリースページ](https://github.com/t-asano/tinyviewplus/releases)よりzipファイルをダウンロード
 2. zipファイルを展開して適当な場所に配置
 
-<font color="crimson">macOSの場合、必ず「アプリケーション」フォルダの下に配置してください。それ以外の場所に配置すると、ファイルの書き込みを伴う機能が正しく動作しません。</font>
+**macOSの場合、必ず「アプリケーション」フォルダの下に配置してください。それ以外の場所に配置すると、ファイルの書き込みを伴う機能が正しく動作しません。**
 
 ![docs/install_mac.png](docs/install_mac.png)
 
@@ -42,9 +42,10 @@ Tiny View Plusは、FPV映像を手軽に表示するためのアプリです。
 2. アドオンをインストール
 ```
 $ cd addons/
-$ git clone -b fix-of_v0.10 https://github.com/t-asano/ofxTrueTypeFontUC/tree/fix-of_v0.10 # 修正版
-$ git clone https://github.com/t-asano/ofxAruco # 改造版
+$ git clone -b fix-of_v0.10 https://github.com/t-asano/ofxTrueTypeFontUC.git
+$ git clone https://github.com/t-asano/ofxAruco
 $ git clone https://github.com/kylemcdonald/ofxCv
+$ git clone https://github.com/t-asano/ofxZxing.git
 ```
 3. プロジェクトジェネレーターで、以下のアドオンを含むプロジェクトを作成
 	- ofxOsc
@@ -53,6 +54,7 @@ $ git clone https://github.com/kylemcdonald/ofxCv
 	- ofxCv
 	- ofxOpenCv
 	- ofxPoco
+    - ofxZxing
 4. Tiny View Plusのソースコード(src/)とアセット(bin/data/)を上書き
 5. ビルド
 
@@ -99,10 +101,10 @@ Windowsでは、デバイスマネージャーでカメラ(受信機)の検出�
 | I | 設定の初期化 | - |
 | . | アプリの終了 | - |
 
-- (※1) QRコードから読み取った文字列をカメラのラベルに設定します
+- (※1)QRコードから読み取った文字列をカメラのラベルに設定します
 - 背景画像は、画面に合わせて拡大縮小され、左上が優先表示されます
-- (※2) ゲート通過タイムの差が1秒未満の場合に、追跡する側のカメラを拡大表示します
-- (※3) レースの結果は、レース終了時に既定フォルダ内へも出力されます
+- (※2)ゲート通過タイムの差が1秒未満の場合に、追跡する側のカメラを拡大表示します
+- (※3)レースの結果は、レース終了時に既定フォルダ内へも出力されます
 	- macOSバイナリ版: Tiny View Plus.app/Contents/Resources/data/results
 	- それ以外: data/results
 - アプリを終了すると設定は消去されます
@@ -117,7 +119,7 @@ Windowsでは、デバイスマネージャーでカメラ(受信機)の検出�
 | カメラ1~4のアイコン | カメラ1~4のアイコンの変更 |
 | カメラ1~4のラベル | カメラ1~4のラベルの変更(※1) |
 
-- (※1) カメラのラベルを変更すると、アイコンが自動的に変更されます
+- (※1)カメラのラベルを変更すると、アイコンが自動的に変更されます
 	- 既定フォルダ内に、ラベル文字列.png または ラベル文字列.jpg という画像ファイルが見つかると、この優先順でアイコン画像として採用されます
 		- macOSバイナリ版: Tiny View Plus.app/Contents/Resources/data/pilots
 		- それ以外: data/pilots
@@ -205,7 +207,7 @@ OSCプロトコルにより外部からの制御が可能です。UDP4000番ポ�
 
 - パラメーター
     - id ... 1～4の数値
-    - label ... ラップタイムを示す数値(秒)
+    - time ... ラップタイムを示す数値(秒)
 - [例]カメラ3のラップタイムを128秒64とする
     - /v1/camera/3/laptime 128.64
 - [例]カメラ4のラップタイムをクリアする
@@ -220,17 +222,6 @@ OSCプロトコルにより外部からの制御が可能です。UDP4000番ポ�
     - text ... 読み上げる文
 - [例]日本語で"ドローンで遊ぼう"と読み上げる
     - /v1/speeech/jp/say "ドローンで遊ぼう"
-
-### 動作確認
-
-以下のようにして、Node.jsで動作を確認できます。
-
-```js
-var osc = require('node-osc');
-var client = new osc.Client('127.0.0.1', 4000);
-client.send("/v1/camera/1/label", "Whooper1", function () {});
-client.send("/v1/camera/1/laptime", 62.09, function () {});
-```
 
 ## License
 
