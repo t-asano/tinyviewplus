@@ -10,7 +10,7 @@
 
 // view
 ofVideoGrabber grabber[CAMERA_MAXNUM];
-ofColor myColorYellow, myColorWhite, myColorLGray, myColorLayer;
+ofColor myColorYellow, myColorWhite, myColorLGray, myColorLayer, myColorAlert;
 ofxTrueTypeFontUC myFontNumber, myFontLabel, myFontLap;
 ofxTrueTypeFontUC myFontNumberSub, myFontLabelSub, myFontLapSub;
 ofImage wallImage;
@@ -150,6 +150,8 @@ void ofApp::update() {
                 for (int i = 0; i < cameraNum; i++) {
                     grabber[i].update();
                     camView[i].foundMarkerNum = 0;
+                    camView[i].foundValidMarkerNum = 0;
+                    camView[i].enoughValidMarkers = false;
                     camView[i].prevElapsedSec = raceDuraSecs + WATCH_COUNT_SEC;
                 }
                 toggleRace();
@@ -178,12 +180,39 @@ void ofApp::update() {
         float elp = elapsedTime;
         if (grabber[i].isFrameNew() && arLapEnabled == true) {
             camView[i].aruco.detectMarkers(grabber[i].getPixels());
-            int num = camView[i].aruco.getNumMarkers();
-            if (num == 0 && camView[i].foundMarkerNum >= ARAP_MNUM_THR) {
+            // all markers
+            int anum = camView[i].aruco.getNumMarkers();
+            if (anum == 0) {
+                camView[i].flickerCount++;
+                if (camView[i].flickerCount <= 3) {
+                    anum = camView[i].foundMarkerNum; // anti flicker
+                } else {
+                    camView[i].flickerCount = 0;
+                }
+            } else {
+                camView[i].flickerCount = 0;
+            }
+            // vaild markers
+            int vnum = camView[i].aruco.getNumMarkersValidGate();
+            if (vnum == 0) {
+                camView[i].flickerValidCount++;
+                if (camView[i].flickerValidCount <= 3) {
+                    vnum = camView[i].foundValidMarkerNum; // anti flicker
+                } else {
+                    camView[i].flickerValidCount = 0;
+                }
+            } else {
+                camView[i].flickerValidCount = 0;
+            }
+            // passed gate
+            if (anum == 0 && camView[i].enoughValidMarkers == true
+                && camView[i].foundMarkerNum == camView[i].foundValidMarkerNum) {
                 float lap = elp - camView[i].prevElapsedSec;
                 if (lap < minLapTime) {
                     // ignore too short lap
                     camView[i].foundMarkerNum = 0;
+                    camView[i].foundValidMarkerNum = 0;
+                    camView[i].enoughValidMarkers = false;
                     continue;
                 }
                 if (camView[i].totalLaps >= raceDuraLaps) {
@@ -198,6 +227,8 @@ void ofApp::update() {
                 if (total == raceDuraLaps) {
                     // finish
                     camView[i].foundMarkerNum = 0;
+                    camView[i].foundValidMarkerNum = 0;
+                    camView[i].enoughValidMarkers = false;
                     finishSound.play();
                     speakLap((i + 1), lap, total);
                     continue;
@@ -231,16 +262,17 @@ void ofApp::update() {
                 }
                 speakLap((i + 1), lap, total);
             }
-            if (num == 0) {
-                camView[i].foundMarkerNum = 0;
-            } else if (num > camView[i].foundMarkerNum) {
-                camView[i].foundMarkerNum = num;
+            camView[i].foundMarkerNum = anum;
+            camView[i].foundValidMarkerNum = vnum;
+            if (anum == 0) {
+                camView[i].enoughValidMarkers = false;
+            } else if (vnum >= ARAP_MNUM_THR) {
+                camView[i].enoughValidMarkers = true;
             }
         }
     }
     if (lockOnEnabled == true && lapcnt > 0 && lockcnt == 0) {
-        // xxx experimental
-        resetCameraSolo();
+        resetCameraSolo(); // experimental
     }
     // finish race by laps
     if (raceStarted == true) {
@@ -270,6 +302,27 @@ void drawCamera(int idx) {
     // image
     ofSetColor(myColorWhite);
     grabber[i].draw(camView[i].posX, camView[i].posY, camView[i].width, camView[i].height);
+    // AR marker
+    if (arLapEnabled == true && raceStarted == true && camView[i].totalLaps < raceDuraLaps) {
+        // rect
+        ofPushMatrix();
+        ofTranslate(camView[i].posX, camView[i].posY);
+        ofScale(camView[i].imageScale, camView[i].imageScale, 1);
+        ofSetLineWidth(2);
+        camView[i].aruco.draw2dGate(myColorYellow, myColorAlert);
+        ofPopMatrix();
+        // meter
+        ofSetColor(myColorYellow);
+        string lv = "";
+        for (int j = 0; j < camView[i].foundValidMarkerNum; j++) {
+            lv += "|";
+        }
+        if (isSub) {
+            myFontLapSub.drawString(lv, camView[i].lapPosX, camView[i].lapPosY + (LAP_HEIGHT / 2) + 5);
+        } else {
+            myFontLap.drawString(lv, camView[i].lapPosX, camView[i].lapPosY + LAP_HEIGHT + 10);
+        }
+    }
     // base
     ofSetColor(camView[i].baseColor);
     ofDrawRectangle(camView[i].basePosX, camView[i].basePosY, camView[i].baseWidth, camView[i].baseHeight);
@@ -333,19 +386,6 @@ void drawCamera(int idx) {
             } else {
                 myFontLap.drawString(sout, camView[i].lapPosX, camView[i].lapPosY);
             }
-        }
-    }
-    // AR marker
-    if (arLapEnabled == true && raceStarted == true && camView[i].totalLaps < raceDuraLaps) {
-        ofSetColor(myColorYellow);
-        string lv = "";
-        for (int j = 0; j < camView[i].foundMarkerNum; j++) {
-            lv += "|";
-        }
-        if (isSub) {
-            myFontLapSub.drawString(lv, camView[i].lapPosX, camView[i].lapPosY + (LAP_HEIGHT / 2) + 5);
-        } else {
-            myFontLap.drawString(lv, camView[i].lapPosX, camView[i].lapPosY + LAP_HEIGHT + 10);
         }
     }
 }
@@ -426,7 +466,7 @@ void ofApp::draw(){
 void ofApp::keyPressed(int key) {
     if (raceResultDisplay == true) {
         // race result
-        if (key == 'v' || key == 'V') {
+        if (key == 'v' || key == 'V' || key == ' ') {
             processRaceResultDisplay();
         }
         return;
@@ -691,6 +731,7 @@ void setupColors() {
     myColorWhite = ofColor(COLOR_WHITE);
     myColorLGray = ofColor(COLOR_LGRAY);
     myColorLayer = ofColor(COLOR_LAYER);
+    myColorAlert = ofColor(COLOR_ALERT);
     // pilot
     for (int i = 0; i < CAMERA_MAXNUM; i++) {
         switch(i) {
@@ -810,7 +851,7 @@ void setViewParams() {
     int idx, i;
     int width = ofGetWidth();
     int height = ofGetHeight();
-    float ratio = float(width) / float(height);
+    float ratio = (float)width / (float)height;
     switch (cameraNumVisible) {
         case 1:
             // 1st visible camera
@@ -1029,6 +1070,7 @@ void setViewParams() {
             camView[idx].lapPosXTarget = camView[idx].lapPosXTarget - (LAP_MARGIN_X / 2);
             camView[idx].lapPosYTarget = camView[idx].lapPosYTarget - (LAP_MARGIN_Y / 2);
         }
+        camView[idx].imageScale = (float)(camView[idx].width) / (float)CAMERA_WIDTH;
     }
 }
 
@@ -1066,6 +1108,7 @@ void updateViewParams() {
         camView[idx].height = calcViewParam(camView[idx].heightTarget, camView[idx].height, steps);
         camView[idx].posX = calcViewParam(camView[idx].posXTarget, camView[idx].posX, steps);
         camView[idx].posY = calcViewParam(camView[idx].posYTarget, camView[idx].posY, steps);
+        camView[idx].imageScale = (float)(camView[idx].width) / (float)CAMERA_WIDTH;
         // base
         camView[idx].basePosX = calcViewParam(camView[idx].basePosXTarget, camView[idx].basePosX, steps);
         camView[idx].basePosY = calcViewParam(camView[idx].basePosYTarget, camView[idx].basePosY, steps);
@@ -1226,9 +1269,9 @@ void recvOscCameraFloat(int camid, string method, float argfloat) {
 void toggleOscSpeech() {
     oscSpeechEnabled = !oscSpeechEnabled;
     if (oscSpeechEnabled == true) {
-        ofSystemAlertDialog("Speech on");
+        ofSystemAlertDialog("OSC speech on");
     } else {
-        ofSystemAlertDialog("Speech off");
+        ofSystemAlertDialog("OSC speech off");
     }
 }
 
@@ -1408,6 +1451,10 @@ void toggleRace() {
         ofResetElapsedTimeCounter();
         for (int i = 0; i < cameraNum; i++) {
             camView[i].foundMarkerNum = 0;
+            camView[i].foundValidMarkerNum = 0;
+            camView[i].enoughValidMarkers = false;
+            camView[i].flickerCount = 0;
+            camView[i].flickerValidCount = 0;
             camView[i].prevElapsedSec = WATCH_COUNT_SEC; // countdown
             camView[i].totalLaps = 0;
             camView[i].lastLap = 0;
@@ -1815,7 +1862,7 @@ void drawRaceResult(int pageidx) {
     // message
     line = ARAP_RSLT_LINES - 1;
     ofSetColor(myColorLGray);
-    drawStringBlock(&myFontResultP, "Press V key to continue...", 0, line, ALIGN_CENTER, 1, szl);
+    drawStringBlock(&myFontResultP, "Press SPACE or V key to continue...", 0, line, ALIGN_CENTER, 1, szl);
 }
 
 //--------------------------------------------------------------

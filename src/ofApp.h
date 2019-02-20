@@ -17,6 +17,7 @@
 #define COLOR_WHITE     255,255,255
 #define COLOR_LGRAY     127,127,127
 #define COLOR_LAYER     0,0,0,223
+#define COLOR_ALERT     255,0,0
 // view
 #define FRAME_RATE      60
 #define MOVE_STEPS      10
@@ -126,6 +127,7 @@ public:
     int posY;
     int posXTarget;
     int posYTarget;
+    float imageScale;
     // base
     ofColor baseColor;
     int basePosX;
@@ -160,9 +162,13 @@ public:
     // AR lap timer
     ofxAruco aruco;
     int foundMarkerNum;
+    int foundValidMarkerNum;
+    bool enoughValidMarkers;
     float prevElapsedSec;
     int totalLaps;
     float lapHistory[ARAP_MAX_RLAPS];
+    int flickerCount;
+    int flickerValidCount;
     // QR reader
     bool qrScanned;
 };

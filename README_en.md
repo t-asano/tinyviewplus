@@ -142,16 +142,13 @@ You can measure the lap time using the AR marker.
 
 ![docs/argate.png](docs/argate.png)
 
-Place the following four types of markers around the gate.
+Please place four or more of the following marker around the gate. Make sure the top of the marker faces the center of the gate.
 
-- [marker_0.png](bin/data/system/marker/marker_0.png)
-- [marker_1.png](bin/data/system/marker/marker_1.png)
-- [marker_2.png](bin/data/system/marker/marker_2.png)
-- [marker_3.png](bin/data/system/marker/marker_3.png)
+- [marker_00_main_a.png](docs/marker_00_main_a.png)
 
 The size of the marker should be 120mm per side. Smaller gate and markers may be suitable for low speed race in narrow space.
 
-Lap time will be measured only during the race. After detecting two or more types of markers simultaneously, when the marker disappears from the screen, lap time will be confirmed. Yellow vertical lines will be displayed on the screen according to the number of detected markers.
+Lap time will be measured only during the race. After detecting two or more correctly oriented markers simultaneously, when the marker disappears from the screen, lap time will be confirmed. Yellow vertical lines will be displayed on the screen according to the number of detected markers.
 
 Depending on the environment, recognition processing of markers might be heavy. In that case, please disable the function.
 
