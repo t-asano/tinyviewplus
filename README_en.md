@@ -148,7 +148,7 @@ Please place four or more of the following marker around the gate. Make sure the
 
 The size of the marker should be 120mm per side. Smaller gate and markers may be suitable for low speed race in narrow space.
 
-Lap time will be measured only during the race. After detecting two or more correctly oriented markers simultaneously, when the marker disappears from the screen, lap time will be confirmed. Yellow vertical lines will be displayed on the screen according to the number of detected markers.
+Lap time will be measured only during the race. After detecting two or more correctly oriented markers simultaneously, when the marker disappears from the screen, lap time will be confirmed. However, if the direction of the last displayed marker is incorrect, the measurement will be canceled.
 
 Depending on the environment, recognition processing of markers might be heavy. In that case, please disable the function.
 
