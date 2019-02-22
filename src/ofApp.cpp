@@ -308,8 +308,8 @@ void drawCamera(int idx) {
         ofPushMatrix();
         ofTranslate(camView[i].posX, camView[i].posY);
         ofScale(camView[i].imageScale, camView[i].imageScale, 1);
-        ofSetLineWidth(2);
-        camView[i].aruco.draw2dGate(myColorYellow, myColorAlert);
+        ofSetLineWidth(3);
+        camView[i].aruco.draw2dGate(myColorYellow, myColorAlert, false);
         ofPopMatrix();
         // meter
         ofSetColor(myColorYellow);
