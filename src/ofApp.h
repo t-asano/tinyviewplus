@@ -11,7 +11,7 @@
 /* ---------- definitions ---------- */
 
 // system
-#define APP_INFO        "Tiny View Plus v0.9.11"
+#define APP_INFO        "Tiny View Plus v0.9.12"
 #define DEBUG_ENABLED   false
 #define COLOR_YELLOW    255,215,0
 #define COLOR_WHITE     255,255,255
