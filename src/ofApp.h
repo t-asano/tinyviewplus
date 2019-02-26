@@ -52,7 +52,7 @@
 #define LAP_HEIGHT      20
 #define LAP_MARGIN_X    20
 #define LAP_MARGIN_Y    80
-#define DFLT_SOLO_TRIM  true
+#define DFLT_SOLO_TRIM  false
 #define DFLT_FSCR_ENBLD false
 #define ALIGN_LEFT      0
 #define ALIGN_CENTER    1

@@ -81,7 +81,7 @@ On Windows, you can check the detection status of the camera (receiver) with the
 |---|---|---|
 | H | Display help | - |
 | 1~4 | Camera 1~4 solo view on/off | off |
-| T | Solo view triming on/off | on |
+| T | Solo view triming on/off | off |
 | Shift + 1~4 | Camera 1~4 display on/off | on |
 | Q | Start/Stop QR code reader (\*1) | - |
 | B | Change background image | built-in image |
