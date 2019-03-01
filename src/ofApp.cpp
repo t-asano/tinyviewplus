@@ -605,6 +605,12 @@ void ofApp::dragEvent(ofDragInfo dragInfo){
     
 }
 
+void ofApp::exit() {
+    for (int i = 0; i < cameraNum; i++) {
+        camView[i].aruco.setThreaded(false);
+    }
+}
+
 //--------------------------------------------------------------
 void bindCameras() {
     cameraNum = 0;
