@@ -58,7 +58,10 @@
 #define ALIGN_CENTER    1
 #define ALIGN_RIGHT     2
 // AR lap timer
-#define DFLT_ARAP_ENBLD true
+#define ARAP_MODE_NORM  0
+#define ARAP_MODE_LOOSE 1
+#define ARAP_MODE_OFF   2
+#define DFLT_ARAP_MODE  ARAP_MODE_NORM
 #define DFLT_ARAP_RLAPS 10
 #define DFLT_ARAP_RSECS 0
 #define DFLT_ARAP_MNLAP 3
@@ -163,7 +166,7 @@ public:
     ofxAruco aruco;
     int foundMarkerNum;
     int foundValidMarkerNum;
-    bool enoughValidMarkers;
+    bool enoughMarkers;
     float prevElapsedSec;
     int totalLaps;
     float lapHistory[ARAP_MAX_RLAPS];

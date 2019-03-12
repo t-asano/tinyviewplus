@@ -36,7 +36,7 @@ bool speechLangJpn;
 ofxTrueTypeFontUC myFontWatch;
 ofSoundPlayer beepSound, beep3Sound, countSound, finishSound, notifySound;
 ofFile resultsFile;
-bool arLapEnabled;
+int arLapMode;
 bool lockOnEnabled;
 bool raceStarted;
 int raceDuraSecs;
@@ -100,7 +100,7 @@ void ofApp::setup() {
     // osc
     oscReceiver.setup(OSC_LISTEN_PORT);
     // AR lap timer
-    arLapEnabled = DFLT_ARAP_ENBLD;
+    arLapMode = DFLT_ARAP_MODE;
     lockOnEnabled = DFLT_ARAP_LCKON;
     minLapTime = DFLT_ARAP_MNLAP;
     raceDuraSecs = DFLT_ARAP_RSECS;
@@ -151,7 +151,7 @@ void ofApp::update() {
                     grabber[i].update();
                     camView[i].foundMarkerNum = 0;
                     camView[i].foundValidMarkerNum = 0;
-                    camView[i].enoughValidMarkers = false;
+                    camView[i].enoughMarkers = false;
                     camView[i].prevElapsedSec = raceDuraSecs + WATCH_COUNT_SEC;
                 }
                 toggleRace();
@@ -178,11 +178,11 @@ void ofApp::update() {
         }
         // AR lap timer
         float elp = elapsedTime;
-        if (grabber[i].isFrameNew() && arLapEnabled == true) {
+        if (grabber[i].isFrameNew() && arLapMode != ARAP_MODE_OFF) {
             camView[i].aruco.detectMarkers(grabber[i].getPixels());
             // all markers
             int anum = camView[i].aruco.getNumMarkers();
-            if (anum == 0) {
+            if (anum == 0 && camView[i].foundMarkerNum > 0) {
                 camView[i].flickerCount++;
                 if (camView[i].flickerCount <= 3) {
                     anum = camView[i].foundMarkerNum; // anti flicker
@@ -194,7 +194,7 @@ void ofApp::update() {
             }
             // vaild markers
             int vnum = camView[i].aruco.getNumMarkersValidGate();
-            if (vnum == 0) {
+            if (vnum == 0 && camView[i].foundValidMarkerNum > 0) {
                 camView[i].flickerValidCount++;
                 if (camView[i].flickerValidCount <= 3) {
                     vnum = camView[i].foundValidMarkerNum; // anti flicker
@@ -205,14 +205,16 @@ void ofApp::update() {
                 camView[i].flickerValidCount = 0;
             }
             // passed gate
-            if (anum == 0 && camView[i].enoughValidMarkers == true
-                && camView[i].foundMarkerNum == camView[i].foundValidMarkerNum) {
+            if (anum == 0 && camView[i].enoughMarkers == true
+                && ((arLapMode == ARAP_MODE_LOOSE)
+                    || (arLapMode == ARAP_MODE_NORM
+                        && camView[i].foundMarkerNum == camView[i].foundValidMarkerNum))) {
                 float lap = elp - camView[i].prevElapsedSec;
                 if (lap < minLapTime) {
                     // ignore too short lap
                     camView[i].foundMarkerNum = 0;
                     camView[i].foundValidMarkerNum = 0;
-                    camView[i].enoughValidMarkers = false;
+                    camView[i].enoughMarkers = false;
                     continue;
                 }
                 if (camView[i].totalLaps >= raceDuraLaps) {
@@ -228,7 +230,7 @@ void ofApp::update() {
                     // finish
                     camView[i].foundMarkerNum = 0;
                     camView[i].foundValidMarkerNum = 0;
-                    camView[i].enoughValidMarkers = false;
+                    camView[i].enoughMarkers = false;
                     finishSound.play();
                     speakLap((i + 1), lap, total);
                     continue;
@@ -265,9 +267,10 @@ void ofApp::update() {
             camView[i].foundMarkerNum = anum;
             camView[i].foundValidMarkerNum = vnum;
             if (anum == 0) {
-                camView[i].enoughValidMarkers = false;
-            } else if (vnum >= ARAP_MNUM_THR) {
-                camView[i].enoughValidMarkers = true;
+                camView[i].enoughMarkers = false;
+            } else if ((arLapMode == ARAP_MODE_NORM && vnum >= ARAP_MNUM_THR)
+                       || (arLapMode == ARAP_MODE_LOOSE && anum >= ARAP_MNUM_THR)) {
+                camView[i].enoughMarkers = true;
             }
         }
     }
@@ -303,7 +306,7 @@ void drawCamera(int idx) {
     ofSetColor(myColorWhite);
     grabber[i].draw(camView[i].posX, camView[i].posY, camView[i].width, camView[i].height);
     // AR marker
-    if (arLapEnabled == true && raceStarted == true && camView[i].totalLaps < raceDuraLaps) {
+    if (arLapMode != ARAP_MODE_OFF && raceStarted == true && camView[i].totalLaps < raceDuraLaps) {
         // rect
         ofPushMatrix();
         ofTranslate(camView[i].posX, camView[i].posY);
@@ -312,15 +315,42 @@ void drawCamera(int idx) {
         camView[i].aruco.draw2dGate(myColorYellow, myColorAlert, false);
         ofPopMatrix();
         // meter
-        ofSetColor(myColorYellow);
-        string lv = "";
-        for (int j = 0; j < camView[i].foundValidMarkerNum; j++) {
-            lv += "|";
+        string lv_valid = "";
+        string lv_invalid = "";
+        int x, y;
+        int vnum = camView[i].foundValidMarkerNum;
+        int ivnum = camView[i].foundMarkerNum - camView[i].foundValidMarkerNum;
+        for (int j = 0; j < vnum; j++) {
+            lv_valid += "|";
         }
-        if (isSub) {
-            myFontLapSub.drawString(lv, camView[i].lapPosX, camView[i].lapPosY + (LAP_HEIGHT / 2) + 5);
-        } else {
-            myFontLap.drawString(lv, camView[i].lapPosX, camView[i].lapPosY + LAP_HEIGHT + 10);
+        for (int j = 0; j < ivnum; j++) {
+            lv_invalid += "|";
+        }
+        x = camView[i].lapPosX;
+        y = isSub ? (camView[i].lapPosY + (LAP_HEIGHT / 2) + 5) : (camView[i].lapPosY + LAP_HEIGHT + 10);
+        if (vnum > 0) {
+            ofSetColor(myColorYellow);
+            if (isSub) {
+                myFontLapSub.drawString(lv_valid, x, y);
+            } else {
+                myFontLap.drawString(lv_valid, x, y);
+            }
+        }
+        if (ivnum > 0) {
+            ofSetColor(myColorAlert);
+            if (isSub) {
+                if (vnum > 0) {
+                    x += 2;
+                }
+                x = x + myFontLapSub.stringWidth(lv_valid);
+                myFontLapSub.drawString(lv_invalid, x, y);
+            } else {
+                if (vnum > 0) {
+                    x += 5;
+                }
+                x = x + myFontLap.stringWidth(lv_valid);
+                myFontLap.drawString(lv_invalid, x, y);
+            }
         }
     }
     // base
@@ -1164,7 +1194,7 @@ void initConfig() {
     oscSpeechEnabled = DFLT_SPCH_ENBLD;
     speechLangJpn = DFLT_SPCH_JPN;
     // AR lap timer
-    arLapEnabled = DFLT_ARAP_ENBLD;
+    arLapMode = DFLT_ARAP_MODE;
     lockOnEnabled = DFLT_ARAP_LCKON;
     minLapTime = DFLT_ARAP_MNLAP;
     raceDuraLaps = DFLT_ARAP_RLAPS;
@@ -1458,7 +1488,7 @@ void toggleRace() {
         for (int i = 0; i < cameraNum; i++) {
             camView[i].foundMarkerNum = 0;
             camView[i].foundValidMarkerNum = 0;
-            camView[i].enoughValidMarkers = false;
+            camView[i].enoughMarkers = false;
             camView[i].flickerCount = 0;
             camView[i].flickerValidCount = 0;
             camView[i].prevElapsedSec = WATCH_COUNT_SEC; // countdown
@@ -1605,11 +1635,19 @@ void fwriteRaceResult() {
 
 //--------------------------------------------------------------
 void toggleARLap() {
-    arLapEnabled = !arLapEnabled;
-    if (arLapEnabled == true) {
-        ofSystemAlertDialog("AR lap timer on");
-    } else {
-        ofSystemAlertDialog("AR lap timer off");
+    switch (arLapMode) {
+        case ARAP_MODE_NORM:
+            arLapMode = ARAP_MODE_LOOSE;
+            ofSystemAlertDialog("AR lap timer mode: loose");
+            break;
+        case ARAP_MODE_LOOSE:
+            arLapMode = ARAP_MODE_OFF;
+            ofSystemAlertDialog("AR lap timer mode: off");
+            break;
+        case ARAP_MODE_OFF:
+            arLapMode = ARAP_MODE_NORM;
+            ofSystemAlertDialog("AR lap timer mode: normal");
+            break;
     }
 }
 
