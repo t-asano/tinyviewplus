@@ -28,7 +28,7 @@ To build from source code, [openFrameworks](http://openframeworks.cc/ja/) v0.10.
 
 **On macOS, be sure to put the application under the "Application" folder. If you place it anywhere else, functions that writing to file will not work correctly.**
 
-![docs/install_mac.png](docs/install_mac.png)
+![install_mac.png](docs/install_mac.png)
 
 Attention. We are not responsible for any problems caused by running the application.
 
@@ -81,15 +81,15 @@ On Windows, you can check the detection status of the camera (receiver) with the
 |---|---|---|
 | H | Display help | - |
 | 1~4 | Camera 1~4 solo view on/off | off |
-| T | Solo view triming on/off | off |
+| T | Camera triming on/off (\*1) | off |
 | Shift + 1~4 | Camera 1~4 display on/off | on |
-| Q | Start/Stop QR code reader (\*1) | - |
+| Q | Start/Stop QR code reader (\*2) | - |
 | B | Change background image | built-in image |
 | F | Fullscreen mode on/off | off |
-| A | Switch AR lap timer mode (normal/loose/off) (\*2) | normal |
-| O | Lock-on effect on/off (\*3) | off |
+| A | Switch AR lap timer mode (normal/loose/off) (\*3) | normal |
+| O | Lock-on effect on/off (\*4) | off |
 | Space | Start/Stop race | - |
-| V | Display race results (\*4) | - |
+| V | Display race results (\*5) | - |
 | D | Set race duration time (1\~3600sec) and laps (1\~100) | no limit, 10 |
 | M | Set minimum lap time (1~100sec) | 3 |
 | N | Change speech language (Japanese/English) | Japanese |
@@ -97,11 +97,12 @@ On Windows, you can check the detection status of the camera (receiver) with the
 | I | Initialize configuration | - |
 | . | Exit application | - |
 
-- (\*1) Sets the characters scanned from the QR code to the camera label.
+- (\*1) When 1 or 3 cameras are connected, the image will be cropped and displayed as large as possible.
+- (\*2) Sets the characters scanned from the QR code to the camera label.
 - The background image is scaled according to the screen, and the upper left is displayed in priority.
-- (\*2) In loose mode, lap time will be measured even if the drone passes outside the gate.
-- (\*3) If the difference in gate passing time is less than 1 second, tracking side camera display will be enlarged.
-- (\*4) Race results will be saved under predefined folder when race finish.
+- (\*3) In loose mode, lap time will be measured even if the drone passes outside the gate.
+- (\*4) If the difference in gate passing time is less than 1 second, tracking side camera display will be enlarged.
+- (\*5) Race results will be saved under predefined folder when race finish.
 	- macOS binary: Tiny View Plus.app/Contents/ Resources/data/pilots
 	- others: data/pilots
 - When you exit the application settings will be initialized.
@@ -127,7 +128,7 @@ Some functions can also be operated with the mouse.
 
 You can set the camera label by the QR code.
 
-![docs/qr_screen.png](docs/qr_screen.png)
+![qr_screen.png](docs/qr_screen.png)
 
 You can use Google Charts API to create QR codes. An example of URL is as follows.
 
@@ -135,19 +136,23 @@ You can use Google Charts API to create QR codes. An example of URL is as follow
 
 It is convenient to embed the QR code in the OSD. An example of an image for the Betaflight is as follows.
 
-![docs/qr_betaflight.png](docs/qr_betaflight.png)
+![qr_betaflight.png](docs/qr_betaflight.png)
 
 ### AR lap timer
 
 You can measure the lap time using the AR marker.
 
-![docs/argate.png](docs/argate.png)
+![argate_single.png](docs/argate_single.png)
+![argate_multi.png](docs/argate_multi.png)
 
-Please place four or more of the following marker around the gate. Make sure the top of the marker faces the center of the gate.
+Please place 4 to 8 markers around the gate. Also make sure that the top of the marker faces the center of the gate. Following four types of markers are supported. It does not matter if only one type is placed as shown above.
 
 - [marker_00_main_a.png](docs/marker_00_main_a.png)
+- [marker_01_main_b.png](docs/marker_01_main_b.png)
+- [marker_02_main_c.png](docs/marker_02_main_c.png)
+- [marker_03_main_d.png](docs/marker_03_main_d.png)
 
-The size of the marker should be 120mm per side. Smaller gate and markers may be suitable for low speed race in narrow space.
+The size of the marker should be 150mm per side. Larger marker will be suitable for high speed race. If marker recognition is not successful, please try increasing the size of the marker, using multiple types, or placing them in a brighter place.
 
 Lap time will be measured only during the race. After detecting two or more correctly oriented markers simultaneously, when the marker disappears from the screen, lap time will be confirmed. However, if the direction of the last displayed marker is incorrect, the measurement will be canceled.
 

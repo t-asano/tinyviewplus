@@ -22,7 +22,7 @@ int cameraNum;
 int cameraNumVisible;
 int cameraIdxSolo;
 string helpMessage;
-bool soloViewTrim;
+bool camViewTrim;
 bool fullscreenEnabled;
 
 // osc
@@ -86,7 +86,7 @@ void ofApp::setup() {
     myFontNumberSub.load(FONT_P_FILE, NUMBER_HEIGHT / 2);
     myFontLabelSub.load(FONT_P_FILE, LABEL_HEIGHT / 2);
     myFontLapSub.load(FONT_P_FILE, LAP_HEIGHT / 2);
-    soloViewTrim = DFLT_SOLO_TRIM;
+    camViewTrim = DFLT_CAM_TRIM;
     fullscreenEnabled = DFLT_FSCR_ENBLD;
     // wallpaper
     wallImage.load(WALL_FILE);
@@ -896,8 +896,8 @@ void setViewParams() {
                 break;
             }
             camView[idx].moveSteps = MOVE_STEPS;
-            if ((ratio > CAMERA_RATIO && soloViewTrim == true)
-                || (ratio <= CAMERA_RATIO && soloViewTrim == false)) {
+            if ((ratio > CAMERA_RATIO && camViewTrim == true)
+                || (ratio <= CAMERA_RATIO && camViewTrim == false)) {
                 // wide-fill, tall-fit
                 camView[idx].widthTarget = width;
                 camView[idx].heightTarget = camView[idx].widthTarget / CAMERA_RATIO;
@@ -914,14 +914,14 @@ void setViewParams() {
                 // 1st camera
                 idx = getCameraIdxNthVisibleAll(1);
                 camView[idx].moveSteps = MOVE_STEPS;
-                camView[idx].widthTarget = width / 2;
+                camView[idx].widthTarget = (width / 2) - 1;
                 camView[idx].heightTarget = camView[idx].widthTarget / CAMERA_RATIO;
-                camView[idx].posXTarget = -1;
+                camView[idx].posXTarget = 0;
                 camView[idx].posYTarget = (height / 2) - (camView[idx].heightTarget / 2);
                 // 2nd camera
                 idx = getCameraIdxNthVisibleAll(2);
                 camView[idx].moveSteps = MOVE_STEPS;
-                camView[idx].widthTarget = width / 2;
+                camView[idx].widthTarget = (width / 2) - 1;
                 camView[idx].heightTarget = camView[idx].widthTarget / CAMERA_RATIO;
                 camView[idx].posXTarget = (width / 2) + 1;
                 camView[idx].posYTarget = (height / 2) - (camView[idx].heightTarget / 2);
@@ -929,8 +929,8 @@ void setViewParams() {
                 // main camera
                 idx = cameraIdxSolo;
                 camView[idx].moveSteps = MOVE_STEPS;
-                if ((ratio > CAMERA_RATIO && soloViewTrim == true)
-                    || (ratio <= CAMERA_RATIO && soloViewTrim == false)) {
+                if ((ratio > CAMERA_RATIO && camViewTrim == true)
+                    || (ratio <= CAMERA_RATIO && camViewTrim == false)) {
                     // wide-fill, tall-fit
                     camView[idx].widthTarget = width;
                     camView[idx].heightTarget = camView[idx].widthTarget / CAMERA_RATIO;
@@ -955,30 +955,42 @@ void setViewParams() {
                 // 1st camera
                 idx = getCameraIdxNthVisibleAll(1);
                 camView[idx].moveSteps = MOVE_STEPS;
-                camView[idx].heightTarget = height * 0.55;
+                if (camViewTrim == true) {
+                    camView[idx].heightTarget = height * 0.55;
+                } else {
+                    camView[idx].heightTarget = (height / 2) - 1;
+                }
                 camView[idx].widthTarget = camView[idx].heightTarget * CAMERA_RATIO;
                 camView[idx].posXTarget = (width / 2) - (camView[idx].widthTarget / 2);
                 camView[idx].posYTarget = 0;
                 // 2nd camera
                 idx = getCameraIdxNthVisibleAll(2);
                 camView[idx].moveSteps = MOVE_STEPS;
-                camView[idx].heightTarget = height * 0.55;
+                if (camViewTrim == true) {
+                    camView[idx].heightTarget = height * 0.55;
+                } else {
+                    camView[idx].heightTarget = (height / 2) - 1;
+                }
                 camView[idx].widthTarget = camView[idx].heightTarget * CAMERA_RATIO;
                 camView[idx].posXTarget = 0;
-                camView[idx].posYTarget = height * 0.45;
+                camView[idx].posYTarget = height - camView[idx].heightTarget;
                 // 3rd camera
                 idx = getCameraIdxNthVisibleAll(3);
                 camView[idx].moveSteps = MOVE_STEPS;
-                camView[idx].heightTarget = height * 0.55;
+                if (camViewTrim == true) {
+                    camView[idx].heightTarget = height * 0.55;
+                } else {
+                    camView[idx].heightTarget = (height / 2) - 1;
+                }
                 camView[idx].widthTarget = camView[idx].heightTarget * CAMERA_RATIO;
                 camView[idx].posXTarget = width - camView[idx].widthTarget;
-                camView[idx].posYTarget = height * 0.45;
+                camView[idx].posYTarget = height - camView[idx].heightTarget;
             } else { // solo mode on
                 // main camera
                 idx = cameraIdxSolo;
                 camView[idx].moveSteps = MOVE_STEPS;
-                if ((ratio > CAMERA_RATIO && soloViewTrim == true)
-                    || (ratio <= CAMERA_RATIO && soloViewTrim == false)) {
+                if ((ratio > CAMERA_RATIO && camViewTrim == true)
+                    || (ratio <= CAMERA_RATIO && camViewTrim == false)) {
                     // wide-fill, tall-fit
                     camView[idx].widthTarget = width;
                     camView[idx].heightTarget = camView[idx].widthTarget / CAMERA_RATIO;
@@ -1010,37 +1022,37 @@ void setViewParams() {
                 // 1st camera
                 idx = getCameraIdxNthVisibleAll(1);
                 camView[idx].moveSteps = MOVE_STEPS;
-                camView[idx].heightTarget = height * 0.5;
+                camView[idx].heightTarget = (height / 2) - 1;
                 camView[idx].widthTarget = camView[idx].heightTarget * CAMERA_RATIO;
                 camView[idx].posXTarget = (width / 2) - (camView[idx].widthTarget + 1);
-                camView[idx].posYTarget = -1;
+                camView[idx].posYTarget = 0;
                 // 2nd camera
                 idx = getCameraIdxNthVisibleAll(2);
                 camView[idx].moveSteps = MOVE_STEPS;
-                camView[idx].heightTarget = height * 0.5;
+                camView[idx].heightTarget = (height / 2) - 1;
                 camView[idx].widthTarget = camView[idx].heightTarget * CAMERA_RATIO;
                 camView[idx].posXTarget = (width / 2) + 1;
-                camView[idx].posYTarget = -1;
+                camView[idx].posYTarget = 0;
                 // 3rd camera
                 idx = getCameraIdxNthVisibleAll(3);
                 camView[idx].moveSteps = MOVE_STEPS;
-                camView[idx].heightTarget = height * 0.5;
+                camView[idx].heightTarget = (height / 2) - 1;
                 camView[idx].widthTarget = camView[idx].heightTarget * CAMERA_RATIO;
                 camView[idx].posXTarget = (width / 2) - (camView[idx].widthTarget + 1);
-                camView[idx].posYTarget = (height / 2) + 1;
+                camView[idx].posYTarget = height - camView[idx].heightTarget;
                 // 4th camera
                 idx = getCameraIdxNthVisibleAll(4);
                 camView[idx].moveSteps = MOVE_STEPS;
-                camView[idx].heightTarget = height * 0.5;
+                camView[idx].heightTarget = (height / 2) - 1;
                 camView[idx].widthTarget = camView[idx].heightTarget * CAMERA_RATIO;
                 camView[idx].posXTarget = (width / 2) + 1;
-                camView[idx].posYTarget = (height / 2) + 1;
+                camView[idx].posYTarget = height - camView[idx].heightTarget;
             } else { // solo mode off
                 // main camera
                 idx = cameraIdxSolo;
                 camView[idx].moveSteps = MOVE_STEPS;
-                if ((ratio > CAMERA_RATIO && soloViewTrim == true)
-                    || (ratio <= CAMERA_RATIO && soloViewTrim == false)) {
+                if ((ratio > CAMERA_RATIO && camViewTrim == true)
+                    || (ratio <= CAMERA_RATIO && camViewTrim == false)) {
                     // wide-fill, tall-fit
                     camView[idx].widthTarget = width;
                     camView[idx].heightTarget = camView[idx].widthTarget / CAMERA_RATIO;
@@ -1188,7 +1200,7 @@ void initConfig() {
         camView[i].lastLap = 0;
     }
     // view mode
-    soloViewTrim = DFLT_SOLO_TRIM;
+    camViewTrim = DFLT_CAM_TRIM;
     fullscreenEnabled = DFLT_FSCR_ENBLD;
     // speech
     oscSpeechEnabled = DFLT_SPCH_ENBLD;
@@ -1731,7 +1743,7 @@ void toggleFullscreen() {
 
 //--------------------------------------------------------------
 void toggleSoloTrim() {
-    soloViewTrim = !soloViewTrim;
+    camViewTrim = !camViewTrim;
     setViewParams();
 }
 
