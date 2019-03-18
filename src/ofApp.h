@@ -74,9 +74,9 @@
 #define ARAP_MKR_FILE   "system/marker.xml"
 #define ARAP_RESULT_DIR "results/"
 #define ARAP_MNUM_THR   2
-#define ARAP_MAX_RLAPS  100
+#define ARAP_MAX_RLAPS  1000
 #define ARAP_MAX_MNLAP  100
-#define ARAP_MAX_RSECS  3600
+#define ARAP_MAX_RSECS  36000
 #define ARAP_LOCKON_SEC 1
 #define ARAP_RSLT_SCRN  0
 #define ARAP_RSLT_FILE  1

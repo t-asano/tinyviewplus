@@ -1695,7 +1695,7 @@ void changeRaceDuration() {
     while (true) {
         int sec;
         str = (raceDuraSecs == 0) ? "" : ofToString(raceDuraSecs);
-        str = ofSystemTextBoxDialog("Race time (sec):", str);
+        str = ofSystemTextBoxDialog("Race time (0~" + ofToString(ARAP_MAX_RSECS) + " secs):", str);
         sec = (str == "") ? 0 : ofToInt(str);
         if (sec <= 0) {
             // no limit
@@ -1722,7 +1722,7 @@ void changeRaceDuration() {
     while (true) {
         int laps;
         str = (raceDuraLaps == 0) ? "" : ofToString(raceDuraLaps);
-        str = ofSystemTextBoxDialog("Race laps:", str);
+        str = ofSystemTextBoxDialog("Race laps (1~"  + ofToString(ARAP_MAX_RLAPS) + "):", str);
         laps = (str == "") ? 0 : ofToInt(str);
         if (laps > 0 && laps <= ARAP_MAX_RLAPS) {
             raceDuraLaps = laps;
@@ -1759,11 +1759,11 @@ void generateDummyData() {
     camView[1].prevElapsedSec = 180.2;
     camView[2].prevElapsedSec = 180.3;
     camView[3].prevElapsedSec = 180.4;
-    camView[0].totalLaps = 100;
-    camView[1].totalLaps = 70;
-    camView[2].totalLaps = 40;
-    camView[3].totalLaps = 10;
-    for (int i = 0; i < 100; i++) {
+    camView[0].totalLaps = ARAP_MAX_RLAPS;
+    camView[1].totalLaps = ARAP_MAX_RLAPS / 2;
+    camView[2].totalLaps = ARAP_MAX_RLAPS / 3;
+    camView[3].totalLaps = ARAP_MAX_RLAPS / 4;
+    for (int i = 0; i < ARAP_MAX_RLAPS; i++) {
         for (int j = 0; j < 4; j++) {
             camView[j].lapHistory[i] = 60 + (j * 0.1) + (i * 0.01);
         }
