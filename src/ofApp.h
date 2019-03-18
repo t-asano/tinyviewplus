@@ -104,7 +104,7 @@
                         "[Q] Start/Stop QR reader for camera label\n"\
                         "[B] Change background image\n"\
                         "[F] Fullscreen mode on/off\n"\
-                        "[A] AR lap timer on/off\n"\
+                        "[A] AR lap timer on/loose/off\n"\
                         "[O] Lock-on effect on/off\n"\
                         "[Space] Start/Stop race\n"\
                         "[V] Display race result\n"\

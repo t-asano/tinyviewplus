@@ -551,7 +551,6 @@ void ofApp::keyPressed(int key) {
     } else if (key == 't' || key == 'T') {
         toggleSoloTrim();
     } else if (key == '.') {
-        ofSystemAlertDialog("Exit application");
         ofExit();
     }
 }
