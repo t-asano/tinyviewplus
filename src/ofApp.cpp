@@ -225,7 +225,8 @@ void ofApp::update() {
                 camView[i].prevElapsedSec = elp;
                 camView[i].totalLaps = total;
                 camView[i].lastLap = lap;
-                camView[i].lapHistory[total - 1] = lap;
+                camView[i].lapHistoryName[total - 1] = camView[i].labelString;
+                camView[i].lapHistoryTime[total - 1] = lap;
                 if (total == raceDuraLaps) {
                     // finish
                     camView[i].foundMarkerNum = 0;
@@ -496,7 +497,7 @@ void ofApp::draw(){
 void ofApp::keyPressed(int key) {
     if (raceResultDisplay == true) {
         // race result
-        if (key == 'v' || key == 'V' || key == ' ') {
+        if (key == 'v' || key == 'V') {
             processRaceResultDisplay();
         }
         return;
@@ -635,6 +636,7 @@ void ofApp::dragEvent(ofDragInfo dragInfo){
 }
 
 void ofApp::exit() {
+    stopRace(true);
     for (int i = 0; i < cameraNum; i++) {
         camView[i].aruco.setThreaded(false);
     }
@@ -1309,7 +1311,13 @@ void recvOscCameraFloat(int camid, string method, float argfloat) {
     if (oscSpeechEnabled == true){
         speakLap(camid, argfloat, 0);
     }
-    camView[camid - 1].lastLap = argfloat;
+    int idx = camid - 1;
+    int total = camView[idx].totalLaps + 1;
+    // camView[idx].prevElapsedSec = elp;
+    camView[idx].totalLaps = total;
+    camView[idx].lastLap = argfloat;
+    camView[idx].lapHistoryName[total - 1] = camView[idx].labelString;
+    camView[idx].lapHistoryTime[total - 1] = argfloat;
 }
 
 //--------------------------------------------------------------
@@ -1492,31 +1500,48 @@ void toggleRace() {
         resetCameraSolo();
     }
     if (raceStarted == false) {
-        // init -> start
-        finishSound.stop();
-        countSound.play();
-        ofResetElapsedTimeCounter();
-        for (int i = 0; i < cameraNum; i++) {
-            camView[i].foundMarkerNum = 0;
-            camView[i].foundValidMarkerNum = 0;
-            camView[i].enoughMarkers = false;
-            camView[i].flickerCount = 0;
-            camView[i].flickerValidCount = 0;
-            camView[i].prevElapsedSec = WATCH_COUNT_SEC; // countdown
-            camView[i].totalLaps = 0;
-            camView[i].lastLap = 0;
-            for (int h = 0; h < ARAP_MAX_RLAPS; h++) {
-                camView[i].lapHistory[h] = 0;
-            }
-        }
-        if (raceDuraSecs > 0) {
-            setNextSpeechRemainSecs(raceDuraSecs);
-        }
-        raceStarted = true;
-        qrEnabled = false;
+        startRace();
     }
     else {
-        // start -> stop
+        stopRace(false);
+    }
+}
+
+void startRace() {
+    if (raceStarted == true) {
+        return;
+    }
+    // stop/init -> start
+    finishSound.stop();
+    for (int i = 0; i < cameraNum; i++) {
+        camView[i].foundMarkerNum = 0;
+        camView[i].foundValidMarkerNum = 0;
+        camView[i].enoughMarkers = false;
+        camView[i].flickerCount = 0;
+        camView[i].flickerValidCount = 0;
+        camView[i].prevElapsedSec = WATCH_COUNT_SEC; // countdown
+        camView[i].totalLaps = 0;
+        camView[i].lastLap = 0;
+        for (int h = 0; h < ARAP_MAX_RLAPS; h++) {
+            camView[i].lapHistoryName[h] = "";
+            camView[i].lapHistoryTime[h] = 0;
+        }
+    }
+    if (raceDuraSecs > 0) {
+        setNextSpeechRemainSecs(raceDuraSecs);
+    }
+    raceStarted = true;
+    qrEnabled = false;
+    ofResetElapsedTimeCounter();
+    countSound.play();
+}
+
+void stopRace(bool exit) {
+    if (raceStarted == false) {
+        return;
+    }
+    // start -> stop
+    if (exit == false) {
         raceStarted = false;
         countSound.stop();
         finishSound.play();
@@ -1526,8 +1551,32 @@ void toggleRace() {
             speakAny("en", "race finished.");
         }
         processRaceResultDisplay();
-        fwriteRaceResult();
     }
+    fwriteRaceResult();
+}
+
+//--------------------------------------------------------------
+bool isVariousPilots(int camidx) {
+    if (camidx < 0 || camidx >= cameraNum || camView[camidx].totalLaps <= 1) {
+        return false;
+    }
+    string name = camView[camidx].lapHistoryName[0];
+    for (int i = 1; i < camView[camidx].totalLaps; i++) {
+        if (name != camView[camidx].lapHistoryName[i]) {
+            return true;
+        }
+    }
+    return false;
+}
+
+//--------------------------------------------------------------
+bool isVariousPilotsAll() {
+    for (int i = 0; i < cameraNum; i++) {
+        if (isVariousPilots(i) == true) {
+            return true;
+        }
+    }
+    return false;
 }
 
 //--------------------------------------------------------------
@@ -1549,11 +1598,11 @@ float getBestLap(int camidx) {
         return blap;
     }
     for (int i = 0; i < camView[camidx].totalLaps; i++) {
-        float h = camView[camidx].lapHistory[i];
+        float t = camView[camidx].lapHistoryTime[i];
         if (blap == 0) {
-            blap = h;
-        } else if (h < blap) {
-            blap = h;
+            blap = t;
+        } else if (t < blap) {
+            blap = t;
         }
     }
     return blap;
@@ -1629,7 +1678,7 @@ void fwriteRaceResult() {
             if (lap > camView[i].totalLaps) {
                 strlapb += "-.-";
             } else {
-                strlapb += getLapStr(camView[i].lapHistory[lap - 1]);
+                strlapb += getLapStr(camView[i].lapHistoryTime[lap - 1]);
             }
             if (i < (cameraNum - 1)) {
                 strlapb += sep;
@@ -1765,7 +1814,8 @@ void generateDummyData() {
     camView[3].totalLaps = ARAP_MAX_RLAPS / 4;
     for (int i = 0; i < ARAP_MAX_RLAPS; i++) {
         for (int j = 0; j < 4; j++) {
-            camView[j].lapHistory[i] = 60 + (j * 0.1) + (i * 0.01);
+            camView[j].lapHistoryName[i] = camView[j].labelString + "_L" + ofToString(i);
+            camView[j].lapHistoryTime[i] = 60 + (j * 0.1) + (i * 0.01);
         }
     }
 }
@@ -1898,7 +1948,7 @@ void drawRaceResult(int pageidx) {
             if ((lapidx + 1) > camView[i].totalLaps) {
                 str = "-.-";
             } else {
-                str = getLapStr(camView[i].lapHistory[lapidx]);
+                str = getLapStr(camView[i].lapHistoryTime[lapidx]);
             }
             drawStringBlock(&myFontResultM, str,
                             xoff + i + 1, line, ALIGN_CENTER, szb, szl);
@@ -1917,7 +1967,7 @@ void drawRaceResult(int pageidx) {
     // message
     line = ARAP_RSLT_LINES - 1;
     ofSetColor(myColorLGray);
-    drawStringBlock(&myFontResultP, "Press SPACE or V key to continue...", 0, line, ALIGN_CENTER, 1, szl);
+    drawStringBlock(&myFontResultP, "Press V key to continue...", 0, line, ALIGN_CENTER, 1, szl);
 }
 
 //--------------------------------------------------------------

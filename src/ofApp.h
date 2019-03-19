@@ -169,7 +169,8 @@ public:
     bool enoughMarkers;
     float prevElapsedSec;
     int totalLaps;
-    float lapHistory[ARAP_MAX_RLAPS];
+    string lapHistoryName[ARAP_MAX_RLAPS];
+    float lapHistoryTime[ARAP_MAX_RLAPS];
     int flickerCount;
     int flickerValidCount;
     // QR reader
@@ -230,6 +231,10 @@ void drawCamera(int);
 string getWatchString(float);
 void drawWatch();
 void toggleRace();
+void startRace();
+void stopRace(bool);
+bool isVariousPilots(int);
+bool isVariousPilotsAll();
 bool isRecordedLaps();
 float getBestLap(int);
 int getMaxLaps();
