@@ -827,6 +827,7 @@ void changeCameraIconPath(int camid, string path) {
         int idx = camid - 1;
         camView[idx].iconImage.clear();
         camView[idx].iconImage.load(path);
+        camView[camid - 1].labelString = file.getBaseName(); // sync
     } else {
         ofSystemAlertDialog("Unsupported file type");
     }

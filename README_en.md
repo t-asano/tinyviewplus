@@ -114,10 +114,12 @@ Some functions can also be operated with the mouse.
 
 | Click location | Function |
 | --- | --- |
-| Camera 1~4 icon | Change camera 1~4 icon |
-| Camera 1~4 label | Change camera 1~4 label (\*1) |
+| Camera 1~4 icon | Change camera 1~4 icon (\*1) |
+| Camera 1~4 label | Change camera 1~4 label (\*2) |
 
-- (\*1) Camera icon will be automatically changed according to camera label.
+- (\*1) Camera label will be automatically changed according to camera icon.
+	- The file name of the icon (excluding the extension) will be adopted
+- (\*2) Camera icon will be automatically changed according to camera label.
 	- If {label string}.png or {label string}.jpg was found under predefined folder, it will be adopted as an icon image in this priority order.
 		- macOS binary: Tiny View Plus.app/Contents/ Resources/data/pilots
 		- others: data/pilots
