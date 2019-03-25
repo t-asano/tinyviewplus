@@ -86,6 +86,7 @@ On Windows, you can check the detection status of the camera (receiver) with the
 | Q | Start/Stop QR code reader (\*2) | - |
 | B | Change background image | built-in image |
 | F | Fullscreen mode on/off | off |
+| L | Lap history display during race on/off | off |
 | A | Switch AR lap timer mode (normal/loose/off) (\*3) | normal |
 | O | Lock-on effect on/off (\*4) | off |
 | Space | Start/Stop race | - |

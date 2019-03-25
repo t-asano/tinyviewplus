@@ -22,8 +22,9 @@ int cameraNum;
 int cameraNumVisible;
 int cameraIdxSolo;
 string helpMessage;
-bool camViewTrim;
+bool cameraTrimEnabled;
 bool fullscreenEnabled;
+bool cameraLapHistEnabled;
 
 // osc
 ofxOscReceiver oscReceiver;
@@ -86,8 +87,9 @@ void ofApp::setup() {
     myFontNumberSub.load(FONT_P_FILE, NUMBER_HEIGHT / 2);
     myFontLabelSub.load(FONT_P_FILE, LABEL_HEIGHT / 2);
     myFontLapSub.load(FONT_P_FILE, LAP_HEIGHT / 2);
-    camViewTrim = DFLT_CAM_TRIM;
+    cameraTrimEnabled = DFLT_CAM_TRIM;
     fullscreenEnabled = DFLT_FSCR_ENBLD;
+    cameraLapHistEnabled = DFLT_CAM_LAPHST;
     // wallpaper
     wallImage.load(WALL_FILE);
     wallRatio = wallImage.getWidth() / wallImage.getHeight();
@@ -297,16 +299,15 @@ void ofApp::update() {
 }
 
 //--------------------------------------------------------------
-void drawCamera(int idx) {
-    int i = idx;
-    bool isSub = false;
-    if (cameraIdxSolo != -1 && i != cameraIdxSolo) {
-        isSub = true;
-    }
-    // image
+void drawCameraImage(int camidx) {
+    int i = camidx;
     ofSetColor(myColorWhite);
     grabber[i].draw(camView[i].posX, camView[i].posY, camView[i].width, camView[i].height);
-    // AR marker
+}
+
+//--------------------------------------------------------------
+void drawCameraARMarker(int idx, bool isSub) {
+    int i = idx;
     if (arLapMode != ARAP_MODE_OFF && raceStarted == true && camView[i].totalLaps < raceDuraLaps) {
         // rect
         ofPushMatrix();
@@ -315,6 +316,9 @@ void drawCamera(int idx) {
         ofSetLineWidth(3);
         camView[i].aruco.draw2dGate(myColorYellow, myColorAlert, false);
         ofPopMatrix();
+        if (cameraLapHistEnabled == true) {
+            return;
+        }
         // meter
         string lv_valid = "";
         string lv_invalid = "";
@@ -354,6 +358,11 @@ void drawCamera(int idx) {
             }
         }
     }
+}
+
+//--------------------------------------------------------------
+void drawCameraPilot(int camidx, bool isSub) {
+    int i = camidx;
     // base
     ofSetColor(camView[i].baseColor);
     ofDrawRectangle(camView[i].basePosX, camView[i].basePosY, camView[i].baseWidth, camView[i].baseHeight);
@@ -380,45 +389,89 @@ void drawCamera(int idx) {
             myFontLabel.drawString(camView[i].labelString, camView[i].labelPosX, camView[i].labelPosY);
         }
     }
-    // lap time
-    if (camView[i].lastLap != 0) {
-        string sout;
-        int laps = camView[i].totalLaps;
-        if (isRecordedLaps() == true && (raceStarted == false || camView[i].totalLaps == raceDuraLaps)) {
-            // race/laps finished
-            sout = "Laps: " + ofToString(laps);
-            ofSetColor(myColorWhite);
-            if (isSub) {
-                myFontLapSub.drawString(sout, camView[i].lapPosX, camView[i].lapPosY);
-            } else {
-                myFontLap.drawString(sout, camView[i].lapPosX, camView[i].lapPosY);
-            }
-            float blap = getBestLap(i);
-            if (blap != 0) {
-                sout = "BestLap: " + getLapStr(blap) + "s";
-                if (isSub) {
-                    myFontLapSub.drawString(sout, camView[i].lapPosX, camView[i].lapPosY + (LAP_HEIGHT / 2) + 5);
-                } else {
-                    myFontLap.drawString(sout, camView[i].lapPosX, camView[i].lapPosY + LAP_HEIGHT + 10);
-                }
-                sout = "Time: " + getWatchString(camView[i].prevElapsedSec - WATCH_COUNT_SEC);
-                if (isSub) {
-                    myFontLapSub.drawString(sout, camView[i].lapPosX, camView[i].lapPosY + LAP_HEIGHT + 10);
-                } else {
-                    myFontLap.drawString(sout, camView[i].lapPosX, camView[i].lapPosY + (LAP_HEIGHT * 2) + 20);
-                }
-            }
+}
+
+//--------------------------------------------------------------
+void drawCameraLapTime(int idx, bool isSub) {
+    int laps = camView[idx].totalLaps;
+    if (laps == 0) {
+        return;
+    }
+    int i = idx;
+    string sout;
+    if (raceStarted == false || camView[i].totalLaps == raceDuraLaps) {
+        // race/laps finished
+        sout = "Laps: " + ofToString(laps);
+        ofSetColor(myColorWhite);
+        if (isSub) {
+            myFontLapSub.drawString(sout, camView[i].lapPosX, camView[i].lapPosY);
         } else {
-            // others
-            sout = "Lap" + ((laps > 0) ? ofToString(laps) : "") + ": " + getLapStr(camView[i].lastLap) + "s";
-            ofSetColor(myColorWhite);
+            myFontLap.drawString(sout, camView[i].lapPosX, camView[i].lapPosY);
+        }
+        float blap = getBestLap(i);
+        if (blap != 0) {
+            sout = "BestLap: " + getLapStr(blap) + "s";
             if (isSub) {
-                myFontLapSub.drawString(sout, camView[i].lapPosX, camView[i].lapPosY);
+                myFontLapSub.drawString(sout, camView[i].lapPosX, camView[i].lapPosY + (LAP_HEIGHT / 2) + 5);
             } else {
-                myFontLap.drawString(sout, camView[i].lapPosX, camView[i].lapPosY);
+                myFontLap.drawString(sout, camView[i].lapPosX, camView[i].lapPosY + LAP_HEIGHT + 10);
+            }
+            sout = "Time: " + getWatchString(camView[i].prevElapsedSec - WATCH_COUNT_SEC);
+            if (isSub) {
+                myFontLapSub.drawString(sout, camView[i].lapPosX, camView[i].lapPosY + LAP_HEIGHT + 10);
+            } else {
+                myFontLap.drawString(sout, camView[i].lapPosX, camView[i].lapPosY + (LAP_HEIGHT * 2) + 20);
             }
         }
+    } else {
+        // not finished
+        sout = "Lap" + ofToString(laps) + ": " + getLapStr(camView[i].lastLap) + "s";
+        ofSetColor(myColorWhite);
+        if (isSub) {
+            myFontLapSub.drawString(sout, camView[i].lapPosX, camView[i].lapPosY);
+        } else {
+            myFontLap.drawString(sout, camView[i].lapPosX, camView[i].lapPosY);
+        }
+        // history
+        if (cameraLapHistEnabled == false || laps < 2 || camView[idx].moveSteps > 0 || isSub == true) {
+            return;
+        }
+        drawCameraLapHistory(idx);
     }
+}
+
+//--------------------------------------------------------------
+void drawCameraLapHistory(int camidx) {
+    string text;
+    float lap;
+    int lapidx = camView[camidx].totalLaps - 2;
+    int posy = camView[camidx].posY + LAP_MARGIN_Y + (LAP_HEIGHT / 2);
+    ofSetColor(myColorWhite);
+    for (; lapidx >= 0; lapidx--) {
+        posy += LAPHIST_HEIGHT + (LAPHIST_HEIGHT / 2);
+        if (posy + (LAPHIST_HEIGHT / 2) >= camView[camidx].height) {
+            break;
+        }
+        lap = camView[camidx].lapHistoryTime[lapidx];
+        text = "Lap" + ofToString(lapidx + 1) + ": " + getLapStr(lap) + "s";
+        myFontLapSub.drawString(text, camView[camidx].lapPosX, posy);
+    }
+}
+
+//--------------------------------------------------------------
+void drawCamera(int idx) {
+    bool isSub = false;
+    if (cameraIdxSolo != -1 && idx != cameraIdxSolo) {
+        isSub = true;
+    }
+    // image
+    drawCameraImage(idx);
+    // AR marker
+    drawCameraARMarker(idx, isSub);
+    // pilot
+    drawCameraPilot(idx, isSub);
+    // lap time
+    drawCameraLapTime(idx, isSub);
 }
 
 //--------------------------------------------------------------
@@ -551,6 +604,8 @@ void ofApp::keyPressed(int key) {
         toggleFullscreen();
     } else if (key == 't' || key == 'T') {
         toggleSoloTrim();
+    } else if (key == 'l' || key == 'L') {
+        toggleLapHistory();
     } else if (key == '.') {
         ofExit();
     }
@@ -583,21 +638,17 @@ void ofApp::mouseReleased(int x, int y, int button){
         processRaceResultDisplay();
         return;
     }
-    // camera icon
+    // pilot
     for (int i = 0; i < cameraNum; i++) {
-        if (camView[i].visible == false) {
+        if (camView[i].visible == false || camView[i].moveSteps > 0) {
             continue;
         }
+        // icon
         if (x >= camView[i].iconPosX && x <= camView[i].iconPosX + ICON_WIDTH
             && y >= camView[i].iconPosY && y <= camView[i].iconPosY + ICON_HEIGHT) {
             changeCameraIcon(i + 1);
         }
-    }
-    // camera label
-    for (int i = 0; i < cameraNum; i++) {
-        if (camView[i].visible == false) {
-            continue;
-        }
+        // label
         if (x >= camView[i].labelPosX && x <= camView[i].posX + camView[i].width
             && y >= camView[i].posY && y <= camView[i].iconPosY + ICON_HEIGHT) {
             changeCameraLabel(i + 1);
@@ -898,8 +949,8 @@ void setViewParams() {
                 break;
             }
             camView[idx].moveSteps = MOVE_STEPS;
-            if ((ratio > CAMERA_RATIO && camViewTrim == true)
-                || (ratio <= CAMERA_RATIO && camViewTrim == false)) {
+            if ((ratio > CAMERA_RATIO && cameraTrimEnabled == true)
+                || (ratio <= CAMERA_RATIO && cameraTrimEnabled == false)) {
                 // wide-fill, tall-fit
                 camView[idx].widthTarget = width;
                 camView[idx].heightTarget = camView[idx].widthTarget / CAMERA_RATIO;
@@ -931,8 +982,8 @@ void setViewParams() {
                 // main camera
                 idx = cameraIdxSolo;
                 camView[idx].moveSteps = MOVE_STEPS;
-                if ((ratio > CAMERA_RATIO && camViewTrim == true)
-                    || (ratio <= CAMERA_RATIO && camViewTrim == false)) {
+                if ((ratio > CAMERA_RATIO && cameraTrimEnabled == true)
+                    || (ratio <= CAMERA_RATIO && cameraTrimEnabled == false)) {
                     // wide-fill, tall-fit
                     camView[idx].widthTarget = width;
                     camView[idx].heightTarget = camView[idx].widthTarget / CAMERA_RATIO;
@@ -957,7 +1008,7 @@ void setViewParams() {
                 // 1st camera
                 idx = getCameraIdxNthVisibleAll(1);
                 camView[idx].moveSteps = MOVE_STEPS;
-                if (camViewTrim == true) {
+                if (cameraTrimEnabled == true) {
                     camView[idx].heightTarget = height * 0.55;
                 } else {
                     camView[idx].heightTarget = (height / 2) - 1;
@@ -968,7 +1019,7 @@ void setViewParams() {
                 // 2nd camera
                 idx = getCameraIdxNthVisibleAll(2);
                 camView[idx].moveSteps = MOVE_STEPS;
-                if (camViewTrim == true) {
+                if (cameraTrimEnabled == true) {
                     camView[idx].heightTarget = height * 0.55;
                 } else {
                     camView[idx].heightTarget = (height / 2) - 1;
@@ -979,7 +1030,7 @@ void setViewParams() {
                 // 3rd camera
                 idx = getCameraIdxNthVisibleAll(3);
                 camView[idx].moveSteps = MOVE_STEPS;
-                if (camViewTrim == true) {
+                if (cameraTrimEnabled == true) {
                     camView[idx].heightTarget = height * 0.55;
                 } else {
                     camView[idx].heightTarget = (height / 2) - 1;
@@ -991,8 +1042,8 @@ void setViewParams() {
                 // main camera
                 idx = cameraIdxSolo;
                 camView[idx].moveSteps = MOVE_STEPS;
-                if ((ratio > CAMERA_RATIO && camViewTrim == true)
-                    || (ratio <= CAMERA_RATIO && camViewTrim == false)) {
+                if ((ratio > CAMERA_RATIO && cameraTrimEnabled == true)
+                    || (ratio <= CAMERA_RATIO && cameraTrimEnabled == false)) {
                     // wide-fill, tall-fit
                     camView[idx].widthTarget = width;
                     camView[idx].heightTarget = camView[idx].widthTarget / CAMERA_RATIO;
@@ -1053,8 +1104,8 @@ void setViewParams() {
                 // main camera
                 idx = cameraIdxSolo;
                 camView[idx].moveSteps = MOVE_STEPS;
-                if ((ratio > CAMERA_RATIO && camViewTrim == true)
-                    || (ratio <= CAMERA_RATIO && camViewTrim == false)) {
+                if ((ratio > CAMERA_RATIO && cameraTrimEnabled == true)
+                    || (ratio <= CAMERA_RATIO && cameraTrimEnabled == false)) {
                     // wide-fill, tall-fit
                     camView[idx].widthTarget = width;
                     camView[idx].heightTarget = camView[idx].widthTarget / CAMERA_RATIO;
@@ -1202,8 +1253,9 @@ void initConfig() {
         camView[i].lastLap = 0;
     }
     // view mode
-    camViewTrim = DFLT_CAM_TRIM;
+    cameraTrimEnabled = DFLT_CAM_TRIM;
     fullscreenEnabled = DFLT_FSCR_ENBLD;
+    cameraLapHistEnabled = DFLT_CAM_LAPHST;
     // speech
     oscSpeechEnabled = DFLT_SPCH_ENBLD;
     speechLangJpn = DFLT_SPCH_JPN;
@@ -1325,9 +1377,9 @@ void recvOscCameraFloat(int camid, string method, float argfloat) {
 void toggleOscSpeech() {
     oscSpeechEnabled = !oscSpeechEnabled;
     if (oscSpeechEnabled == true) {
-        ofSystemAlertDialog("OSC speech on");
+        ofSystemAlertDialog("OSC speech: On");
     } else {
-        ofSystemAlertDialog("OSC speech off");
+        ofSystemAlertDialog("OSC speech: Off");
     }
 }
 
@@ -1335,10 +1387,10 @@ void toggleOscSpeech() {
 void toggleSpeechLang() {
     speechLangJpn = !speechLangJpn;
     if (speechLangJpn == true) {
-        ofSystemAlertDialog("Speech language japanese");
+        ofSystemAlertDialog("Speech language: Japanese");
     }
     else {
-        ofSystemAlertDialog("Speech language english");
+        ofSystemAlertDialog("Speech language: English");
     }
 }
 
@@ -1644,10 +1696,10 @@ void fwriteRaceResult() {
     string sep = "  ";
     int maxlap = 0;
 
-    // SUMMARY: PILOT LAPS BESTLAP TIME
+    // SUMMARY: NAME LAPS BESTLAP TIME
     // - head
     strsumm += "- Summary -" + newline;
-    strsumm += "PILOT" + sep  + "LAPS" + sep + "BESTLAP" + sep + "TIME" + newline;
+    strsumm += "NAME" + sep  + "LAPS" + sep + "BESTLAP" + sep + "TIME" + newline;
     // - body
     for (int i = 0; i < cameraNum; i++) {
         float blap = getBestLap(i);
@@ -1717,9 +1769,9 @@ void toggleLockOnEffect() {
     lockOnEnabled = !lockOnEnabled;
     resetCameraSolo();
     if (lockOnEnabled == true) {
-        ofSystemAlertDialog("Lock-on effect on");
+        ofSystemAlertDialog("Lock-on effect: On");
     } else {
-        ofSystemAlertDialog("Lock-on effect off");
+        ofSystemAlertDialog("Lock-on effect: Off");
     }
 }
 
@@ -1792,7 +1844,7 @@ void toggleFullscreen() {
 
 //--------------------------------------------------------------
 void toggleSoloTrim() {
-    camViewTrim = !camViewTrim;
+    cameraTrimEnabled = !cameraTrimEnabled;
     setViewParams();
 }
 
@@ -1888,11 +1940,11 @@ void drawRaceResult(int pageidx) {
     ofSetColor(myColorYellow);
     drawStringBlock(&myFontResultP2x, "Race Result", 0, line, ALIGN_CENTER, 1, szl);
 
-    // summary : pilot laps bestlap time
+    // summary : name laps bestlap time
     // _header
     line = 4;
     ofSetColor(myColorWhite);
-    drawStringBlock(&myFontResultP, "Pilot", 1, line, ALIGN_CENTER, szb, szl);
+    drawStringBlock(&myFontResultP, "Name", 1, line, ALIGN_CENTER, szb, szl);
     drawStringBlock(&myFontResultP, "Laps", 2, line, ALIGN_CENTER, szb, szl);
     drawStringBlock(&myFontResultP, "BestLap", 3, line, ALIGN_CENTER, szb, szl);
     drawStringBlock(&myFontResultP, "Time", 4, line, ALIGN_CENTER, szb, szl);
@@ -2100,4 +2152,9 @@ void processQrReader() {
     if (count == cameraNum) {
         toggleQrReader(); // finished
     }
+}
+
+//--------------------------------------------------------------
+void toggleLapHistory() {
+    cameraLapHistEnabled = !cameraLapHistEnabled;
 }

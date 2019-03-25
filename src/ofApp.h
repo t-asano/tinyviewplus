@@ -52,8 +52,10 @@
 #define LAP_HEIGHT      20
 #define LAP_MARGIN_X    20
 #define LAP_MARGIN_Y    80
+#define LAPHIST_HEIGHT  10
 #define DFLT_CAM_TRIM   false
 #define DFLT_FSCR_ENBLD false
+#define DFLT_CAM_LAPHST false
 #define ALIGN_LEFT      0
 #define ALIGN_CENTER    1
 #define ALIGN_RIGHT     2
@@ -227,6 +229,11 @@ void speakLap(int, float, int);
 void setNextSpeechRemainSecs(int);
 void speakRemainTime(int);
 void speakAny(string, string);
+void drawCameraImage(int);
+void drawCameraARMarker(int, bool);
+void drawCameraPilot(int, bool);
+void drawCameraLapTime(int, bool);
+void drawCameraLapHistory(int);
 void drawCamera(int);
 string getWatchString(float);
 void drawWatch();
@@ -260,3 +267,4 @@ string utf8ToAnsi(string);
 #endif /* TARGET_WIN32 */
 void toggleQrReader();
 void processQrReader();
+void toggleLapHistory();
