@@ -59,9 +59,10 @@
 #define ALIGN_LEFT      0
 #define ALIGN_CENTER    1
 #define ALIGN_RIGHT     2
-#define OVLAY_NONE      0
-#define OVLAY_RACE_RSLT 1
 // overlay
+#define OVLAY_NONE      0
+#define OVLAY_HELP      1
+#define OVLAY_RACE_RSLT 2
 #define OVLTXT_BLKS     12
 #define OVLTXT_LINES    34
 #define OVLTXT_LAPS     25
@@ -100,8 +101,8 @@
 // QR code reader
 #define QR_CYCLE        6
 // help
-#define HELP_MESSAGE    APP_INFO"\n\n"\
-                        "Keyboard shortcuts:\n"\
+#define HELP_LINES      24
+#define HELP_MESSAGE    "Keyboard shortcuts:\n"\
                         "[H] Display help\n"\
                         "[1~4] Camera 1~4 solo view on/off\n"\
                         "[T] Solo view trimming on/off\n"\
@@ -240,6 +241,7 @@ void drawCameraLapHistory(int);
 void drawCamera(int);
 string getWatchString(float);
 void drawWatch();
+void keyPressedOverlayHelp(int);
 void keyPressedOverlayResult(int);
 void keyPressedOverlayNone(int);
 void toggleRace();
@@ -257,16 +259,18 @@ void changeMinLap();
 void changeRaceDuration();
 void toggleFullscreen();
 void toggleSoloTrim();
-// overlay
+// overlay - common
 void loadOverlayFont();
 void drawStringBlock(ofxTrueTypeFontUC*, string, int , int, int, int, int);
 void drawLineBlock(int, int, int, int, int);
-// - race result
+// overlay - race result
 void generateDummyData();
 void fwriteRaceResult();
 int getRaceResultPages();
 void processRaceResultDisplay();
 void drawRaceResult(int);
+// overlay - help
+void drawHelp();
 // QR code reader
 #ifdef TARGET_WIN32
 string utf8ToAnsi(string);

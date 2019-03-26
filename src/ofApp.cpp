@@ -537,6 +537,9 @@ void ofApp::draw(){
     }
     // overlay
     switch (overlayMode) {
+        case OVLAY_HELP:
+            drawHelp();
+            break;
         case OVLAY_RACE_RSLT:
             drawRaceResult(raceResultPage);
             break;
@@ -549,6 +552,13 @@ void ofApp::draw(){
     if (DEBUG_ENABLED == true) {
         ofSetColor(myColorYellow);
         ofDrawBitmapString("FPS: " + ofToString(ofGetFrameRate()), 10, ofGetHeight() - 10);
+    }
+}
+
+//--------------------------------------------------------------
+void keyPressedOverlayHelp(int key) {
+    if (key == 'h' || key == 'H') {
+        overlayMode = OVLAY_NONE;
     }
 }
 
@@ -578,7 +588,7 @@ void keyPressedOverlayNone(int key) {
     } else if (key == '$') {
         toggleCameraVisibility(4);
     } else if (key == 'h' || key == 'H') {
-        ofSystemAlertDialog(helpMessage);
+        overlayMode = OVLAY_HELP;
     } else if (key == 'i' || key == 'I') {
         initConfig();
     } else if (key == 's' || key == 'S') {
@@ -620,6 +630,9 @@ void keyPressedOverlayNone(int key) {
 //--------------------------------------------------------------
 void ofApp::keyPressed(int key) {
     switch (overlayMode) {
+        case OVLAY_HELP:
+            keyPressedOverlayHelp(key);
+            break;
         case OVLAY_RACE_RSLT:
             keyPressedOverlayResult(key);
             break;
@@ -2087,6 +2100,27 @@ void drawRaceResult(int pageidx) {
     line = OVLTXT_LINES - 1;
     ofSetColor(myColorLGray);
     drawStringBlock(&myFontOvlayP, "Press V key to continue...", 0, line, ALIGN_CENTER, 1, szl);
+}
+
+//--------------------------------------------------------------
+void drawHelp() {
+    int szl = HELP_LINES;
+    int line;
+    // background
+    ofSetColor(myColorLayer);
+    ofDrawRectangle(0, 0, ofGetWidth(), ofGetHeight());
+    // title
+    line = 1;
+    ofSetColor(myColorYellow);
+    drawStringBlock(&myFontOvlayP2x, APP_INFO, 0, line, ALIGN_CENTER, 1, szl);
+    // body
+    line = 3;
+    ofSetColor(myColorWhite);
+    drawStringBlock(&myFontOvlayP, HELP_MESSAGE, 0, line, ALIGN_CENTER, 1, szl);
+    // message
+    line = HELP_LINES - 2;
+    ofSetColor(myColorLGray);
+    drawStringBlock(&myFontOvlayP, "Press H key to continue...", 0, line, ALIGN_CENTER, 1, szl);
 }
 
 #ifdef TARGET_WIN32
