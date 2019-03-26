@@ -25,6 +25,7 @@ string helpMessage;
 bool cameraTrimEnabled;
 bool fullscreenEnabled;
 bool cameraLapHistEnabled;
+int overlayMode;
 
 // osc
 ofxOscReceiver oscReceiver;
@@ -49,7 +50,6 @@ float elapsedTime;
 // race result
 ofxTrueTypeFontUC myFontResultP, myFontResultP2x, myFontResultM;
 int raceResultPage;
-bool raceResultDisplay;
 
 // QR code reader
 bool qrEnabled;
@@ -90,6 +90,7 @@ void ofApp::setup() {
     cameraTrimEnabled = DFLT_CAM_TRIM;
     fullscreenEnabled = DFLT_FSCR_ENBLD;
     cameraLapHistEnabled = DFLT_CAM_LAPHST;
+    overlayMode = OVLAY_NONE;
     // wallpaper
     wallImage.load(WALL_FILE);
     wallRatio = wallImage.getWidth() / wallImage.getHeight();
@@ -123,7 +124,6 @@ void ofApp::setup() {
     elapsedTime = 0;
     // race result
     loadResultFont();
-    raceResultDisplay = false;
     raceResultPage = 0;
     // QR reader
     qrEnabled = false;
@@ -535,9 +535,15 @@ void ofApp::draw(){
         int x = (ofGetWidth() / 2) - (myFontWatch.stringWidth(str) / 2);
         myFontWatch.drawString(str, x, ofGetHeight() - 10);
     }
-    // race result
-    if (raceResultDisplay == true) {
-        drawRaceResult(raceResultPage);
+    // overlay
+    switch (overlayMode) {
+        case OVLAY_RACE_RSLT:
+            drawRaceResult(raceResultPage);
+            break;
+        case OVLAY_NONE:
+            /* fall through */
+        default:
+            break;
     }
     // debug
     if (DEBUG_ENABLED == true) {
@@ -547,14 +553,14 @@ void ofApp::draw(){
 }
 
 //--------------------------------------------------------------
-void ofApp::keyPressed(int key) {
-    if (raceResultDisplay == true) {
-        // race result
-        if (key == 'v' || key == 'V') {
-            processRaceResultDisplay();
-        }
-        return;
+void keyPressedOverlayResult(int key) {
+    if (key == 'v' || key == 'V') {
+        processRaceResultDisplay();
     }
+}
+
+//--------------------------------------------------------------
+void keyPressedOverlayNone(int key) {
     if (key == '1') {
         toggleCameraSolo(1);
     } else if (key == '2') {
@@ -582,7 +588,7 @@ void ofApp::keyPressed(int key) {
     } else if (key == 'b' || key == 'B') {
         changeWallImage();
     } else if (key == 'q' || key == 'Q') {
-        if (raceStarted == false && raceResultDisplay == false) {
+        if (raceStarted == false && overlayMode == OVLAY_NONE) {
             toggleQrReader();
         }
     } else if (key == ' ') {
@@ -612,6 +618,20 @@ void ofApp::keyPressed(int key) {
 }
 
 //--------------------------------------------------------------
+void ofApp::keyPressed(int key) {
+    switch (overlayMode) {
+        case OVLAY_RACE_RSLT:
+            keyPressedOverlayResult(key);
+            break;
+        case OVLAY_NONE:
+            /* fall through */
+        default:
+            keyPressedOverlayNone(key);
+            break;
+    }
+}
+
+//--------------------------------------------------------------
 void ofApp::keyReleased(int key){
     
 }
@@ -634,7 +654,7 @@ void ofApp::mousePressed(int x, int y, int button){
 //--------------------------------------------------------------
 void ofApp::mouseReleased(int x, int y, int button){
     // race result
-    if (raceResultDisplay == true) {
+    if (overlayMode == OVLAY_RACE_RSLT) {
         processRaceResultDisplay();
         return;
     }
@@ -1260,6 +1280,7 @@ void initConfig() {
     oscSpeechEnabled = DFLT_SPCH_ENBLD;
     speechLangJpn = DFLT_SPCH_JPN;
     // AR lap timer
+    overlayMode = OVLAY_NONE;
     arLapMode = DFLT_ARAP_MODE;
     lockOnEnabled = DFLT_ARAP_LCKON;
     minLapTime = DFLT_ARAP_MNLAP;
@@ -1907,12 +1928,12 @@ void processRaceResultDisplay() {
     if (isRecordedLaps() == false) { // no result
         return;
     }
-    if (raceResultDisplay == false) {
-        raceResultDisplay = true;
+    if (overlayMode != OVLAY_RACE_RSLT) {
+        overlayMode = OVLAY_RACE_RSLT;
         raceResultPage = 0;
     } else {
         if ((raceResultPage + 1) >= getRaceResultPages()) {
-            raceResultDisplay = false;
+            overlayMode = OVLAY_NONE;
             raceResultPage = 0;
         } else {
             raceResultPage++;

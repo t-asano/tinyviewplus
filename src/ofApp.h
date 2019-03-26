@@ -59,6 +59,8 @@
 #define ALIGN_LEFT      0
 #define ALIGN_CENTER    1
 #define ALIGN_RIGHT     2
+#define OVLAY_NONE      0
+#define OVLAY_RACE_RSLT 1
 // AR lap timer
 #define ARAP_MODE_NORM  0
 #define ARAP_MODE_LOOSE 1
@@ -237,6 +239,8 @@ void drawCameraLapHistory(int);
 void drawCamera(int);
 string getWatchString(float);
 void drawWatch();
+void keyPressedOverlayResult(int);
+void keyPressedOverlayNone(int);
 void toggleRace();
 void startRace();
 void stopRace(bool);
