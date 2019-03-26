@@ -1870,6 +1870,68 @@ void toggleSoloTrim() {
 }
 
 //--------------------------------------------------------------
+void loadOverlayFont() {
+    int h = (ofGetHeight() - (OVLTXT_MARG * 2)) / OVLTXT_LINES * 0.7;
+    if (myFontOvlayP.isLoaded()) {
+        myFontOvlayP.unloadFont();
+    }
+    if (myFontOvlayP2x.isLoaded()) {
+        myFontOvlayP2x.unloadFont();
+    }
+    if (myFontOvlayM.isLoaded()) {
+        myFontOvlayM.unloadFont();
+    }
+    myFontOvlayP.load(FONT_P_FILE, h);
+    myFontOvlayP2x.load(FONT_P_FILE, h * 2);
+    myFontOvlayM.load(FONT_M_FILE, h);
+}
+
+//--------------------------------------------------------------
+void drawStringBlock(ofxTrueTypeFontUC *font, string text,
+                     int xblock, int yline, int align, int blocks, int lines) {
+    int bw, bh, x, y;
+    int margin = OVLTXT_MARG;
+    bw = (ofGetWidth() - (margin * 2)) / blocks;
+    bh = (ofGetHeight() - (margin * 2)) / lines;
+    // pos-x
+    switch (align) {
+        case ALIGN_LEFT:
+            x = bw * xblock;
+            break;
+        case ALIGN_CENTER:
+            x = (bw * xblock) + (bw / 2) - (font->stringWidth(text) / 2);
+            break;
+        case ALIGN_RIGHT:
+            x = (bw * xblock) + bw - font->stringWidth(text);
+            break;
+        default:
+            return;
+    }
+    x += margin;
+    // pos-y
+    y = bh * (yline + 1) + margin;
+    // draw
+    font->setLineHeight(bh);
+    font->drawString(text, x, y);
+}
+
+//--------------------------------------------------------------
+void drawLineBlock(int xblock1, int xblock2, int yline, int blocks, int lines) {
+    int bw, bh, x, y, w, h;
+    int margin = OVLTXT_MARG;
+
+    bw = (ofGetWidth() - (margin * 2)) / blocks;
+    x = (bw * xblock1) + margin;
+    w = bw * (xblock2 - xblock1 + 1);
+
+    bh = (ofGetHeight() - (margin * 2)) / lines;
+    y = (bh * yline) + (bh * 0.5) + margin - 1;
+    h = 2;
+
+    ofDrawRectangle(x, y, w, h);
+}
+
+//--------------------------------------------------------------
 void generateDummyData() {
     // camera
     cameraNum = 4;
@@ -1892,23 +1954,6 @@ void generateDummyData() {
             camView[j].lapHistoryTime[i] = 60 + (j * 0.1) + (i * 0.01);
         }
     }
-}
-
-//--------------------------------------------------------------
-void loadOverlayFont() {
-    int h = (ofGetHeight() - (OVLTXT_MARG * 2)) / OVLTXT_LINES * 0.7;
-    if (myFontOvlayP.isLoaded()) {
-        myFontOvlayP.unloadFont();
-    }
-    if (myFontOvlayP2x.isLoaded()) {
-        myFontOvlayP2x.unloadFont();
-    }
-    if (myFontOvlayM.isLoaded()) {
-        myFontOvlayM.unloadFont();
-    }
-    myFontOvlayP.load(FONT_P_FILE, h);
-    myFontOvlayP2x.load(FONT_P_FILE, h * 2);
-    myFontOvlayM.load(FONT_M_FILE, h);
 }
 
 //--------------------------------------------------------------
@@ -2042,51 +2087,6 @@ void drawRaceResult(int pageidx) {
     line = OVLTXT_LINES - 1;
     ofSetColor(myColorLGray);
     drawStringBlock(&myFontOvlayP, "Press V key to continue...", 0, line, ALIGN_CENTER, 1, szl);
-}
-
-//--------------------------------------------------------------
-void drawStringBlock(ofxTrueTypeFontUC *font, string text,
-                     int xblock, int yline, int align, int blocks, int lines) {
-    int bw, bh, x, y;
-    int margin = OVLTXT_MARG;
-    bw = (ofGetWidth() - (margin * 2)) / blocks;
-    bh = (ofGetHeight() - (margin * 2)) / lines;
-    // pos-x
-    switch (align) {
-        case ALIGN_LEFT:
-            x = bw * xblock;
-            break;
-        case ALIGN_CENTER:
-            x = (bw * xblock) + (bw / 2) - (font->stringWidth(text) / 2);
-            break;
-        case ALIGN_RIGHT:
-            x = (bw * xblock) + bw - font->stringWidth(text);
-            break;
-        default:
-            return;
-    }
-    x += margin;
-    // pos-y
-    y = bh * (yline + 1) + margin;
-    // draw
-    font->setLineHeight(bh);
-    font->drawString(text, x, y);
-}
-
-//--------------------------------------------------------------
-void drawLineBlock(int xblock1, int xblock2, int yline, int blocks, int lines) {
-    int bw, bh, x, y, w, h;
-    int margin = OVLTXT_MARG;
-
-    bw = (ofGetWidth() - (margin * 2)) / blocks;
-    x = (bw * xblock1) + margin;
-    w = bw * (xblock2 - xblock1 + 1);
-
-    bh = (ofGetHeight() - (margin * 2)) / lines;
-    y = (bh * yline) + (bh * 0.5) + margin - 1;
-    h = 2;
-
-    ofDrawRectangle(x, y, w, h);
 }
 
 #ifdef TARGET_WIN32

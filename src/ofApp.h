@@ -257,15 +257,16 @@ void changeMinLap();
 void changeRaceDuration();
 void toggleFullscreen();
 void toggleSoloTrim();
-// race result
+// overlay
+void loadOverlayFont();
+void drawStringBlock(ofxTrueTypeFontUC*, string, int , int, int, int, int);
+void drawLineBlock(int, int, int, int, int);
+// - race result
 void generateDummyData();
 void fwriteRaceResult();
-void loadOverlayFont();
 int getRaceResultPages();
 void processRaceResultDisplay();
 void drawRaceResult(int);
-void drawStringBlock(ofxTrueTypeFontUC*, string, int , int, int, int, int);
-void drawLineBlock(int, int, int, int, int);
 // QR code reader
 #ifdef TARGET_WIN32
 string utf8ToAnsi(string);
