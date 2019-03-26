@@ -47,8 +47,8 @@ int raceDuraLaps;
 int minLapTime;
 float elapsedTime;
 
-// race result
-ofxTrueTypeFontUC myFontResultP, myFontResultP2x, myFontResultM;
+// overlay
+ofxTrueTypeFontUC myFontOvlayP, myFontOvlayP2x, myFontOvlayM;
 int raceResultPage;
 
 // QR code reader
@@ -87,6 +87,7 @@ void ofApp::setup() {
     myFontNumberSub.load(FONT_P_FILE, NUMBER_HEIGHT / 2);
     myFontLabelSub.load(FONT_P_FILE, LABEL_HEIGHT / 2);
     myFontLapSub.load(FONT_P_FILE, LAP_HEIGHT / 2);
+    loadOverlayFont();
     cameraTrimEnabled = DFLT_CAM_TRIM;
     fullscreenEnabled = DFLT_FSCR_ENBLD;
     cameraLapHistEnabled = DFLT_CAM_LAPHST;
@@ -123,7 +124,6 @@ void ofApp::setup() {
     raceStarted = false;
     elapsedTime = 0;
     // race result
-    loadResultFont();
     raceResultPage = 0;
     // QR reader
     qrEnabled = false;
@@ -692,8 +692,8 @@ void ofApp::windowResized(int w, int h){
     setWallParams();
     // view
     setViewParams();
-    // race result
-    loadResultFont();
+    // overlay
+    loadOverlayFont();
 }
 
 //--------------------------------------------------------------
@@ -1895,20 +1895,20 @@ void generateDummyData() {
 }
 
 //--------------------------------------------------------------
-void loadResultFont() {
-    int h = (ofGetHeight() - (ARAP_RSLT_MARG * 2)) / ARAP_RSLT_LINES * 0.7;
-    if (myFontResultP.isLoaded()) {
-        myFontResultP.unloadFont();
+void loadOverlayFont() {
+    int h = (ofGetHeight() - (OVLTXT_MARG * 2)) / OVLTXT_LINES * 0.7;
+    if (myFontOvlayP.isLoaded()) {
+        myFontOvlayP.unloadFont();
     }
-    if (myFontResultP2x.isLoaded()) {
-        myFontResultP2x.unloadFont();
+    if (myFontOvlayP2x.isLoaded()) {
+        myFontOvlayP2x.unloadFont();
     }
-    if (myFontResultM.isLoaded()) {
-        myFontResultM.unloadFont();
+    if (myFontOvlayM.isLoaded()) {
+        myFontOvlayM.unloadFont();
     }
-    myFontResultP.load(FONT_P_FILE, h);
-    myFontResultP2x.load(FONT_P_FILE, h * 2);
-    myFontResultM.load(FONT_M_FILE, h);
+    myFontOvlayP.load(FONT_P_FILE, h);
+    myFontOvlayP2x.load(FONT_P_FILE, h * 2);
+    myFontOvlayM.load(FONT_M_FILE, h);
 }
 
 //--------------------------------------------------------------
@@ -1918,7 +1918,7 @@ int getRaceResultPages() {
     if (lnum <= 0) {
         pages = 0;
     } else {
-        pages = (lnum / ARAP_RSLT_LAPS) + ((lnum % ARAP_RSLT_LAPS == 0) ? 0 : 1);
+        pages = (lnum / OVLTXT_LAPS) + ((lnum % OVLTXT_LAPS == 0) ? 0 : 1);
     }
     return pages;
 }
@@ -1943,8 +1943,8 @@ void processRaceResultDisplay() {
 
 //--------------------------------------------------------------
 void drawRaceResult(int pageidx) {
-    int szb = ARAP_RSLT_BLKS - (CAMERA_MAXNUM - cameraNum);
-    int szl = ARAP_RSLT_LINES;
+    int szb = OVLTXT_BLKS - (CAMERA_MAXNUM - cameraNum);
+    int szl = OVLTXT_LINES;
     int pages, line;
 
     pages = getRaceResultPages();
@@ -1959,16 +1959,16 @@ void drawRaceResult(int pageidx) {
     // title
     line = 2;
     ofSetColor(myColorYellow);
-    drawStringBlock(&myFontResultP2x, "Race Result", 0, line, ALIGN_CENTER, 1, szl);
+    drawStringBlock(&myFontOvlayP2x, "Race Result", 0, line, ALIGN_CENTER, 1, szl);
 
     // summary : name laps bestlap time
     // _header
     line = 4;
     ofSetColor(myColorWhite);
-    drawStringBlock(&myFontResultP, "Name", 1, line, ALIGN_CENTER, szb, szl);
-    drawStringBlock(&myFontResultP, "Laps", 2, line, ALIGN_CENTER, szb, szl);
-    drawStringBlock(&myFontResultP, "BestLap", 3, line, ALIGN_CENTER, szb, szl);
-    drawStringBlock(&myFontResultP, "Time", 4, line, ALIGN_CENTER, szb, szl);
+    drawStringBlock(&myFontOvlayP, "Name", 1, line, ALIGN_CENTER, szb, szl);
+    drawStringBlock(&myFontOvlayP, "Laps", 2, line, ALIGN_CENTER, szb, szl);
+    drawStringBlock(&myFontOvlayP, "BestLap", 3, line, ALIGN_CENTER, szb, szl);
+    drawStringBlock(&myFontOvlayP, "Time", 4, line, ALIGN_CENTER, szb, szl);
     line += 1;
     ofSetColor(myColorYellow);
     drawLineBlock(1, 4, line, szb, szl);
@@ -1981,42 +1981,42 @@ void drawRaceResult(int pageidx) {
         line += 1;
         // pilot
         str = (camView[i].labelString == "") ? ("Pilot" + ofToString(i + 1)) : camView[i].labelString;
-        drawStringBlock(&myFontResultP, str, 1, line, ALIGN_CENTER, szb, szl);
+        drawStringBlock(&myFontOvlayP, str, 1, line, ALIGN_CENTER, szb, szl);
         // laps
         str = ofToString(camView[i].totalLaps);
-        drawStringBlock(&myFontResultM, str, 2, line, ALIGN_CENTER, szb, szl);
+        drawStringBlock(&myFontOvlayM, str, 2, line, ALIGN_CENTER, szb, szl);
         // bestlap
         fval = getBestLap(i);
         str = (fval == 0) ? "-.-" : getLapStr(fval);
-        drawStringBlock(&myFontResultM, str, 3, line, ALIGN_CENTER, szb, szl);
+        drawStringBlock(&myFontOvlayM, str, 3, line, ALIGN_CENTER, szb, szl);
         // time
         fval = camView[i].prevElapsedSec - WATCH_COUNT_SEC;
         str = (fval <= 0) ? "-:-.-" : getWatchString(fval);
-        drawStringBlock(&myFontResultM, str, 4, line, ALIGN_CENTER, szb, szl);
+        drawStringBlock(&myFontOvlayM, str, 4, line, ALIGN_CENTER, szb, szl);
     }
 
     // laptimes : lap p1 p2 p3 p4
     // _header
     int xoff = 6;
     line = 4;
-    drawStringBlock(&myFontResultP, "Lap", xoff, line, ALIGN_CENTER, szb, szl);
+    drawStringBlock(&myFontOvlayP, "Lap", xoff, line, ALIGN_CENTER, szb, szl);
     for (int i = 0; i < cameraNum; i++) {
         string pilot = (camView[i].labelString == "") ? ("Pilot" + ofToString(i + 1)) : camView[i].labelString;
-        drawStringBlock(&myFontResultP, pilot, xoff + i + 1, line, ALIGN_CENTER, szb, szl);
+        drawStringBlock(&myFontOvlayP, pilot, xoff + i + 1, line, ALIGN_CENTER, szb, szl);
     }
     line += 1;
     ofSetColor(myColorYellow);
     drawLineBlock(xoff, xoff + cameraNum, line, szb, szl);
     // _body
     ofSetColor(myColorWhite);
-    int lapidx = pageidx * ARAP_RSLT_LAPS;
+    int lapidx = pageidx * OVLTXT_LAPS;
     int lnum = getMaxLaps();
-    for (int cnt = 0; cnt < ARAP_RSLT_LAPS; cnt++) {
+    for (int cnt = 0; cnt < OVLTXT_LAPS; cnt++) {
         if ((lapidx + 1) > lnum) {
             break;
         }
         line += 1;
-        drawStringBlock(&myFontResultM, ofToString(lapidx + 1), xoff, line, ALIGN_CENTER, szb, szl);
+        drawStringBlock(&myFontOvlayM, ofToString(lapidx + 1), xoff, line, ALIGN_CENTER, szb, szl);
         for (int i = 0; i < cameraNum; i++) {
             string str;
             if ((lapidx + 1) > camView[i].totalLaps) {
@@ -2024,7 +2024,7 @@ void drawRaceResult(int pageidx) {
             } else {
                 str = getLapStr(camView[i].lapHistoryTime[lapidx]);
             }
-            drawStringBlock(&myFontResultM, str,
+            drawStringBlock(&myFontOvlayM, str,
                             xoff + i + 1, line, ALIGN_CENTER, szb, szl);
         }
         lapidx += 1;
@@ -2033,22 +2033,22 @@ void drawRaceResult(int pageidx) {
     if (pages > 1) {
         line += 1;
         ofSetColor(myColorLGray);
-        drawStringBlock(&myFontResultP,
+        drawStringBlock(&myFontOvlayP,
                         "(Page " + ofToString(pageidx + 1) + " of " + ofToString(pages) + ")",
                         xoff + 2, line, ALIGN_CENTER, szb, szl);
     }
 
     // message
-    line = ARAP_RSLT_LINES - 1;
+    line = OVLTXT_LINES - 1;
     ofSetColor(myColorLGray);
-    drawStringBlock(&myFontResultP, "Press V key to continue...", 0, line, ALIGN_CENTER, 1, szl);
+    drawStringBlock(&myFontOvlayP, "Press V key to continue...", 0, line, ALIGN_CENTER, 1, szl);
 }
 
 //--------------------------------------------------------------
 void drawStringBlock(ofxTrueTypeFontUC *font, string text,
                      int xblock, int yline, int align, int blocks, int lines) {
     int bw, bh, x, y;
-    int margin = ARAP_RSLT_MARG;
+    int margin = OVLTXT_MARG;
     bw = (ofGetWidth() - (margin * 2)) / blocks;
     bh = (ofGetHeight() - (margin * 2)) / lines;
     // pos-x
@@ -2076,7 +2076,7 @@ void drawStringBlock(ofxTrueTypeFontUC *font, string text,
 //--------------------------------------------------------------
 void drawLineBlock(int xblock1, int xblock2, int yline, int blocks, int lines) {
     int bw, bh, x, y, w, h;
-    int margin = ARAP_RSLT_MARG;
+    int margin = OVLTXT_MARG;
 
     bw = (ofGetWidth() - (margin * 2)) / blocks;
     x = (bw * xblock1) + margin;

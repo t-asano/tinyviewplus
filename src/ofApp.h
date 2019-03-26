@@ -61,6 +61,11 @@
 #define ALIGN_RIGHT     2
 #define OVLAY_NONE      0
 #define OVLAY_RACE_RSLT 1
+// overlay
+#define OVLTXT_BLKS     12
+#define OVLTXT_LINES    34
+#define OVLTXT_LAPS     25
+#define OVLTXT_MARG     10
 // AR lap timer
 #define ARAP_MODE_NORM  0
 #define ARAP_MODE_LOOSE 1
@@ -86,10 +91,6 @@
 #define ARAP_RSLT_FILE  1
 #define WATCH_COUNT_SEC 5
 #define WATCH_HEIGHT    15
-#define ARAP_RSLT_BLKS  12
-#define ARAP_RSLT_LINES 34
-#define ARAP_RSLT_LAPS  25
-#define ARAP_RSLT_MARG  10
 // osc
 #define OSC_LISTEN_PORT 4000
 // speech
@@ -259,7 +260,7 @@ void toggleSoloTrim();
 // race result
 void generateDummyData();
 void fwriteRaceResult();
-void loadResultFont();
+void loadOverlayFont();
 int getRaceResultPages();
 void processRaceResultDisplay();
 void drawRaceResult(int);
