@@ -10,7 +10,7 @@
 
 // view
 ofVideoGrabber grabber[CAMERA_MAXNUM];
-ofColor myColorYellow, myColorWhite, myColorLGray, myColorLayer, myColorAlert;
+ofColor myColorYellow, myColorWhite, myColorLGray, myColorBGDark, myColorBGLight, myColorAlert;
 ofxTrueTypeFontUC myFontNumber, myFontLabel, myFontLap;
 ofxTrueTypeFontUC myFontNumberSub, myFontLabelSub, myFontLapSub;
 ofImage wallImage;
@@ -25,7 +25,6 @@ string helpMessage;
 bool cameraTrimEnabled;
 bool fullscreenEnabled;
 bool cameraLapHistEnabled;
-int overlayMode;
 
 // osc
 ofxOscReceiver oscReceiver;
@@ -49,7 +48,10 @@ float elapsedTime;
 
 // overlay
 ofxTrueTypeFontUC myFontOvlayP, myFontOvlayP2x, myFontOvlayM;
+int overlayMode;
 int raceResultPage;
+int ovlayMsgTimer;
+string ovlayMsgString;
 
 // QR code reader
 bool qrEnabled;
@@ -77,7 +79,7 @@ void ofApp::setup() {
     // help
     helpMessage = ofToString(HELP_MESSAGE);
     // screen
-    ofSetWindowTitle("Tiny View Plus");
+    ofSetWindowTitle(APP_INFO);
     ofBackground(0, 0, 0);
     ofSetVerticalSync(VERTICAL_SYNC);
     ofSetFrameRate(FRAME_RATE);
@@ -91,7 +93,6 @@ void ofApp::setup() {
     cameraTrimEnabled = DFLT_CAM_TRIM;
     fullscreenEnabled = DFLT_FSCR_ENBLD;
     cameraLapHistEnabled = DFLT_CAM_LAPHST;
-    overlayMode = OVLAY_NONE;
     // wallpaper
     wallImage.load(WALL_FILE);
     wallRatio = wallImage.getWidth() / wallImage.getHeight();
@@ -101,6 +102,10 @@ void ofApp::setup() {
     // view common
     setupColors();
     setViewParams();
+    // overlay
+    setOverlayMode(OVLMODE_NONE);
+    initOverlayMessage();
+    raceResultPage = 0;
     // osc
     oscReceiver.setup(OSC_LISTEN_PORT);
     // AR lap timer
@@ -123,8 +128,6 @@ void ofApp::setup() {
     }
     raceStarted = false;
     elapsedTime = 0;
-    // race result
-    raceResultPage = 0;
     // QR reader
     qrEnabled = false;
     // debug
@@ -294,8 +297,15 @@ void ofApp::update() {
     }
     // osc
     recvOsc();
-    // view layout
+    // view
     updateViewParams();
+    if (overlayMode == OVLMODE_MSG) {
+        if (ovlayMsgTimer <= 0) {
+            setOverlayMode(OVLMODE_NONE);
+        } else {
+            ovlayMsgTimer--;
+        }
+    }
 }
 
 //--------------------------------------------------------------
@@ -509,7 +519,7 @@ void drawWatch() {
 }
 
 //--------------------------------------------------------------
-void ofApp::draw(){
+void ofApp::draw() {
     // wallpaper
     ofSetColor(myColorWhite);
     wallImage.draw(0, 0, wallDrawWidth, wallDrawHeight);
@@ -537,14 +547,16 @@ void ofApp::draw(){
     }
     // overlay
     switch (overlayMode) {
-        case OVLAY_HELP:
+        case OVLMODE_HELP:
             drawHelp();
             break;
-        case OVLAY_RACE_RSLT:
+        case OVLMODE_MSG:
+            drawOverlayMessage();
+            break;
+        case OVLMODE_RCRSLT:
             drawRaceResult(raceResultPage);
             break;
-        case OVLAY_NONE:
-            /* fall through */
+        case OVLMODE_NONE:
         default:
             break;
     }
@@ -558,8 +570,17 @@ void ofApp::draw(){
 //--------------------------------------------------------------
 void keyPressedOverlayHelp(int key) {
     if (key == 'h' || key == 'H') {
-        overlayMode = OVLAY_NONE;
+        setOverlayMode(OVLMODE_NONE);
+    } else {
+        setOverlayMessage(OVLMODE_NONE);
+        keyPressedOverlayNone(key);
     }
+}
+
+//--------------------------------------------------------------
+void keyPressedOverlayMessage(int key) {
+    setOverlayMode(OVLMODE_NONE);
+    keyPressedOverlayNone(key);
 }
 
 //--------------------------------------------------------------
@@ -588,7 +609,7 @@ void keyPressedOverlayNone(int key) {
     } else if (key == '$') {
         toggleCameraVisibility(4);
     } else if (key == 'h' || key == 'H') {
-        overlayMode = OVLAY_HELP;
+        setOverlayMode(OVLMODE_HELP);
     } else if (key == 'i' || key == 'I') {
         initConfig();
     } else if (key == 's' || key == 'S') {
@@ -598,7 +619,7 @@ void keyPressedOverlayNone(int key) {
     } else if (key == 'b' || key == 'B') {
         changeWallImage();
     } else if (key == 'q' || key == 'Q') {
-        if (raceStarted == false && overlayMode == OVLAY_NONE) {
+        if (raceStarted == false) {
             toggleQrReader();
         }
     } else if (key == ' ') {
@@ -630,16 +651,19 @@ void keyPressedOverlayNone(int key) {
 //--------------------------------------------------------------
 void ofApp::keyPressed(int key) {
     switch (overlayMode) {
-        case OVLAY_HELP:
+        case OVLMODE_HELP:
             keyPressedOverlayHelp(key);
             break;
-        case OVLAY_RACE_RSLT:
+        case OVLMODE_MSG:
+            keyPressedOverlayMessage(key);
+            break;
+        case OVLMODE_RCRSLT:
             keyPressedOverlayResult(key);
             break;
-        case OVLAY_NONE:
-            /* fall through */
-        default:
+        case OVLMODE_NONE:
             keyPressedOverlayNone(key);
+            break;
+        default:
             break;
     }
 }
@@ -665,12 +689,7 @@ void ofApp::mousePressed(int x, int y, int button){
 }
 
 //--------------------------------------------------------------
-void ofApp::mouseReleased(int x, int y, int button){
-    // race result
-    if (overlayMode == OVLAY_RACE_RSLT) {
-        processRaceResultDisplay();
-        return;
-    }
+void mouseReleasedOverlayNone(int x, int y, int button) {
     // pilot
     for (int i = 0; i < cameraNum; i++) {
         if (camView[i].visible == false || camView[i].moveSteps > 0) {
@@ -686,6 +705,27 @@ void ofApp::mouseReleased(int x, int y, int button){
             && y >= camView[i].posY && y <= camView[i].iconPosY + ICON_HEIGHT) {
             changeCameraLabel(i + 1);
         }
+    }
+}
+
+//--------------------------------------------------------------
+void ofApp::mouseReleased(int x, int y, int button) {
+    switch (overlayMode) {
+        case OVLMODE_HELP:
+            setOverlayMode(OVLMODE_NONE);
+            break;
+        case OVLMODE_MSG:
+            setOverlayMode(OVLMODE_NONE);
+            mouseReleasedOverlayNone(x, y, button);
+            break;
+        case OVLMODE_RCRSLT:
+            processRaceResultDisplay();
+            break;
+        case OVLMODE_NONE:
+            mouseReleasedOverlayNone(x, y, button);
+            break;
+        default:
+            break;
     }
 }
 
@@ -851,7 +891,8 @@ void setupColors() {
     myColorYellow = ofColor(COLOR_YELLOW);
     myColorWhite = ofColor(COLOR_WHITE);
     myColorLGray = ofColor(COLOR_LGRAY);
-    myColorLayer = ofColor(COLOR_LAYER);
+    myColorBGDark = ofColor(COLOR_BG_DARK);
+    myColorBGLight = ofColor(COLOR_BG_LIGHT);
     myColorAlert = ofColor(COLOR_ALERT);
     // pilot
     for (int i = 0; i < CAMERA_MAXNUM; i++) {
@@ -1293,7 +1334,7 @@ void initConfig() {
     oscSpeechEnabled = DFLT_SPCH_ENBLD;
     speechLangJpn = DFLT_SPCH_JPN;
     // AR lap timer
-    overlayMode = OVLAY_NONE;
+    setOverlayMode(OVLMODE_NONE);
     arLapMode = DFLT_ARAP_MODE;
     lockOnEnabled = DFLT_ARAP_LCKON;
     minLapTime = DFLT_ARAP_MNLAP;
@@ -1301,7 +1342,7 @@ void initConfig() {
     raceDuraSecs = DFLT_ARAP_RSECS;
     nextSpeechRemainSecs = -1;
     raceStarted = false;
-    ofSystemAlertDialog("Configuration initialized");
+    setOverlayMessage("Configuration initialized");
 }
 
 //--------------------------------------------------------------
@@ -1411,9 +1452,9 @@ void recvOscCameraFloat(int camid, string method, float argfloat) {
 void toggleOscSpeech() {
     oscSpeechEnabled = !oscSpeechEnabled;
     if (oscSpeechEnabled == true) {
-        ofSystemAlertDialog("OSC speech: On");
+        setOverlayMessage("OSC speech: On");
     } else {
-        ofSystemAlertDialog("OSC speech: Off");
+        setOverlayMessage("OSC speech: Off");
     }
 }
 
@@ -1421,10 +1462,9 @@ void toggleOscSpeech() {
 void toggleSpeechLang() {
     speechLangJpn = !speechLangJpn;
     if (speechLangJpn == true) {
-        ofSystemAlertDialog("Speech language: Japanese");
-    }
-    else {
-        ofSystemAlertDialog("Speech language: English");
+        setOverlayMessage("Speech language: Japanese");
+    } else {
+        setOverlayMessage("Speech language: English");
     }
 }
 
@@ -1785,15 +1825,15 @@ void toggleARLap() {
     switch (arLapMode) {
         case ARAP_MODE_NORM:
             arLapMode = ARAP_MODE_LOOSE;
-            ofSystemAlertDialog("AR lap timer mode: loose");
+            setOverlayMessage("AR lap timer mode: loose");
             break;
         case ARAP_MODE_LOOSE:
             arLapMode = ARAP_MODE_OFF;
-            ofSystemAlertDialog("AR lap timer mode: off");
+            setOverlayMessage("AR lap timer mode: off");
             break;
         case ARAP_MODE_OFF:
             arLapMode = ARAP_MODE_NORM;
-            ofSystemAlertDialog("AR lap timer mode: normal");
+            setOverlayMessage("AR lap timer mode: normal");
             break;
     }
 }
@@ -1803,9 +1843,9 @@ void toggleLockOnEffect() {
     lockOnEnabled = !lockOnEnabled;
     resetCameraSolo();
     if (lockOnEnabled == true) {
-        ofSystemAlertDialog("Lock-on effect: On");
+        setOverlayMessage("Lock-on effect: On");
     } else {
-        ofSystemAlertDialog("Lock-on effect: Off");
+        setOverlayMessage("Lock-on effect: Off");
     }
 }
 
@@ -1849,9 +1889,8 @@ void changeRaceDuration() {
             setNextSpeechRemainSecs(remain);
             break;
         } else {
-            ofSystemAlertDialog("Please enter 0~" + ofToString(ARAP_MAX_RSECS)
-                                + " (0/empty means no limit)");
-            // retry
+            ofSystemAlertDialog("Please enter 0~" + ofToString(ARAP_MAX_RSECS) + " (0/empty means no limit)");
+            // -> retry
         }
     }
     // laps
@@ -1865,7 +1904,7 @@ void changeRaceDuration() {
             break;
         } else {
             ofSystemAlertDialog("Please enter 1~" + ofToString(ARAP_MAX_RLAPS));
-            // retry
+            // -> retry
         }
     }
 }
@@ -1880,6 +1919,14 @@ void toggleFullscreen() {
 void toggleSoloTrim() {
     cameraTrimEnabled = !cameraTrimEnabled;
     setViewParams();
+}
+
+//--------------------------------------------------------------
+void setOverlayMode(int mode) {
+    overlayMode = mode;
+    if (mode != OVLMODE_MSG) {
+        initOverlayMessage();
+    }
 }
 
 //--------------------------------------------------------------
@@ -1986,13 +2033,13 @@ void processRaceResultDisplay() {
     if (isRecordedLaps() == false) { // no result
         return;
     }
-    if (overlayMode != OVLAY_RACE_RSLT) {
-        overlayMode = OVLAY_RACE_RSLT;
+    if (overlayMode != OVLMODE_RCRSLT) {
         raceResultPage = 0;
+        setOverlayMode(OVLMODE_RCRSLT);
     } else {
         if ((raceResultPage + 1) >= getRaceResultPages()) {
-            overlayMode = OVLAY_NONE;
             raceResultPage = 0;
+            setOverlayMode(OVLMODE_NONE);
         } else {
             raceResultPage++;
         }
@@ -2011,7 +2058,7 @@ void drawRaceResult(int pageidx) {
     }
 
     // background
-    ofSetColor(myColorLayer);
+    ofSetColor(myColorBGDark);
     ofDrawRectangle(0, 0, ofGetWidth(), ofGetHeight());
 
     // title
@@ -2107,7 +2154,7 @@ void drawHelp() {
     int szl = HELP_LINES;
     int line;
     // background
-    ofSetColor(myColorLayer);
+    ofSetColor(myColorBGDark);
     ofDrawRectangle(0, 0, ofGetWidth(), ofGetHeight());
     // title
     line = 1;
@@ -2120,7 +2167,41 @@ void drawHelp() {
     // message
     line = HELP_LINES - 2;
     ofSetColor(myColorLGray);
-    drawStringBlock(&myFontOvlayP, "Press H key to continue...", 0, line, ALIGN_CENTER, 1, szl);
+    drawStringBlock(&myFontOvlayP, "Press H key to exit...", 0, line, ALIGN_CENTER, 1, szl);
+}
+
+//--------------------------------------------------------------
+void initOverlayMessage() {
+    ovlayMsgTimer = 0;
+    ovlayMsgString = "";
+}
+
+//--------------------------------------------------------------
+void setOverlayMessage(string msg) {
+    if (overlayMode != OVLMODE_NONE && overlayMode != OVLMODE_MSG) {
+        return;
+    }
+    ovlayMsgTimer = OLVMSG_TIME;
+    ovlayMsgString = msg;
+    setOverlayMode(OVLMODE_MSG);
+}
+
+//--------------------------------------------------------------
+void drawOverlayMessage() {
+    ofxTrueTypeFontUC *font = &myFontLap;
+    string msg = ovlayMsgString;
+    float sw, fh, sx, sy, margin;
+    margin = 10;
+    sw = font->stringWidth(msg);
+    fh = font->getFontSize();
+    sx = (ofGetWidth() / 2) - (sw / 2);
+    sy = (ofGetHeight() / 2) + (fh / 2);
+    // background
+    ofSetColor(myColorBGLight);
+    ofDrawRectangle(sx - margin, sy - (fh + margin), sw + (margin * 2), fh + (margin * 2));
+    // message
+    ofSetColor(myColorWhite);
+    font->drawString(msg, sx, sy);
 }
 
 #ifdef TARGET_WIN32
@@ -2162,7 +2243,6 @@ void toggleQrReader() {
         // stop
         qrEnabled = false;
     }
-    elapsedTime = 0;
 }
 
 //--------------------------------------------------------------

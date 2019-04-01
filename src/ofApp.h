@@ -16,7 +16,8 @@
 #define COLOR_YELLOW    255,215,0
 #define COLOR_WHITE     255,255,255
 #define COLOR_LGRAY     127,127,127
-#define COLOR_LAYER     0,0,0,223
+#define COLOR_BG_DARK   0,0,0,223
+#define COLOR_BG_LIGHT  0,0,0,31
 #define COLOR_ALERT     255,0,0
 // view
 #define FRAME_RATE      60
@@ -60,13 +61,15 @@
 #define ALIGN_CENTER    1
 #define ALIGN_RIGHT     2
 // overlay
-#define OVLAY_NONE      0
-#define OVLAY_HELP      1
-#define OVLAY_RACE_RSLT 2
+#define OVLMODE_NONE    0
+#define OVLMODE_HELP    1
+#define OVLMODE_MSG     2
+#define OVLMODE_RCRSLT  3
 #define OVLTXT_BLKS     12
 #define OVLTXT_LINES    34
 #define OVLTXT_LAPS     25
 #define OVLTXT_MARG     10
+#define OLVMSG_TIME     FRAME_RATE
 // AR lap timer
 #define ARAP_MODE_NORM  0
 #define ARAP_MODE_LOOSE 1
@@ -242,8 +245,10 @@ void drawCamera(int);
 string getWatchString(float);
 void drawWatch();
 void keyPressedOverlayHelp(int);
+void keyPressedOverlayHelp(int);
 void keyPressedOverlayResult(int);
 void keyPressedOverlayNone(int);
+void mouseReleasedOverlayNone(int, int, int);
 void toggleRace();
 void startRace();
 void stopRace(bool);
@@ -260,6 +265,7 @@ void changeRaceDuration();
 void toggleFullscreen();
 void toggleSoloTrim();
 // overlay - common
+void setOverlayMode(int);
 void loadOverlayFont();
 void drawStringBlock(ofxTrueTypeFontUC*, string, int , int, int, int, int);
 void drawLineBlock(int, int, int, int, int);
@@ -271,6 +277,10 @@ void processRaceResultDisplay();
 void drawRaceResult(int);
 // overlay - help
 void drawHelp();
+// overlay - message
+void initOverlayMessage();
+void setOverlayMessage(string);
+void drawOverlayMessage();
 // QR code reader
 #ifdef TARGET_WIN32
 string utf8ToAnsi(string);
