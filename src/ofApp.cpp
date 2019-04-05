@@ -11,7 +11,7 @@
 // view
 ofVideoGrabber grabber[CAMERA_MAXNUM];
 ofColor myColorYellow, myColorWhite, myColorLGray, myColorBGDark, myColorBGLight, myColorAlert;
-ofxTrueTypeFontUC myFontNumber, myFontLabel, myFontLap;
+ofxTrueTypeFontUC myFontNumber, myFontLabel, myFontLap, myFontLapHist;
 ofxTrueTypeFontUC myFontNumberSub, myFontLabelSub, myFontLapSub;
 ofImage wallImage;
 float wallRatio;
@@ -86,6 +86,7 @@ void ofApp::setup() {
     myFontNumber.load(FONT_P_FILE, NUMBER_HEIGHT);
     myFontLabel.load(FONT_P_FILE, LABEL_HEIGHT);
     myFontLap.load(FONT_P_FILE, LAP_HEIGHT);
+    myFontLapHist.load(FONT_P_FILE, LAPHIST_HEIGHT);
     myFontNumberSub.load(FONT_P_FILE, NUMBER_HEIGHT / 2);
     myFontLabelSub.load(FONT_P_FILE, LABEL_HEIGHT / 2);
     myFontLapSub.load(FONT_P_FILE, LAP_HEIGHT / 2);
@@ -392,12 +393,9 @@ void drawCameraPilot(int camidx, bool isSub) {
     }
     // label
     if (camView[i].labelString != "") {
-        ofSetColor(myColorYellow);
-        if (isSub) {
-            myFontLabelSub.drawString(camView[i].labelString, camView[i].labelPosX, camView[i].labelPosY);
-        } else {
-            myFontLabel.drawString(camView[i].labelString, camView[i].labelPosX, camView[i].labelPosY);
-        }
+        ofxTrueTypeFontUC *font = isSub ? &myFontLabelSub : &myFontLabel;
+        drawStringWithShadow(font, myColorYellow,
+                             camView[i].labelString, camView[i].labelPosX, camView[i].labelPosY);
     }
 }
 
@@ -412,41 +410,45 @@ void drawCameraLapTime(int idx, bool isSub) {
     if (raceStarted == false || camView[i].totalLaps == raceDuraLaps) {
         // race/laps finished
         sout = "Laps: " + ofToString(laps);
-        ofSetColor(myColorWhite);
         if (isSub) {
-            myFontLapSub.drawString(sout, camView[i].lapPosX, camView[i].lapPosY);
+            drawStringWithShadow(&myFontLapSub, myColorWhite, sout, camView[i].lapPosX, camView[i].lapPosY);
         } else {
-            myFontLap.drawString(sout, camView[i].lapPosX, camView[i].lapPosY);
+            drawStringWithShadow(&myFontLap, myColorWhite, sout, camView[i].lapPosX, camView[i].lapPosY);
         }
         float blap = getBestLap(i);
         if (blap != 0) {
             sout = "BestLap: " + getLapStr(blap) + "s";
             if (isSub) {
-                myFontLapSub.drawString(sout, camView[i].lapPosX, camView[i].lapPosY + (LAP_HEIGHT / 2) + 5);
+                drawStringWithShadow(&myFontLapSub, myColorWhite,
+                                     sout, camView[i].lapPosX, camView[i].lapPosY + (LAP_HEIGHT / 2) + 5);
             } else {
-                myFontLap.drawString(sout, camView[i].lapPosX, camView[i].lapPosY + LAP_HEIGHT + 10);
+                drawStringWithShadow(&myFontLap, myColorWhite,
+                                     sout, camView[i].lapPosX, camView[i].lapPosY + LAP_HEIGHT + 10);
             }
             sout = "Time: " + getWatchString(camView[i].prevElapsedSec - WATCH_COUNT_SEC);
             if (isSub) {
-                myFontLapSub.drawString(sout, camView[i].lapPosX, camView[i].lapPosY + LAP_HEIGHT + 10);
+                drawStringWithShadow(&myFontLapSub, myColorWhite,
+                                     sout, camView[i].lapPosX, camView[i].lapPosY + LAP_HEIGHT + 10);
             } else {
-                myFontLap.drawString(sout, camView[i].lapPosX, camView[i].lapPosY + (LAP_HEIGHT * 2) + 20);
+                drawStringWithShadow(&myFontLap, myColorWhite,
+                                     sout, camView[i].lapPosX, camView[i].lapPosY + (LAP_HEIGHT * 2) + 20);
             }
         }
     } else {
         // not finished
         sout = "Lap" + ofToString(laps) + ": " + getLapStr(camView[i].lastLap) + "s";
-        ofSetColor(myColorWhite);
         if (isSub) {
-            myFontLapSub.drawString(sout, camView[i].lapPosX, camView[i].lapPosY);
+            drawStringWithShadow(&myFontLapSub, myColorWhite,
+                                 sout, camView[i].lapPosX, camView[i].lapPosY);
         } else {
-            myFontLap.drawString(sout, camView[i].lapPosX, camView[i].lapPosY);
+            drawStringWithShadow(&myFontLap, myColorWhite,
+                                 sout, camView[i].lapPosX, camView[i].lapPosY);
         }
         // history
-        if (cameraLapHistEnabled == false || laps < 2 || camView[idx].moveSteps > 0 || isSub == true) {
+        if (cameraLapHistEnabled == false || laps < 2 || camView[i].moveSteps > 0 || isSub == true) {
             return;
         }
-        drawCameraLapHistory(idx);
+        drawCameraLapHistory(i);
     }
 }
 
@@ -456,15 +458,15 @@ void drawCameraLapHistory(int camidx) {
     float lap;
     int lapidx = camView[camidx].totalLaps - 2;
     int posy = camView[camidx].posY + LAP_MARGIN_Y + (LAP_HEIGHT / 2);
-    ofSetColor(myColorWhite);
     for (; lapidx >= 0; lapidx--) {
         posy += LAPHIST_HEIGHT + (LAPHIST_HEIGHT / 2);
-        if (posy + (LAPHIST_HEIGHT / 2) >= camView[camidx].height) {
+        if (posy + (LAPHIST_HEIGHT / 2) >= camView[camidx].posY + camView[camidx].height) {
             break;
         }
         lap = camView[camidx].lapHistoryTime[lapidx];
-        text = "Lap" + ofToString(lapidx + 1) + ": " + getLapStr(lap) + "s";
-        myFontLapSub.drawString(text, camView[camidx].lapPosX, posy);
+        text = ofToString(lapidx + 1) + ": " + getLapStr(lap) + "s";
+        drawStringWithShadow(&myFontLapHist, myColorWhite,
+                             text, camView[camidx].lapPosX, posy);
     }
 }
 
@@ -512,10 +514,17 @@ void drawWatch() {
         }
         str = getWatchString(sec);
     }
-    ofSetColor(myColorWhite);
     int x = (ofGetWidth() / 2) - (myFontWatch.stringWidth(str) / 2);
     x = (int)(x / 5) * 5;
-    myFontWatch.drawString(str, x, ofGetHeight() - 10);
+    drawStringWithShadow(&myFontWatch, myColorWhite, str, x, ofGetHeight() - 10);
+}
+
+//--------------------------------------------------------------
+void drawStringWithShadow(ofxTrueTypeFontUC *font, ofColor color, string str, int x, int y) {
+    ofSetColor(myColorBGDark);
+    font->drawString(str, x + 1, y + 1);
+    ofSetColor(color);
+    font->drawString(str, x, y);
 }
 
 //--------------------------------------------------------------
@@ -541,9 +550,8 @@ void ofApp::draw() {
     // QR reader
     if (qrEnabled == true) {
         string str = "Scanning QR code...";
-        ofSetColor(myColorYellow);
         int x = (ofGetWidth() / 2) - (myFontWatch.stringWidth(str) / 2);
-        myFontWatch.drawString(str, x, ofGetHeight() - 10);
+        drawStringWithShadow(&myFontWatch, myColorYellow, str, x, ofGetHeight() - 10);
     }
     // overlay
     switch (overlayMode) {
@@ -572,7 +580,7 @@ void keyPressedOverlayHelp(int key) {
     if (key == 'h' || key == 'H') {
         setOverlayMode(OVLMODE_NONE);
     } else {
-        setOverlayMessage(OVLMODE_NONE);
+        setOverlayMode(OVLMODE_NONE);
         keyPressedOverlayNone(key);
     }
 }
@@ -937,12 +945,12 @@ void changeCameraIcon(int camid) {
     ofFileDialogResult result = ofSystemLoadDialog(str);
     if (result.bSuccess) {
         string path = result.getPath();
-        changeCameraIconPath(camid, path);
+        changeCameraIconPath(camid, path, true);
     }
 }
 
 //--------------------------------------------------------------
-void changeCameraIconPath(int camid, string path) {
+void changeCameraIconPath(int camid, string path, bool synclabel) {
     ofFile file(path);
     if (camid < 1 || camid > cameraNum) {
         return;
@@ -952,7 +960,9 @@ void changeCameraIconPath(int camid, string path) {
         int idx = camid - 1;
         camView[idx].iconImage.clear();
         camView[idx].iconImage.load(path);
-        camView[camid - 1].labelString = file.getBaseName(); // sync
+        if (synclabel) {
+            camView[camid - 1].labelString = file.getBaseName();
+        }
     } else {
         ofSystemAlertDialog("Unsupported file type");
     }
@@ -967,14 +977,14 @@ void autoSelectCameraIcon(int camid, string pname) {
     }
     path = ICON_DIR + pname + ".png";
     if (file.doesFileExist(path)) {
-        changeCameraIconPath(camid, path);
+        changeCameraIconPath(camid, path, false);
         return;
     }
     path = ICON_DIR + pname + ".jpg";
     if (file.doesFileExist(path)) {
-        changeCameraIconPath(camid, path);
+        changeCameraIconPath(camid, path, false);
     } else {
-        changeCameraIconPath(camid, ICON_FILE);
+        changeCameraIconPath(camid, ICON_FILE, false);
     }
 }
 
@@ -2145,7 +2155,7 @@ void drawRaceResult(int pageidx) {
 
     // message
     line = OVLTXT_LINES - 1;
-    ofSetColor(myColorLGray);
+    ofSetColor(myColorYellow);
     drawStringBlock(&myFontOvlayP, "Press V key to continue...", 0, line, ALIGN_CENTER, 1, szl);
 }
 
@@ -2166,7 +2176,7 @@ void drawHelp() {
     drawStringBlock(&myFontOvlayP, HELP_MESSAGE, 0, line, ALIGN_CENTER, 1, szl);
     // message
     line = HELP_LINES - 2;
-    ofSetColor(myColorLGray);
+    ofSetColor(myColorYellow);
     drawStringBlock(&myFontOvlayP, "Press H key to exit...", 0, line, ALIGN_CENTER, 1, szl);
 }
 
@@ -2197,7 +2207,7 @@ void drawOverlayMessage() {
     sx = (ofGetWidth() / 2) - (sw / 2);
     sy = (ofGetHeight() / 2) + (fh / 2);
     // background
-    ofSetColor(myColorBGLight);
+    ofSetColor(myColorBGDark);
     ofDrawRectangle(sx - margin, sy - (fh + margin), sw + (margin * 2), fh + (margin * 2));
     // message
     ofSetColor(myColorWhite);

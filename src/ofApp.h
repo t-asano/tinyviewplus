@@ -53,7 +53,7 @@
 #define LAP_HEIGHT      20
 #define LAP_MARGIN_X    20
 #define LAP_MARGIN_Y    80
-#define LAPHIST_HEIGHT  10
+#define LAPHIST_HEIGHT  15
 #define DFLT_CAM_TRIM   false
 #define DFLT_FSCR_ENBLD false
 #define DFLT_CAM_LAPHST false
@@ -104,7 +104,7 @@
 // QR code reader
 #define QR_CYCLE        6
 // help
-#define HELP_LINES      24
+#define HELP_LINES      25
 #define HELP_MESSAGE    "Keyboard shortcuts:\n"\
                         "[H] Display help\n"\
                         "[1~4] Camera 1~4 solo view on/off\n"\
@@ -113,6 +113,7 @@
                         "[Q] Start/Stop QR reader for camera label\n"\
                         "[B] Change background image\n"\
                         "[F] Fullscreen mode on/off\n"\
+                        "[L] Lap history display during race on/off\n"\
                         "[A] AR lap timer on/loose/off\n"\
                         "[O] Lock-on effect on/off\n"\
                         "[Space] Start/Stop race\n"\
@@ -218,7 +219,7 @@ void setupColors();
 void changeCameraLabel(int);
 void changeCameraLabelAll();
 void changeCameraIcon(int);
-void changeCameraIconPath(int, string);
+void changeCameraIconPath(int, string, bool);
 void autoSelectCameraIcon(int, string);
 void changeWallImage();
 void setWallParams();
@@ -244,6 +245,7 @@ void drawCameraLapHistory(int);
 void drawCamera(int);
 string getWatchString(float);
 void drawWatch();
+void drawStringWithShadow(ofxTrueTypeFontUC*, ofColor, string, int, int);
 void keyPressedOverlayHelp(int);
 void keyPressedOverlayHelp(int);
 void keyPressedOverlayResult(int);
