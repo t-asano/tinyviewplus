@@ -25,6 +25,7 @@ string helpMessage;
 bool cameraTrimEnabled;
 bool fullscreenEnabled;
 bool cameraLapHistEnabled;
+int hideCursorTimer;
 
 // osc
 ofxOscReceiver oscReceiver;
@@ -103,6 +104,7 @@ void ofApp::setup() {
     // view common
     setupColors();
     setViewParams();
+    hideCursorTimer = HIDECUR_TIME;
     // overlay
     setOverlayMode(OVLMODE_NONE);
     initOverlayMessage();
@@ -306,6 +308,11 @@ void ofApp::update() {
         } else {
             ovlayMsgTimer--;
         }
+    }
+    if (hideCursorTimer <= 0) {
+        ofHideCursor();
+    } else {
+        hideCursorTimer--;
     }
 }
 
@@ -682,18 +689,18 @@ void ofApp::keyReleased(int key){
 }
 
 //--------------------------------------------------------------
-void ofApp::mouseMoved(int x, int y ){
-    
+void ofApp::mouseMoved(int x, int y) {
+    activateCursor();
 }
 
 //--------------------------------------------------------------
 void ofApp::mouseDragged(int x, int y, int button){
-    
+    activateCursor();
 }
 
 //--------------------------------------------------------------
 void ofApp::mousePressed(int x, int y, int button){
-    
+    activateCursor();
 }
 
 //--------------------------------------------------------------
@@ -718,6 +725,7 @@ void mouseReleasedOverlayNone(int x, int y, int button) {
 
 //--------------------------------------------------------------
 void ofApp::mouseReleased(int x, int y, int button) {
+    activateCursor();
     switch (overlayMode) {
         case OVLMODE_HELP:
             setOverlayMode(OVLMODE_NONE);
@@ -2302,4 +2310,12 @@ void processQrReader() {
 //--------------------------------------------------------------
 void toggleLapHistory() {
     cameraLapHistEnabled = !cameraLapHistEnabled;
+}
+
+//--------------------------------------------------------------
+void activateCursor() {
+    if (hideCursorTimer <= 0) {
+        hideCursorTimer = HIDECUR_TIME;
+        ofShowCursor();
+    }
 }

@@ -60,6 +60,7 @@
 #define ALIGN_LEFT      0
 #define ALIGN_CENTER    1
 #define ALIGN_RIGHT     2
+#define HIDECUR_TIME    (FRAME_RATE * 3)
 // overlay
 #define OVLMODE_NONE    0
 #define OVLMODE_HELP    1
@@ -290,3 +291,4 @@ string utf8ToAnsi(string);
 void toggleQrReader();
 void processQrReader();
 void toggleLapHistory();
+void activateCursor();
