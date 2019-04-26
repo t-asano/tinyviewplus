@@ -71,6 +71,13 @@
 #define OVLTXT_LAPS     25
 #define OVLTXT_MARG     10
 #define OLVMSG_TIME     FRAME_RATE
+// sound
+#define SND_BEEP_FILE   "system/beep.wav"
+#define SND_BEEP3_FILE  "system/beep3.wav"
+#define SND_COUNT_FILE  "system/count.wav"
+#define SND_FINISH_FILE "system/finish.wav"
+#define SND_NOTIFY_FILE "system/notify.wav"
+#define SND_CANCEL_FILE "system/cancel.wav"
 // AR lap timer
 #define ARAP_MODE_NORM  0
 #define ARAP_MODE_LOOSE 1
@@ -80,16 +87,10 @@
 #define DFLT_ARAP_RSECS 0
 #define DFLT_ARAP_MNLAP 3
 #define DFLT_ARAP_LCKON false
-#define SND_BEEP_FILE   "system/beep.wav"
-#define SND_BEEP3_FILE  "system/beep3.wav"
-#define SND_COUNT_FILE  "system/count.wav"
-#define SND_FINISH_FILE "system/finish.wav"
-#define SND_NOTIFY_FILE "system/notify.wav"
-#define SND_CANCEL_FILE "system/cancel.wav"
 #define ARAP_MKR_FILE   "system/marker.xml"
 #define ARAP_RESULT_DIR "results/"
 #define ARAP_MNUM_THR   2
-#define ARAP_MAX_RLAPS  1000
+#define ARAP_MAX_RLAPS  10000
 #define ARAP_MAX_MNLAP  100
 #define ARAP_MAX_RSECS  36000
 #define ARAP_LOCKON_SEC 1
