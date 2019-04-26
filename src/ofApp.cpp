@@ -1121,22 +1121,26 @@ void setViewParams() {
                 camView[idx].moveSteps = MOVE_STEPS;
                 if (cameraTrimEnabled == true) {
                     camView[idx].heightTarget = height * 0.55;
+                    camView[idx].widthTarget = camView[idx].heightTarget * CAMERA_RATIO;
+                    camView[idx].posXTarget = 0;
                 } else {
                     camView[idx].heightTarget = (height / 2) - 1;
+                    camView[idx].widthTarget = camView[idx].heightTarget * CAMERA_RATIO;
+                    camView[idx].posXTarget = (width / 2) - camView[idx].widthTarget - 1;
                 }
-                camView[idx].widthTarget = camView[idx].heightTarget * CAMERA_RATIO;
-                camView[idx].posXTarget = 0;
                 camView[idx].posYTarget = height - camView[idx].heightTarget;
                 // 3rd camera
                 idx = getCameraIdxNthVisibleAll(3);
                 camView[idx].moveSteps = MOVE_STEPS;
                 if (cameraTrimEnabled == true) {
                     camView[idx].heightTarget = height * 0.55;
+                    camView[idx].widthTarget = camView[idx].heightTarget * CAMERA_RATIO;
+                    camView[idx].posXTarget = width - camView[idx].widthTarget;
                 } else {
                     camView[idx].heightTarget = (height / 2) - 1;
+                    camView[idx].widthTarget = camView[idx].heightTarget * CAMERA_RATIO;
+                    camView[idx].posXTarget = (width / 2) + 1;
                 }
-                camView[idx].widthTarget = camView[idx].heightTarget * CAMERA_RATIO;
-                camView[idx].posXTarget = width - camView[idx].widthTarget;
                 camView[idx].posYTarget = height - camView[idx].heightTarget;
             } else { // solo mode on
                 // main camera
