@@ -85,6 +85,7 @@
 #define SND_COUNT_FILE  "system/count.wav"
 #define SND_FINISH_FILE "system/finish.wav"
 #define SND_NOTIFY_FILE "system/notify.wav"
+#define SND_CANCEL_FILE "system/cancel.wav"
 #define ARAP_MKR_FILE   "system/marker.xml"
 #define ARAP_RESULT_DIR "results/"
 #define ARAP_MNUM_THR   2
@@ -261,6 +262,7 @@ bool isRecordedLaps();
 float getBestLap(int);
 int getMaxLaps();
 string getLapStr(float);
+void processLapCanceller(int);
 void toggleARLap();
 void toggleLockOnEffect();
 void changeMinLap();

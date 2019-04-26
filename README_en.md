@@ -50,7 +50,7 @@ $ git clone https://github.com/t-asano/ofxZxing.git
 	- ofxCv
 	- ofxOpenCv
 	- ofxPoco
-    - ofxZxing
+  - ofxZxing
 4. Overwrite src/ and bin/data/ of Tiny View Plus.
 5. Build.
 
@@ -76,7 +76,7 @@ On macOS, you can check a list of cameras (receivers) with the QuickTime. If you
 On Windows, you can check the detection status of the camera (receiver) with the device manager. In addition, if multiple receivers are connected to same USB hub, only one of them may operate.
 
 ### Keyboard shortcuts
-                        
+
 | key | Function | Default value |
 |---|---|---|
 | H | Display help | - |
@@ -113,10 +113,11 @@ On Windows, you can check the detection status of the camera (receiver) with the
 
 Some functions can also be operated with the mouse.
 
-| Click location | Function |
+| Operation | Function |
 | --- | --- |
-| Camera 1~4 icon | Change camera 1~4 icon (\*1) |
-| Camera 1~4 label | Change camera 1~4 label (\*2) |
+| Click at camera 1~4 icon | Change icon (\*1) |
+| Click at camera 1~4 label | Change label (\*2) |
+| Shift key + Click at camaera 1~4 | Cancel previous lap time |
 
 - (\*1) Camera label will be automatically changed according to changing camera icon.
 	- The file name of the icon (excluding the extension) will be adopted.
@@ -127,7 +128,7 @@ Some functions can also be operated with the mouse.
 	- If no image file is found, the default icon will be adopted.
 	- The aspect ratio is forced to 1:1.
 
-### QR code reader
+### QR code for label setting
 
 You can set the camera label by the QR code.
 
@@ -143,7 +144,7 @@ It is convenient to embed the QR code in the OSD. An example of an image for the
 
 ### AR lap timer
 
-You can measure the lap time using the AR marker.
+You can measure the lap time by using AR marker.
 
 ![argate_single.png](docs/argate_single.png)
 ![argate_multi.png](docs/argate_multi.png)

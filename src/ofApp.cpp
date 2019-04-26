@@ -36,7 +36,8 @@ bool speechLangJpn;
 
 // AR lap timer
 ofxTrueTypeFontUC myFontWatch;
-ofSoundPlayer beepSound, beep3Sound, countSound, finishSound, notifySound;
+ofSoundPlayer beepSound, beep3Sound, notifySound, cancelSound;
+ofSoundPlayer countSound, finishSound;
 ofFile resultsFile;
 int arLapMode;
 bool lockOnEnabled;
@@ -123,6 +124,7 @@ void ofApp::setup() {
     countSound.load(SND_COUNT_FILE);
     finishSound.load(SND_FINISH_FILE);
     notifySound.load(SND_NOTIFY_FILE);
+    cancelSound.load(SND_CANCEL_FILE);
     myFontWatch.load(FONT_M_FILE, WATCH_HEIGHT);
     for (int i = 0; i < cameraNum; i++) {
         camView[i].aruco.setUseHighlyReliableMarker(ARAP_MKR_FILE);
@@ -711,14 +713,20 @@ void mouseReleasedOverlayNone(int x, int y, int button) {
             continue;
         }
         // icon
-        if (x >= camView[i].iconPosX && x <= camView[i].iconPosX + ICON_WIDTH
-            && y >= camView[i].iconPosY && y <= camView[i].iconPosY + ICON_HEIGHT) {
+        if (x >= camView[i].iconPosX && x <= (camView[i].iconPosX + ICON_WIDTH)
+            && y >= camView[i].iconPosY && y <= (camView[i].iconPosY + ICON_HEIGHT)) {
             changeCameraIcon(i + 1);
         }
         // label
-        if (x >= camView[i].labelPosX && x <= camView[i].posX + camView[i].width
-            && y >= camView[i].posY && y <= camView[i].iconPosY + ICON_HEIGHT) {
+        if (x >= camView[i].labelPosX && x <= (camView[i].posX + camView[i].width)
+            && y >= camView[i].posY && y <= (camView[i].iconPosY + ICON_HEIGHT)) {
             changeCameraLabel(i + 1);
+        }
+        // lap
+        if (ofGetKeyPressed(OF_KEY_SHIFT)
+            && x >= camView[i].posX && x <= (camView[i].posX + camView[i].width)
+            && y > (camView[i].iconPosY + ICON_HEIGHT) && y <= camView[i].lapPosY) {
+            processLapCanceller(i);
         }
     }
 }
@@ -1769,6 +1777,25 @@ string getLapStr(float lap) {
     stringstream stream;
     stream << fixed << setprecision(2) << lap; // 2 digits
     return stream.str();
+}
+
+//--------------------------------------------------------------
+void processLapCanceller(int camidx) {
+    int laps = camView[camidx].totalLaps;
+    if (raceStarted == false || laps == raceDuraLaps || laps == 0) {
+        return;
+    }
+    cancelSound.play();
+    setOverlayMessage(camView[camidx].labelString + " lap" + ofToString(laps) + " canceled");
+    camView[camidx].lapHistoryName[laps - 1] = "";
+    camView[camidx].lapHistoryTime[laps - 1] = 0;
+    camView[camidx].totalLaps--;
+    camView[camidx].prevElapsedSec -= camView[camidx].lastLap;
+    if (laps == 1) {
+        camView[camidx].lastLap = 0;
+    } else {
+        camView[camidx].lastLap = camView[camidx].lapHistoryTime[laps - 2];
+    }
 }
 
 //--------------------------------------------------------------
