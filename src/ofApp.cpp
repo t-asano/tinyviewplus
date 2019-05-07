@@ -1819,7 +1819,7 @@ void fwriteRaceResult() {
 #else /* TARGET_WIN32 */
     newline = "\n";
 #endif /* TARGET_WIN32 */
-    string strsumm = "Race Result" + newline + newline;
+    string strsumm = timestamp + newline + newline;
     string strlaph = "";
     string strlapb = "";
     string sep = "  ";
