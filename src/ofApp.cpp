@@ -1110,12 +1110,15 @@ void setViewParams() {
                 camView[idx].moveSteps = MOVE_STEPS;
                 if (cameraTrimEnabled == true) {
                     camView[idx].heightTarget = height * 0.55;
+                    camView[idx].widthTarget = camView[idx].heightTarget * CAMERA_RATIO;
+                    camView[idx].posXTarget = (width / 2) - (camView[idx].widthTarget / 2);
+                    camView[idx].posYTarget = 0;
                 } else {
-                    camView[idx].heightTarget = (height / 2) - 1;
+                    camView[idx].widthTarget = (width - 4) / 3;
+                    camView[idx].heightTarget = camView[idx].widthTarget / CAMERA_RATIO;
+                    camView[idx].posXTarget = 0;
+                    camView[idx].posYTarget = (height / 2) - (camView[idx].heightTarget / 2);
                 }
-                camView[idx].widthTarget = camView[idx].heightTarget * CAMERA_RATIO;
-                camView[idx].posXTarget = (width / 2) - (camView[idx].widthTarget / 2);
-                camView[idx].posYTarget = 0;
                 // 2nd camera
                 idx = getCameraIdxNthVisibleAll(2);
                 camView[idx].moveSteps = MOVE_STEPS;
@@ -1123,12 +1126,13 @@ void setViewParams() {
                     camView[idx].heightTarget = height * 0.55;
                     camView[idx].widthTarget = camView[idx].heightTarget * CAMERA_RATIO;
                     camView[idx].posXTarget = 0;
+                    camView[idx].posYTarget = height - camView[idx].heightTarget;
                 } else {
-                    camView[idx].heightTarget = (height / 2) - 1;
-                    camView[idx].widthTarget = camView[idx].heightTarget * CAMERA_RATIO;
-                    camView[idx].posXTarget = (width / 2) - camView[idx].widthTarget - 1;
+                    camView[idx].widthTarget = (width - 4) / 3;
+                    camView[idx].heightTarget = camView[idx].widthTarget / CAMERA_RATIO;
+                    camView[idx].posXTarget = (width / 2) - (camView[idx].widthTarget / 2);
+                    camView[idx].posYTarget = (height / 2) - (camView[idx].heightTarget / 2);
                 }
-                camView[idx].posYTarget = height - camView[idx].heightTarget;
                 // 3rd camera
                 idx = getCameraIdxNthVisibleAll(3);
                 camView[idx].moveSteps = MOVE_STEPS;
@@ -1136,12 +1140,13 @@ void setViewParams() {
                     camView[idx].heightTarget = height * 0.55;
                     camView[idx].widthTarget = camView[idx].heightTarget * CAMERA_RATIO;
                     camView[idx].posXTarget = width - camView[idx].widthTarget;
+                    camView[idx].posYTarget = height - camView[idx].heightTarget;
                 } else {
-                    camView[idx].heightTarget = (height / 2) - 1;
-                    camView[idx].widthTarget = camView[idx].heightTarget * CAMERA_RATIO;
-                    camView[idx].posXTarget = (width / 2) + 1;
-                }
-                camView[idx].posYTarget = height - camView[idx].heightTarget;
+                    camView[idx].widthTarget = (width - 4) / 3;
+                    camView[idx].heightTarget = camView[idx].widthTarget / CAMERA_RATIO;
+                    camView[idx].posXTarget = width - camView[idx].widthTarget;
+                    camView[idx].posYTarget = (height / 2) - (camView[idx].heightTarget / 2);
+               }
             } else { // solo mode on
                 // main camera
                 idx = cameraIdxSolo;
@@ -1807,6 +1812,7 @@ void fwriteRaceResult() {
     if (isRecordedLaps() == false) {
         return;
     }
+    string timestamp = ofGetTimestampString();
     string newline;
 #ifdef TARGET_WIN32
     newline = "\r\n";
@@ -1864,7 +1870,7 @@ void fwriteRaceResult() {
     }
 
     // write to file
-    resultsFile.open(ARAP_RESULT_DIR + ofGetTimestampString() + ".txt" , ofFile::WriteOnly);
+    resultsFile.open(ARAP_RESULT_DIR + timestamp + ".txt" , ofFile::WriteOnly);
     resultsFile << (strsumm + strlaph + strlapb);
     resultsFile.close();
 }
