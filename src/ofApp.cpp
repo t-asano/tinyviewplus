@@ -498,10 +498,17 @@ void drawCamera(int idx) {
 //--------------------------------------------------------------
 string getWatchString(float sec) {
     char buf[16];
-    int m = (int)(sec) / 60;
-    int s = (int)(sec) % 60;
-    int ss = (int)(sec * 100) % 100;
-    snprintf(buf, sizeof(buf), "%02d:%02d.%02d", m, s, ss);
+    int h, m, s, ss;
+    s = (int)(sec) % 60;
+    ss = (int)(sec * 100) % 100;
+    if (sec >= 3600) {
+        h = (int)(sec) / 3600;
+        m = ((int)(sec) % 3600) / 60;
+        snprintf(buf, sizeof(buf), "%02d:%02d:%02d.%02d", h, m, s, ss);
+    } else {
+        m = (int)(sec) / 60;
+        snprintf(buf, sizeof(buf), "%02d:%02d.%02d", m, s, ss);
+    }
     return ofToString(buf);
 }
 
@@ -516,16 +523,29 @@ void drawWatch() {
         str = "Go!";
     } else {
         float sec;
-        if (raceDuraSecs <= 0) {
-            sec = elapsedTime - WATCH_COUNT_SEC;
-        } else {
-            sec = raceDuraSecs - (elapsedTime - WATCH_COUNT_SEC);
-        }
+        sec = elapsedTime - WATCH_COUNT_SEC;
         str = getWatchString(sec);
+        if (raceDuraSecs > 0) {
+            if (raceDuraSecs >= 3600 && sec < 3600) {
+                str = "00:" + str;
+            }
+            str = str + " / " + getWatchString(raceDuraSecs);
+        }
     }
     int x = (ofGetWidth() / 2) - (myFontWatch.stringWidth(str) / 2);
     x = (int)(x / 5) * 5;
     drawStringWithShadow(&myFontWatch, myColorWhite, str, x, ofGetHeight() - 10);
+}
+
+//--------------------------------------------------------------
+void drawCurrentDate() {
+    string str;
+    int x, y;
+    str = ofGetTimestampString("%c");
+    x = ofGetWidth() - myFontWatch.stringWidth(str) - 10;
+    x = (int)(x / 5) * 5;
+    y = ofGetHeight() - 10;
+    drawStringWithShadow(&myFontWatch, myColorLGray, str, x, 20);
 }
 
 //--------------------------------------------------------------
@@ -556,6 +576,8 @@ void ofApp::draw() {
     if (raceStarted == true || elapsedTime != 0) {
         drawWatch();
     }
+    // current date
+    drawCurrentDate();
     // QR reader
     if (qrEnabled == true) {
         string str = "Scanning QR code...";
@@ -667,6 +689,7 @@ void keyPressedOverlayNone(int key) {
 
 //--------------------------------------------------------------
 void ofApp::keyPressed(int key) {
+    activateCursor();
     switch (overlayMode) {
         case OVLMODE_HELP:
             keyPressedOverlayHelp(key);
