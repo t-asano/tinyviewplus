@@ -150,24 +150,10 @@ void ofApp::update() {
         if (raceDuraSecs > 0) {
             float relp = elapsedTime - WATCH_COUNT_SEC;
             // speak remaining time
-            if (nextSpeechRemainSecs > 0 && raceDuraSecs - relp <= nextSpeechRemainSecs) {
+            if (nextSpeechRemainSecs >= 0 && raceDuraSecs - relp <= nextSpeechRemainSecs) {
                 notifySound.play();
                 speakRemainTime(nextSpeechRemainSecs);
                 setNextSpeechRemainSecs(nextSpeechRemainSecs);
-            }
-            // finish race by time
-            if (relp >= raceDuraSecs) {
-                for (int i = 0; i < cameraNum; i++) {
-                    grabber[i].update();
-                    camView[i].foundMarkerNum = 0;
-                    camView[i].foundValidMarkerNum = 0;
-                    camView[i].enoughMarkers = false;
-                    camView[i].prevElapsedSec = raceDuraSecs + WATCH_COUNT_SEC;
-                }
-                toggleRace();
-                recvOsc();
-                updateViewParams();
-                return;
             }
         }
     }
@@ -227,7 +213,8 @@ void ofApp::update() {
                     camView[i].enoughMarkers = false;
                     continue;
                 }
-                if (camView[i].totalLaps >= raceDuraLaps) {
+                if (camView[i].totalLaps >= raceDuraLaps
+                    || (raceDuraSecs > 0 && (camView[i].prevElapsedSec - WATCH_COUNT_SEC) >= raceDuraSecs)) {
                     // already finished
                     continue;
                 }
@@ -237,8 +224,9 @@ void ofApp::update() {
                 camView[i].lastLap = lap;
                 camView[i].lapHistoryName[total - 1] = camView[i].labelString;
                 camView[i].lapHistoryTime[total - 1] = lap;
-                if (total == raceDuraLaps) {
-                    // finish
+                if (total == raceDuraLaps
+                    || (raceDuraSecs > 0 && (elp - WATCH_COUNT_SEC) >= raceDuraSecs)) {
+                    // finish by laps / time
                     camView[i].foundMarkerNum = 0;
                     camView[i].foundValidMarkerNum = 0;
                     camView[i].enoughMarkers = false;
@@ -288,16 +276,29 @@ void ofApp::update() {
     if (lockOnEnabled == true && lapcnt > 0 && lockcnt == 0) {
         resetCameraSolo(); // experimental
     }
-    // finish race by laps
+    // finish race
     if (raceStarted == true) {
-        int count = 0;
-        for (int i = 0; i < cameraNum; i++) {
+        int i, count;
+        // by laps
+        count = 0;
+        for (i = 0; i < cameraNum; i++) {
             if (camView[i].totalLaps >= raceDuraLaps) {
                 count++;
             }
         }
         if (count == cameraNum) {
             toggleRace();
+        } else if (raceDuraSecs > 0) {
+            // by time
+            count = 0;
+            for (i = 0; i < cameraNum; i++) {
+                if ((camView[i].prevElapsedSec - WATCH_COUNT_SEC) >= raceDuraSecs) {
+                    count++;
+                }
+            }
+            if (count == cameraNum) {
+                toggleRace();
+            }
         }
     }
     // osc
@@ -416,7 +417,9 @@ void drawCameraLapTime(int idx, bool isSub) {
     }
     int i = idx;
     string sout;
-    if (raceStarted == false || camView[i].totalLaps == raceDuraLaps) {
+    if (raceStarted == false
+        || camView[i].totalLaps == raceDuraLaps
+        || (raceDuraSecs > 0 && (camView[i].prevElapsedSec - WATCH_COUNT_SEC) >= raceDuraSecs)) {
         // race/laps finished
         sout = "Laps: " + ofToString(laps);
         if (isSub) {
@@ -545,7 +548,7 @@ void drawCurrentDate() {
     x = ofGetWidth() - myFontWatch.stringWidth(str) - 10;
     x = (int)(x / 5) * 5;
     y = ofGetHeight() - 10;
-    drawStringWithShadow(&myFontWatch, myColorLGray, str, x, 20);
+    drawStringWithShadow(&myFontWatch, myColorWhite, str, x, 20);
 }
 
 //--------------------------------------------------------------
@@ -1602,7 +1605,7 @@ void speakLap(int camid, float sec, int num) {
 //--------------------------------------------------------------
 void setNextSpeechRemainSecs(int curr) {
     int next;
-    // ...180,120,60,30
+    // ...180,120,60,30,0
     if (curr > 60) {
         if (curr % 60 == 0) {
             next = curr - 60;
@@ -1611,6 +1614,8 @@ void setNextSpeechRemainSecs(int curr) {
         }
     } else if (curr > 30) {
         next = 30;
+    } else if (curr > 0) {
+        next = 0;
     } else {
         next = -1;
     }
@@ -1619,37 +1624,45 @@ void setNextSpeechRemainSecs(int curr) {
 
 //--------------------------------------------------------------
 void speakRemainTime(int sec) {
-    bool jp = speechLangJpn;
     string str = "";
-    if (jp == true) {
-        str += "残り";
-    }
-    if (sec >= 60 && sec % 60 == 0) {
-        // minute
-        int min = sec / 60;
-        str += ofToString(min);
+    bool jp = speechLangJpn;
+    if (sec == 0) {
         if (jp == true) {
-            str += "分";
+            str = "規定時間が経過しました";
         } else {
-            str += " minute";
-            if (min != 1) {
-                str += "s";
-            }
+            str = "specified time has passed.";
         }
     } else {
-        // second
-        str += ofToString(sec);
         if (jp == true) {
-            str += "秒";
+            str += "残り";
+        }
+        if (sec >= 60 && sec % 60 == 0) {
+            // minute
+            int min = sec / 60;
+            str += ofToString(min);
+            if (jp == true) {
+                str += "分";
+            } else {
+                str += " minute";
+                if (min != 1) {
+                    str += "s";
+                }
+            }
         } else {
-            str += " second";
-            if (sec != 1) {
-                str += "s";
+            // second
+            str += ofToString(sec);
+            if (jp == true) {
+                str += "秒";
+            } else {
+                str += " second";
+                if (sec != 1) {
+                    str += "s";
+                }
             }
         }
-    }
-    if (jp == false) {
-        str += " to go";
+        if (jp == false) {
+            str += " to go";
+        }
     }
     speakAny(jp == true ? "jp" : "en", str);
 }
