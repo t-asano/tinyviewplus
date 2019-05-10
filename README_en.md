@@ -2,7 +2,7 @@
 
 Tiny View Plus is an application to display FPV video easily with USB receivers. Up to 4 receivers(\*) can be connected.
 
-![tinyviewplus](docs/overview.jpg)
+![tinyviewplus](docs/img/overview.jpg)
 
 **(\*)On Windows, it is impossible to connect multiple receivers to the USB hub. Please connect only one receiver to each USB port built in PC.**
 
@@ -28,7 +28,7 @@ To build from source code, [openFrameworks](http://openframeworks.cc/ja/) v0.10.
 
 **On macOS, be sure to put the application under the "Application" folder. If you place it anywhere else, functions that writing to file will not work correctly.**
 
-![install_mac.png](docs/install_mac.png)
+![install_mac.png](docs/img/install_mac.png)
 
 Attention. We are not responsible for any problems caused by running the application.
 
@@ -39,8 +39,8 @@ Attention. We are not responsible for any problems caused by running the applica
 ```
 $ cd addons/
 $ git clone -b fix-of_v0.10 https://github.com/t-asano/ofxTrueTypeFontUC.git
-$ git clone https://github.com/t-asano/ofxAruco
-$ git clone https://github.com/kylemcdonald/ofxCv
+$ git clone https://github.com/t-asano/ofxAruco.git
+$ git clone https://github.com/kylemcdonald/ofxCv.git
 $ git clone https://github.com/t-asano/ofxZxing.git
 ```
 3. Create a project with addons.
@@ -50,7 +50,7 @@ $ git clone https://github.com/t-asano/ofxZxing.git
 	- ofxCv
 	- ofxOpenCv
 	- ofxPoco
-  - ofxZxing
+    - ofxZxing
 4. Overwrite src/ and bin/data/ of Tiny View Plus.
 5. Build.
 
@@ -128,33 +128,35 @@ Some functions can also be operated with the mouse.
 	- If no image file is found, the default icon will be adopted.
 	- The aspect ratio is forced to 1:1.
 
-### QR code for label setting
+### QR Code for label setting
 
-You can set the camera label by the QR code.
+You can set the camera label by the QR Code.
 
-![qr_screen.png](docs/qr_screen.png)
+![qr_screen.png](docs/img/qr_screen.png)
 
-You can use Google Charts API to create QR codes. An example of URL is as follows.
+You can use Google Charts API to create QR Code. An example of URL is as follows.
 
 [https://chart.apis.google.com/chart?cht=qr&chs=500x500&chl=TinyViewPlus](https://chart.apis.google.com/chart?cht=qr&chs=500x500&chl=TinyViewPlus)
 
-It is convenient to embed the QR code in the OSD. An example of an image for the Betaflight is as follows.
+It is convenient to embed the QR Code in the OSD. An example of an image for the Betaflight is as follows.
 
-![qr_betaflight.png](docs/qr_betaflight.png)
+![qr_betaflight.png](docs/img/qr_betaflight.png)
+
+\* "QR Code" is a registered trademark of DENSO WAVE INCORPORATED.
 
 ### AR lap timer
 
 You can measure the lap time by using AR marker.
 
-![argate_single.png](docs/argate_single.png)
-![argate_multi.png](docs/argate_multi.png)
+![argate_single.png](docs/img/argate_single.png)
+![argate_multi.png](docs/img/argate_multi.png)
 
 Please place 4 to 8 markers around the gate. Also make sure that the top of the marker faces the center of the gate. Following four types of markers are supported. It does not matter if only one type is placed as shown above.
 
-- [marker_00_main_a.png](docs/marker_00_main_a.png)
-- [marker_01_main_b.png](docs/marker_01_main_b.png)
-- [marker_02_main_c.png](docs/marker_02_main_c.png)
-- [marker_03_main_d.png](docs/marker_03_main_d.png)
+- [marker_00_main_a.png](docs/img/marker_00_main_a.png)
+- [marker_01_main_b.png](docs/img/marker_01_main_b.png)
+- [marker_02_main_c.png](docs/img/marker_02_main_c.png)
+- [marker_03_main_d.png](docs/img/marker_03_main_d.png)
 
 The size of the marker should be 150mm per side. Larger marker will be suitable for high speed race. If marker recognition is not successful, please try increasing the size of the marker, using multiple types, or placing them in a brighter place.
 

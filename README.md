@@ -4,7 +4,7 @@
 
 Tiny View Plusは、FPV映像を手軽に表示するためのアプリです。UVC対応の受信機を、MacBook等のコンピューターに接続して使用します。受信機は4台まで(※)接続できます。
 
-![tinyviewplus](docs/overview.jpg)
+![tinyviewplus](docs/img/overview.jpg)
 
 **(※)Windowsの場合、USBハブに複数の受信機を接続すると正しく動作しないことがあります。PC本体のUSBポートに1つにつき、受信機1台のみを接続してください。**
 
@@ -32,7 +32,7 @@ Tiny View Plusは、FPV映像を手軽に表示するためのアプリです。
 
 **macOSの場合、必ず「アプリケーション」フォルダの下に配置してください。それ以外の場所に配置すると、ファイルの書き込みを伴う機能が正しく動作しません。**
 
-![install_mac.png](docs/install_mac.png)
+![install_mac.png](docs/img/install_mac.png)
 
 バイナリの作成にあたっては細心の注意を払っていますが、アプリを実行することで起こる不具合については、一切責任を負いません。
 
@@ -43,8 +43,8 @@ Tiny View Plusは、FPV映像を手軽に表示するためのアプリです。
 ```
 $ cd addons/
 $ git clone -b fix-of_v0.10 https://github.com/t-asano/ofxTrueTypeFontUC.git
-$ git clone https://github.com/t-asano/ofxAruco
-$ git clone https://github.com/kylemcdonald/ofxCv
+$ git clone https://github.com/t-asano/ofxAruco.git
+$ git clone https://github.com/kylemcdonald/ofxCv.git
 $ git clone https://github.com/t-asano/ofxZxing.git
 ```
 3. プロジェクトジェネレーターで、以下のアドオンを含むプロジェクトを作成
@@ -54,7 +54,7 @@ $ git clone https://github.com/t-asano/ofxZxing.git
 	- ofxCv
 	- ofxOpenCv
 	- ofxPoco
-  - ofxZxing
+    - ofxZxing
 4. Tiny View Plusのソースコード(src/)とアセット(bin/data/)を上書き
 5. ビルド
 
@@ -136,7 +136,7 @@ Windowsでは、デバイスマネージャーでカメラ(受信機)の検出�
 
 QRコードを使用して、カメラのラベルを設定できます。
 
-![qr_screen.png](docs/qr_screen.png)
+![qr_screen.png](docs/img/qr_screen.png)
 
 QRコードを作成するには、Google Charts APIが利用できます。以下は、QRコードを作成するためのURLの例です。
 
@@ -144,21 +144,23 @@ QRコードを作成するには、Google Charts APIが利用できます。以�
 
 QRコードをOSDに組み込んでおくと便利です。以下は、Betaflight用のロゴ画像の例です。
 
-![qr_betaflight.png](docs/qr_betaflight.png)
+![qr_betaflight.png](docs/img/qr_betaflight.png)
+
+※QRコードは(株)デンソーウェーブの登録商標です。
 
 ### ARマーカーによるラップ計測
 
 ARマーカーを利用して、ラップタイムを計測できます。
 
-![argate_single.png](docs/argate_single.png)
-![argate_multi.png](docs/argate_multi.png)
+![argate_single.png](docs/img/argate_single.png)
+![argate_multi.png](docs/img/argate_multi.png)
 
 マーカーを4から8個程度、ゲートの周囲に配置してください。またその際に、マーカーの上側がゲートの中央を向くようにしてください。以下の4種類のマーカーに対応していますが、上の図のように1種類のみを配置する形でも構いません。
 
-- [marker_00_main_a.png](docs/marker_00_main_a.png)
-- [marker_01_main_b.png](docs/marker_01_main_b.png)
-- [marker_02_main_c.png](docs/marker_02_main_c.png)
-- [marker_03_main_d.png](docs/marker_03_main_d.png)
+- [marker_00_main_a.png](docs/img/marker_00_main_a.png)
+- [marker_01_main_b.png](docs/img/marker_01_main_b.png)
+- [marker_02_main_c.png](docs/img/marker_02_main_c.png)
+- [marker_03_main_d.png](docs/img/marker_03_main_d.png)
 
 マーカーのサイズは1辺150mmを目安として、通過スピードに応じて調整してください。ハイスピードレースにおいては、より大きなマーカーが適しています。マーカーの認識がうまくいかない場合は、マーカーを大きくしたり、複数の種類を織り交ぜたり、より明るい場所に設置すると、改善するかもしれません。
 
