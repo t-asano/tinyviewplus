@@ -1140,10 +1140,12 @@ void setViewParams() {
                     camView[idx].posXTarget = (width / 2) - (camView[idx].widthTarget / 2);
                     camView[idx].posYTarget = 0;
                 } else {
-                    camView[idx].widthTarget = (width - 4) / 3;
-                    camView[idx].heightTarget = camView[idx].widthTarget / CAMERA_RATIO;
-                    camView[idx].posXTarget = 0;
-                    camView[idx].posYTarget = (height / 2) - (camView[idx].heightTarget / 2);
+                    int cw = (width - 6) / 3;
+                    int ch = cw / CAMERA_RATIO;
+                    camView[idx].widthTarget = cw;
+                    camView[idx].heightTarget = ch;
+                    camView[idx].posXTarget = (width / 2) - (cw / 2) - (cw + 2);
+                    camView[idx].posYTarget = (height / 2) - (ch / 2);
                 }
                 // 2nd camera
                 idx = getCameraIdxNthVisibleAll(2);
@@ -1154,10 +1156,12 @@ void setViewParams() {
                     camView[idx].posXTarget = 0;
                     camView[idx].posYTarget = height - camView[idx].heightTarget;
                 } else {
-                    camView[idx].widthTarget = (width - 4) / 3;
-                    camView[idx].heightTarget = camView[idx].widthTarget / CAMERA_RATIO;
-                    camView[idx].posXTarget = (width / 2) - (camView[idx].widthTarget / 2);
-                    camView[idx].posYTarget = (height / 2) - (camView[idx].heightTarget / 2);
+                    int cw = (width - 6) / 3;
+                    int ch = cw / CAMERA_RATIO;
+                    camView[idx].widthTarget = cw;
+                    camView[idx].heightTarget = ch;
+                    camView[idx].posXTarget = (width / 2) - (cw / 2);
+                    camView[idx].posYTarget = (height / 2) - (ch / 2);
                 }
                 // 3rd camera
                 idx = getCameraIdxNthVisibleAll(3);
@@ -1168,10 +1172,12 @@ void setViewParams() {
                     camView[idx].posXTarget = width - camView[idx].widthTarget;
                     camView[idx].posYTarget = height - camView[idx].heightTarget;
                 } else {
-                    camView[idx].widthTarget = (width - 4) / 3;
-                    camView[idx].heightTarget = camView[idx].widthTarget / CAMERA_RATIO;
-                    camView[idx].posXTarget = width - camView[idx].widthTarget;
-                    camView[idx].posYTarget = (height / 2) - (camView[idx].heightTarget / 2);
+                    int cw = (width - 6) / 3;
+                    int ch = cw / CAMERA_RATIO;
+                    camView[idx].widthTarget = cw;
+                    camView[idx].heightTarget = ch;
+                    camView[idx].posXTarget = (width / 2) - (cw / 2) + (cw + 2);
+                    camView[idx].posYTarget = (height / 2) - (ch / 2);
                }
             } else { // solo mode on
                 // main camera
