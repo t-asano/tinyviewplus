@@ -31,6 +31,7 @@ The English version is not available yet.
 ## プロジェクトの作成
 
 1. 必要なアドオンをインストールしておく
+
 	```
 $ cd addons/
 $ git clone -b fix-of_v0.10 https://github.com/t-asano/ofxTrueTypeFontUC.git
@@ -99,7 +100,8 @@ $ git clone https://github.com/t-asano/ofxZxing.git
 ## アップデート
 
 1. Tiny View Plusとアドオンを更新する
-   ```
+
+    ```
    $ cd apps/myApps/tinyviewplus
    $ git pull
    $ cd ../../../addons/ADDON_NAME
