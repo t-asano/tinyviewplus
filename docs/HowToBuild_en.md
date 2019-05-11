@@ -32,7 +32,7 @@ The English version is not available yet.
 
 1. 必要なアドオンをインストールしておく
 
-	```
+    ```
 $ cd addons/
 $ git clone -b fix-of_v0.10 https://github.com/t-asano/ofxTrueTypeFontUC.git
 $ git clone https://github.com/t-asano/ofxAruco.git

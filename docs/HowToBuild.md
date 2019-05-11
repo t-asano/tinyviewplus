@@ -36,7 +36,7 @@ $ git clone -b fix-of_v0.10 https://github.com/t-asano/ofxTrueTypeFontUC.git
 $ git clone https://github.com/t-asano/ofxAruco.git
 $ git clone https://github.com/kylemcdonald/ofxCv.git
 $ git clone https://github.com/t-asano/ofxZxing.git
-	```
+    ```
 	
 2. プロジェクトジェネレーターで、以下のアドオンを含むプロジェクトを作成する。プロジェクト名は「tinyviewplus」とする。
     - ofxOsc
