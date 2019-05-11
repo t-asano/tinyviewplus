@@ -29,13 +29,12 @@
 ## プロジェクトの作成
 
 1. 必要なアドオンをインストールしておく
-
     ```
-$ cd addons/
-$ git clone -b fix-of_v0.10 https://github.com/t-asano/ofxTrueTypeFontUC.git
-$ git clone https://github.com/t-asano/ofxAruco.git
-$ git clone https://github.com/kylemcdonald/ofxCv.git
-$ git clone https://github.com/t-asano/ofxZxing.git
+    $ cd addons/
+    $ git clone -b fix-of_v0.10 https://github.com/t-asano/ofxTrueTypeFontUC.git
+    $ git clone https://github.com/t-asano/ofxAruco.git
+    $ git clone https://github.com/kylemcdonald/ofxCv.git
+    $ git clone https://github.com/t-asano/ofxZxing.git
     ```
 	
 2. プロジェクトジェネレーターで、以下のアドオンを含むプロジェクトを作成する。プロジェクト名は「tinyviewplus」とする。
@@ -48,7 +47,6 @@ $ git clone https://github.com/t-asano/ofxZxing.git
     - ofxZxing
     
 3. 作成したプロジェクトに、Tiny View Plusのファイル一式をマージする
-
     ```
     $ cd apps/myApps
     $ mv tinyviewplus tvptemp
@@ -95,7 +93,6 @@ $ git clone https://github.com/t-asano/ofxZxing.git
 ## アップデート
 
 1. Tiny View Plusとアドオンを更新する
-
    ```
    $ cd apps/myApps/tinyviewplus
    $ git pull
