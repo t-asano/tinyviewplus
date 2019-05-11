@@ -1,6 +1,6 @@
 # Tiny View Plus
 
-[English version](./README_en.md)
+The English version is [here](./README_en.md).
 
 Tiny View Plusは、FPV映像を手軽に表示するためのアプリです。UVC対応の受信機を、MacBook等のコンピューターに接続して使用します。受信機は4台まで(※)接続できます。
 
@@ -21,42 +21,25 @@ Tiny View Plusは、FPV映像を手軽に表示するためのアプリです。
 
 冒頭の写真の例では、USBハブ(C-A)とUSBケーブル(A-microB)を別途用意しています。この場合、ROTG付属のUSBケーブル(OTG用microB-microB)は使用しません。
 
-ソースコードからビルドする場合には [openFrameworks](http://openframeworks.cc/ja/) v0.10.1 が必要です。openFrameworksが対応している他のOS(Ubuntu等)でも動作する可能性はありますが、未検証です。
-
 ## インストール
-
-### ビルド済みバイナリを使用する場合(通常はこちら)
-
-1. [リリースページ](https://github.com/t-asano/tinyviewplus/releases)よりzipファイルをダウンロード
-2. zipファイルを展開して適当な場所に配置
-
-**macOSの場合、必ず「アプリケーション」フォルダの下に配置してください。それ以外の場所に配置すると、ファイルの書き込みを伴う機能が正しく動作しません。**
-
-![install_mac.png](docs/img/install_mac.png)
 
 バイナリの作成にあたっては細心の注意を払っていますが、アプリを実行することで起こる不具合については、一切責任を負いません。
 
-### ソースコードからビルドする場合(上級者向け)
+ソースコードからビルドする場合は、[こちらのドキュメント](docs/HowToBuild.md)を参照してください。
 
-1. [openFrameworks](http://openframeworks.cc/ja/) v0.10.1 をインストール
-2. アドオンをインストール
-```
-$ cd addons/
-$ git clone -b fix-of_v0.10 https://github.com/t-asano/ofxTrueTypeFontUC.git
-$ git clone https://github.com/t-asano/ofxAruco.git
-$ git clone https://github.com/kylemcdonald/ofxCv.git
-$ git clone https://github.com/t-asano/ofxZxing.git
-```
-3. プロジェクトジェネレーターで、以下のアドオンを含むプロジェクトを作成
-	- ofxOsc
-	- ofxTrueTypeFontUC
-	- ofxAruco
-	- ofxCv
-	- ofxOpenCv
-	- ofxPoco
-    - ofxZxing
-4. Tiny View Plusのソースコード(src/)とアセット(bin/data/)を上書き
-5. ビルド
+### macOSの場合
+
+1. [リリースページ](https://github.com/t-asano/tinyviewplus/releases)よりzipファイルをダウンロード
+2. zipファイルを展開して適当な場所に配置
+    - 必ず「アプリケーション」フォルダの下に配置してください。それ以外の場所に配置すると、ファイルの書き込みを伴う機能が正しく動作しません。
+    ![install_mac.png](docs/img/install_mac.png)
+
+### Windowsの場合
+
+1. [リリースページ](https://github.com/t-asano/tinyviewplus/releases)よりzipファイルをダウンロード
+2. zipファイルを展開して適当な場所に配置
+3. [Microsoft Visual C++ 2015 再頒布可能パッケージ(vc_redist.x64.exe)
+](https://www.microsoft.com/ja-jp/download/details.aspx?id=53587)をインストール(起動時にVCOMP140.DLLのエラーが出る場合のみ)
 
 ## 使い方
 

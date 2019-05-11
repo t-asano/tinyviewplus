@@ -21,38 +21,23 @@ To build from source code, [openFrameworks](http://openframeworks.cc/ja/) v0.10.
 
 ## Install
 
-### Case 1: Prebuilt binary
+Attention: We are not responsible for any problems caused by running the application.
+
+If you want to build from source code, please refer to [this document](docs/HowToBuild_en.md).
+
+### macOS
 
 1. Download a zip file from [Release page](https://github.com/t-asano/tinyviewplus/releases).
 2. Extract it and place its contents in the proper place.
+    - Be sure to put the application under the "Application" folder. If you place it anywhere else, functions that writing to file will not work correctly.
+    ![install_mac.png](docs/img/install_mac.png)
 
-**On macOS, be sure to put the application under the "Application" folder. If you place it anywhere else, functions that writing to file will not work correctly.**
+### Windows
 
-![install_mac.png](docs/img/install_mac.png)
-
-Attention. We are not responsible for any problems caused by running the application.
-
-### Case 2: Build from source code (for experts)
-
-1. Install [openFrameworks](http://openframeworks.cc/ja/) v0.10.1.
-2. Install addons.
-```
-$ cd addons/
-$ git clone -b fix-of_v0.10 https://github.com/t-asano/ofxTrueTypeFontUC.git
-$ git clone https://github.com/t-asano/ofxAruco.git
-$ git clone https://github.com/kylemcdonald/ofxCv.git
-$ git clone https://github.com/t-asano/ofxZxing.git
-```
-3. Create a project with addons.
-	- ofxOsc
-	- ofxTrueTypeFontUC
-	- ofxAruco
-	- ofxCv
-	- ofxOpenCv
-	- ofxPoco
-    - ofxZxing
-4. Overwrite src/ and bin/data/ of Tiny View Plus.
-5. Build.
+1. Download a zip file from [Release page](https://github.com/t-asano/tinyviewplus/releases).
+2. Extract it and place its contents in the proper place.
+3. Install [Microsoft Visual C++ 2015 Redistributable(vc_redist.x64.exe)
+](https://www.microsoft.com/ja-jp/download/details.aspx?id=53587)(Only if VCOMP140.DLL error occurs at startup.)
 
 ## Usage
 
