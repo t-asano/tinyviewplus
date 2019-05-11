@@ -541,14 +541,17 @@ void drawWatch() {
 }
 
 //--------------------------------------------------------------
-void drawCurrentDate() {
+void drawInfo() {
     string str;
     int x, y;
-    str = ofGetTimestampString("%c");
-    x = ofGetWidth() - myFontWatch.stringWidth(str) - 10;
-    x = (int)(x / 5) * 5;
     y = ofGetHeight() - 10;
-    drawStringWithShadow(&myFontWatch, myColorWhite, str, x, 20);
+    // app
+    drawStringWithShadow(&myFontWatch, myColorWhite, APP_INFO, 10, y);
+    // date/time
+    str = ofGetTimestampString("%F %T");
+    x = ofGetWidth() - (myFontWatch.stringWidth(str) + 10);
+    x = (int)(x / 5) * 5;
+    drawStringWithShadow(&myFontWatch, myColorWhite, str, x, y);
 }
 
 //--------------------------------------------------------------
@@ -580,7 +583,7 @@ void ofApp::draw() {
         drawWatch();
     }
     // current date
-    drawCurrentDate();
+    drawInfo();
     // QR reader
     if (qrEnabled == true) {
         string str = "Scanning QR code...";

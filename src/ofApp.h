@@ -248,7 +248,7 @@ void drawCameraLapHistory(int);
 void drawCamera(int);
 string getWatchString(float);
 void drawWatch();
-void drawCurrentDate();
+void drawInfo();
 void drawStringWithShadow(ofxTrueTypeFontUC*, ofColor, string, int, int);
 void keyPressedOverlayHelp(int);
 void keyPressedOverlayHelp(int);
