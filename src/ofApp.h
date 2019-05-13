@@ -86,14 +86,12 @@
 #define DFLT_ARAP_RLAPS 10
 #define DFLT_ARAP_RSECS 0
 #define DFLT_ARAP_MNLAP 3
-#define DFLT_ARAP_LCKON false
 #define ARAP_MKR_FILE   "system/marker.xml"
 #define ARAP_RESULT_DIR "results/"
 #define ARAP_MNUM_THR   2
 #define ARAP_MAX_RLAPS  10000
 #define ARAP_MAX_MNLAP  100
 #define ARAP_MAX_RSECS  36000
-#define ARAP_LOCKON_SEC 1
 #define ARAP_RSLT_SCRN  0
 #define ARAP_RSLT_FILE  1
 #define WATCH_COUNT_SEC 5
@@ -107,7 +105,7 @@
 // QR code reader
 #define QR_CYCLE        6
 // help
-#define HELP_LINES      25
+#define HELP_LINES      24
 #define HELP_MESSAGE    "Keyboard shortcuts:\n"\
                         "[H] Display help\n"\
                         "[1~4] Camera 1~4 solo view on/off\n"\
@@ -118,7 +116,6 @@
                         "[F] Fullscreen mode on/off\n"\
                         "[L] Lap history display during race on/off\n"\
                         "[A] AR lap timer on/loose/off\n"\
-                        "[O] Lock-on effect on/off\n"\
                         "[Space] Start/Stop race\n"\
                         "[V] Display race result\n"\
                         "[D] Set race duration (time/laps)\n"\
@@ -268,7 +265,6 @@ int getMaxLaps();
 string getLapStr(float);
 void processLapCanceller(int);
 void toggleARLap();
-void toggleLockOnEffect();
 void changeMinLap();
 void changeRaceDuration();
 void toggleFullscreen();

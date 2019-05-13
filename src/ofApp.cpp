@@ -40,7 +40,6 @@ ofSoundPlayer beepSound, beep3Sound, notifySound, cancelSound;
 ofSoundPlayer countSound, finishSound;
 ofFile resultsFile;
 int arLapMode;
-bool lockOnEnabled;
 bool raceStarted;
 int raceDuraSecs;
 int nextSpeechRemainSecs;
@@ -114,7 +113,6 @@ void ofApp::setup() {
     oscReceiver.setup(OSC_LISTEN_PORT);
     // AR lap timer
     arLapMode = DFLT_ARAP_MODE;
-    lockOnEnabled = DFLT_ARAP_LCKON;
     minLapTime = DFLT_ARAP_MNLAP;
     raceDuraSecs = DFLT_ARAP_RSECS;
     nextSpeechRemainSecs = -1;
@@ -167,8 +165,6 @@ void ofApp::update() {
         processQrReader();
     }
     // lap
-    int lapcnt = 0;
-    int lockcnt = 0;
     for (int i = 0; i < cameraNum; i++) {
         if (raceStarted == false || elapsedTime < WATCH_COUNT_SEC) {
             continue;
@@ -217,6 +213,7 @@ void ofApp::update() {
                     // already finished
                     continue;
                 }
+                // record
                 int total = camView[i].totalLaps + 1;
                 camView[i].prevElapsedSec = elp;
                 camView[i].totalLaps = total;
@@ -231,35 +228,13 @@ void ofApp::update() {
                     camView[i].foundValidMarkerNum = 0;
                     camView[i].enoughMarkers = false;
                     finishSound.play();
-                    speakLap((i + 1), lap, total);
+                    // speakLap((i + 1), lap, total);
                     continue;
                 }
-                // lap with lock-on
-                bool locked = false;
-                if (lockOnEnabled == true) {
-                    for (int j = 0; j < cameraNum; j++) {
-                        if (j == i) {
-                            continue;
-                        }
-                        float diff = elp - camView[j].prevElapsedSec;
-                        if (diff > 0 && diff < ARAP_LOCKON_SEC) {
-                            // lock on!
-                            locked = true;
-                            lockcnt++;
-                            enableCameraSolo(i + 1);
-                            beep3Sound.play();
-                            break;
-                        }
-                    }
-                }
-                // lap without lock-on
-                if (locked == false) {
-                    lapcnt++;
-                    if (total == (raceDuraLaps - 1)) {
-                        beep3Sound.play();
-                    } else {
-                        beepSound.play();
-                    }
+                if (total == (raceDuraLaps - 1)) {
+                    beep3Sound.play();
+                } else {
+                    beepSound.play();
                 }
                 speakLap((i + 1), lap, total);
             }
@@ -272,9 +247,6 @@ void ofApp::update() {
                 camView[i].enoughMarkers = true;
             }
         }
-    }
-    if (lockOnEnabled == true && lapcnt > 0 && lockcnt == 0) {
-        resetCameraSolo(); // experimental
     }
     // finish race
     if (raceStarted == true) {
@@ -680,8 +652,6 @@ void keyPressedOverlayNone(int key) {
         changeMinLap();
     } else if (key == 'd' || key == 'D') {
         changeRaceDuration();
-    } else if (key == 'o' || key == 'O') {
-        toggleLockOnEffect();
     } else if (key == 'f' || key == 'F') {
         toggleFullscreen();
     } else if (key == 't' || key == 'T') {
@@ -1405,7 +1375,6 @@ void initConfig() {
     // AR lap timer
     setOverlayMode(OVLMODE_NONE);
     arLapMode = DFLT_ARAP_MODE;
-    lockOnEnabled = DFLT_ARAP_LCKON;
     minLapTime = DFLT_ARAP_MNLAP;
     raceDuraLaps = DFLT_ARAP_RLAPS;
     raceDuraSecs = DFLT_ARAP_RSECS;
@@ -1704,9 +1673,6 @@ void speakAny(string lang, string text) {
 
 //--------------------------------------------------------------
 void toggleRace() {
-    if (lockOnEnabled == true) {
-        resetCameraSolo();
-    }
     if (raceStarted == false) {
         startRace();
     }
@@ -1955,17 +1921,6 @@ void toggleARLap() {
             arLapMode = ARAP_MODE_NORM;
             setOverlayMessage("AR lap timer mode: normal");
             break;
-    }
-}
-
-//--------------------------------------------------------------
-void toggleLockOnEffect() {
-    lockOnEnabled = !lockOnEnabled;
-    resetCameraSolo();
-    if (lockOnEnabled == true) {
-        setOverlayMessage("Lock-on effect: On");
-    } else {
-        setOverlayMessage("Lock-on effect: Off");
     }
 }
 

@@ -73,9 +73,8 @@ On Windows, you can check the detection status of the camera (receiver) with the
 | F | Fullscreen mode on/off | off |
 | L | Lap history display during race on/off | off |
 | A | Switch AR lap timer mode (normal/loose/off) (\*3) | normal |
-| O | Lock-on effect on/off (\*4) | off |
 | Space | Start/Stop race | - |
-| V | Display race results (\*5) | - |
+| V | Display race results (\*4) | - |
 | D | Set race duration time (0~36,000sec) and laps (1\~10,000) | 0(no limit), 10 |
 | M | Set minimum lap time (1~100sec) | 3 |
 | N | Change speech language (Japanese/English) | Japanese |
@@ -87,8 +86,7 @@ On Windows, you can check the detection status of the camera (receiver) with the
 - (\*2) Sets the characters scanned from the QR code to the camera label.
 - The background image is scaled according to the screen, and the upper left is displayed in priority.
 - (\*3) In loose mode, lap time will be measured even if the drone passes outside the gate.
-- (\*4) If the difference in gate passing time is less than 1 second, tracking side camera display will be enlarged.
-- (\*5) Race results will be saved under predefined folder when race finish.
+- (\*4) Race results will be saved under predefined folder when race finish.
 	- macOS binary: Tiny View Plus.app/Contents/ Resources/data/pilots
 	- others: data/pilots
 - When you exit the application settings will be initialized.
