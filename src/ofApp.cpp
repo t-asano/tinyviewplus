@@ -133,6 +133,7 @@ void ofApp::setup() {
     }
     raceStarted = false;
     elapsedTime = 0;
+    initRaceVars();
     // QR reader
     qrEnabled = false;
     // debug
@@ -202,9 +203,7 @@ void ofApp::update() {
             }
             // passed gate
             if (anum == 0 && camView[i].enoughMarkers == true
-                && ((arLapMode == ARAP_MODE_LOOSE)
-                    || (arLapMode == ARAP_MODE_NORM
-                        && camView[i].foundMarkerNum == camView[i].foundValidMarkerNum))) {
+                && ((arLapMode == ARAP_MODE_LOOSE) || (arLapMode == ARAP_MODE_NORM && camView[i].foundMarkerNum == camView[i].foundValidMarkerNum))) {
                 float lap = elp - camView[i].prevElapsedSec;
                 if (lap < minLapTime) {
                     // ignore too short lap
@@ -221,9 +220,10 @@ void ofApp::update() {
                 int total = camView[i].totalLaps + 1;
                 camView[i].prevElapsedSec = elp;
                 camView[i].totalLaps = total;
-                camView[i].lastLap = lap;
-                camView[i].lapHistoryName[total - 1] = camView[i].labelString;
-                camView[i].lapHistoryTime[total - 1] = lap;
+                camView[i].lastLapTime = lap;
+                camView[i].lapHistName[total - 1] = camView[i].labelString;
+                camView[i].lapHistLapTime[total - 1] = lap;
+                camView[i].lapHistElpTime[total - 1] = elp;
                 if (total == raceDuraLaps
                     || (raceDuraSecs > 0 && (elp - WATCH_COUNT_SEC) >= raceDuraSecs)) {
                     // finish by laps / time
@@ -448,7 +448,7 @@ void drawCameraLapTime(int idx, bool isSub) {
         }
     } else {
         // not finished
-        sout = "Lap" + ofToString(laps) + ": " + getLapStr(camView[i].lastLap) + "s";
+        sout = "Lap" + ofToString(laps) + ": " + getLapStr(camView[i].lastLapTime) + "s";
         if (isSub) {
             drawStringWithShadow(&myFontLapSub, myColorWhite,
                                  sout, camView[i].lapPosX, camView[i].lapPosY);
@@ -475,7 +475,7 @@ void drawCameraLapHistory(int camidx) {
         if (posy + (LAPHIST_HEIGHT / 2) >= camView[camidx].posY + camView[camidx].height) {
             break;
         }
-        lap = camView[camidx].lapHistoryTime[lapidx];
+        lap = camView[camidx].lapHistLapTime[lapidx];
         text = ofToString(lapidx + 1) + ": " + getLapStr(lap) + "s";
         drawStringWithShadow(&myFontLapHist, myColorWhite,
                              text, camView[camidx].lapPosX, posy);
@@ -835,7 +835,6 @@ void bindCameras() {
                     camView[idx].visible = true;
                     camView[idx].iconImage.load(ICON_FILE);
                     camView[idx].labelString = "Pilot" + ofToString(idx + 1);
-                    camView[idx].lastLap = 0;
                     cameraNum++;
                 }
             }
@@ -1394,7 +1393,7 @@ void initConfig() {
         camView[i].iconImage.clear();
         camView[i].iconImage.load(ICON_FILE);
         camView[i].labelString = "Pilot" + ofToString(i + 1);
-        camView[i].lastLap = 0;
+        camView[i].lastLapTime = 0;
     }
     // view mode
     cameraTrimEnabled = DFLT_CAM_TRIM;
@@ -1412,6 +1411,7 @@ void initConfig() {
     raceDuraSecs = DFLT_ARAP_RSECS;
     nextSpeechRemainSecs = -1;
     raceStarted = false;
+    initRaceVars();
     setOverlayMessage("Configuration initialized");
 }
 
@@ -1511,11 +1511,12 @@ void recvOscCameraFloat(int camid, string method, float argfloat) {
     }
     int idx = camid - 1;
     int total = camView[idx].totalLaps + 1;
-    // camView[idx].prevElapsedSec = elp;
+    camView[idx].prevElapsedSec += argfloat;
     camView[idx].totalLaps = total;
-    camView[idx].lastLap = argfloat;
-    camView[idx].lapHistoryName[total - 1] = camView[idx].labelString;
-    camView[idx].lapHistoryTime[total - 1] = argfloat;
+    camView[idx].lastLapTime = argfloat;
+    camView[idx].lapHistName[total - 1] = camView[idx].labelString;
+    camView[idx].lapHistLapTime[total - 1] = argfloat;
+    camView[idx].lapHistElpTime[total - 1] = camView[idx].prevElapsedSec;
 }
 
 //--------------------------------------------------------------
@@ -1714,12 +1715,8 @@ void toggleRace() {
     }
 }
 
-void startRace() {
-    if (raceStarted == true) {
-        return;
-    }
-    // stop/init -> start
-    finishSound.stop();
+//--------------------------------------------------------------
+void initRaceVars() {
     for (int i = 0; i < cameraNum; i++) {
         camView[i].foundMarkerNum = 0;
         camView[i].foundValidMarkerNum = 0;
@@ -1728,12 +1725,23 @@ void startRace() {
         camView[i].flickerValidCount = 0;
         camView[i].prevElapsedSec = WATCH_COUNT_SEC; // countdown
         camView[i].totalLaps = 0;
-        camView[i].lastLap = 0;
+        camView[i].lastLapTime = 0;
         for (int h = 0; h < ARAP_MAX_RLAPS; h++) {
-            camView[i].lapHistoryName[h] = "";
-            camView[i].lapHistoryTime[h] = 0;
+            camView[i].lapHistName[h] = "";
+            camView[i].lapHistLapTime[h] = 0;
+            camView[i].lapHistElpTime[h] = 0;
         }
     }
+}
+
+//--------------------------------------------------------------
+void startRace() {
+    if (raceStarted == true) {
+        return;
+    }
+    // stop/init -> start
+    finishSound.stop();
+    initRaceVars();
     if (raceDuraSecs > 0) {
         setNextSpeechRemainSecs(raceDuraSecs);
     }
@@ -1743,6 +1751,7 @@ void startRace() {
     countSound.play();
 }
 
+//--------------------------------------------------------------
 void stopRace(bool exit) {
     if (raceStarted == false) {
         return;
@@ -1767,9 +1776,9 @@ bool isVariousPilots(int camidx) {
     if (camidx < 0 || camidx >= cameraNum || camView[camidx].totalLaps <= 1) {
         return false;
     }
-    string name = camView[camidx].lapHistoryName[0];
+    string name = camView[camidx].lapHistName[0];
     for (int i = 1; i < camView[camidx].totalLaps; i++) {
-        if (name != camView[camidx].lapHistoryName[i]) {
+        if (name != camView[camidx].lapHistName[i]) {
             return true;
         }
     }
@@ -1805,7 +1814,7 @@ float getBestLap(int camidx) {
         return blap;
     }
     for (int i = 0; i < camView[camidx].totalLaps; i++) {
-        float t = camView[camidx].lapHistoryTime[i];
+        float t = camView[camidx].lapHistLapTime[i];
         if (blap == 0) {
             blap = t;
         } else if (t < blap) {
@@ -1835,20 +1844,23 @@ string getLapStr(float lap) {
 
 //--------------------------------------------------------------
 void processLapCanceller(int camidx) {
-    int laps = camView[camidx].totalLaps;
-    if (raceStarted == false || laps == raceDuraLaps || laps == 0) {
+    int oldlaps = camView[camidx].totalLaps;
+    int newlaps = oldlaps - 1;
+    if (raceStarted == false || oldlaps == raceDuraLaps || oldlaps == 0) {
         return;
     }
     cancelSound.play();
-    setOverlayMessage(camView[camidx].labelString + " lap" + ofToString(laps) + " canceled");
-    camView[camidx].lapHistoryName[laps - 1] = "";
-    camView[camidx].lapHistoryTime[laps - 1] = 0;
+    setOverlayMessage(camView[camidx].labelString + " lap" + ofToString(oldlaps) + " canceled");
+    camView[camidx].lapHistName[oldlaps - 1] = "";
+    camView[camidx].lapHistLapTime[oldlaps - 1] = 0;
+    camView[camidx].lapHistElpTime[oldlaps - 1] = 0;
     camView[camidx].totalLaps--;
-    camView[camidx].prevElapsedSec -= camView[camidx].lastLap;
-    if (laps == 1) {
-        camView[camidx].lastLap = 0;
+    if (newlaps == 0) {
+        camView[camidx].prevElapsedSec = WATCH_COUNT_SEC;
+        camView[camidx].lastLapTime = 0;
     } else {
-        camView[camidx].lastLap = camView[camidx].lapHistoryTime[laps - 2];
+        camView[camidx].prevElapsedSec = camView[camidx].lapHistElpTime[newlaps - 1];
+        camView[camidx].lastLapTime = camView[camidx].lapHistLapTime[newlaps - 1];
     }
 }
 
@@ -1870,10 +1882,10 @@ void fwriteRaceResult() {
     string sep = "  ";
     int maxlap = 0;
 
-    // SUMMARY: NAME LAPS BESTLAP TIME
+    // Summary: Name Laps BestLap TotalTime
     // - head
     strsumm += "- Summary -" + newline;
-    strsumm += "NAME" + sep  + "LAPS" + sep + "BESTLAP" + sep + "TIME" + newline;
+    strsumm += "Name" + sep  + "Laps" + sep + "BestLap" + sep + "TotalTime" + newline;
     // - body
     for (int i = 0; i < cameraNum; i++) {
         float blap = getBestLap(i);
@@ -1882,18 +1894,19 @@ void fwriteRaceResult() {
         strsumm += pilot + sep; // PILOT
         strsumm += ofToString(camView[i].totalLaps) + sep; // LAPS
         strsumm += ((blap == 0) ? "-.-" : getLapStr(blap)) + sep; // BESTLAP
-        strsumm += ((total <= 0) ? "-:-.-" : getWatchString(total)) + sep; // TIME
+        strsumm += ((total <= 0) ? "-:-.-" : getWatchString(total)) + sep; // TOTAL
         strsumm += newline;
     }
     strsumm += newline;
 
-    // LAP TIMES: LAP P1 P2 P3 P4
+    // All Laps: Lap# P1(lap) P1(total) P2(lap) P2(total) P3(lap) P3(total) P4(lap) P4(total)
     // - head
-    strlaph += "- Lap Times -" + newline;
-    strlaph += "LAP" + sep;
+    strlaph += "- All Laps -" + newline;
+    strlaph += "Lap#" + sep;
     for (int i = 0; i < cameraNum; i++) {
         string pilot = (camView[i].labelString == "") ? ("Pilot" + ofToString(i + 1)) : camView[i].labelString;
-        strlaph += pilot + sep;
+        strlaph += pilot + "(lap)" + sep;
+        strlaph += pilot + "(total)" + sep;
     }
     strlaph += newline;
     maxlap = getMaxLaps();
@@ -1901,11 +1914,18 @@ void fwriteRaceResult() {
     for (int lap = 1; lap <= maxlap; lap++) {
         strlapb += ofToString(lap) + sep;
         for (int i = 0; i < cameraNum; i++) {
-            // LAPTIME
             if (lap > camView[i].totalLaps) {
-                strlapb += "-.-";
+                // laptime
+                strlapb += "-";
+                // totaltime
+                strlapb += sep;
+                strlapb += "-";
             } else {
-                strlapb += getLapStr(camView[i].lapHistoryTime[lap - 1]);
+                // laptime
+                strlapb += getLapStr(camView[i].lapHistLapTime[lap - 1]);
+                // totaltime
+                strlapb += sep;
+                strlapb += getWatchString(camView[i].lapHistElpTime[lap - 1] - WATCH_COUNT_SEC);
             }
             if (i < (cameraNum - 1)) {
                 strlapb += sep;
@@ -2110,8 +2130,13 @@ void generateDummyData() {
     camView[3].totalLaps = ARAP_MAX_RLAPS / 4;
     for (int i = 0; i < ARAP_MAX_RLAPS; i++) {
         for (int j = 0; j < 4; j++) {
-            camView[j].lapHistoryName[i] = camView[j].labelString + "_L" + ofToString(i);
-            camView[j].lapHistoryTime[i] = 60 + (j * 0.1) + (i * 0.01);
+            camView[j].lapHistName[i] = camView[j].labelString + "_L" + ofToString(i);
+            camView[j].lapHistLapTime[i] = 10 + (j * 0.1) + (i * 0.01);
+            if (i == 0) {
+                camView[j].lapHistElpTime[i] = WATCH_COUNT_SEC + camView[j].lapHistLapTime[i];
+            } else {
+                camView[j].lapHistElpTime[i] = camView[j].lapHistElpTime[i - 1] + camView[j].lapHistLapTime[i];
+            }
         }
     }
 }
@@ -2166,14 +2191,14 @@ void drawRaceResult(int pageidx) {
     ofSetColor(myColorYellow);
     drawStringBlock(&myFontOvlayP2x, "Race Result", 0, line, ALIGN_CENTER, 1, szl);
 
-    // summary : name laps bestlap time
+    // summary : name laps bestlap total
     // _header
     line = 4;
     ofSetColor(myColorWhite);
     drawStringBlock(&myFontOvlayP, "Name", 1, line, ALIGN_CENTER, szb, szl);
     drawStringBlock(&myFontOvlayP, "Laps", 2, line, ALIGN_CENTER, szb, szl);
     drawStringBlock(&myFontOvlayP, "BestLap", 3, line, ALIGN_CENTER, szb, szl);
-    drawStringBlock(&myFontOvlayP, "Time", 4, line, ALIGN_CENTER, szb, szl);
+    drawStringBlock(&myFontOvlayP, "Total", 4, line, ALIGN_CENTER, szb, szl);
     line += 1;
     ofSetColor(myColorYellow);
     drawLineBlock(1, 4, line, szb, szl);
@@ -2227,10 +2252,9 @@ void drawRaceResult(int pageidx) {
             if ((lapidx + 1) > camView[i].totalLaps) {
                 str = "-.-";
             } else {
-                str = getLapStr(camView[i].lapHistoryTime[lapidx]);
+                str = getLapStr(camView[i].lapHistLapTime[lapidx]);
             }
-            drawStringBlock(&myFontOvlayM, str,
-                            xoff + i + 1, line, ALIGN_CENTER, szb, szl);
+            drawStringBlock(&myFontOvlayM, str, xoff + i + 1, line, ALIGN_CENTER, szb, szl);
         }
         lapidx += 1;
     }

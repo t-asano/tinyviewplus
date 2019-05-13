@@ -174,7 +174,7 @@ public:
     int lapPosY;
     int lapPosXTarget;
     int lapPosYTarget;
-    float lastLap;
+    float lastLapTime;
     // AR lap timer
     ofxAruco aruco;
     int foundMarkerNum;
@@ -182,8 +182,9 @@ public:
     bool enoughMarkers;
     float prevElapsedSec;
     int totalLaps;
-    string lapHistoryName[ARAP_MAX_RLAPS];
-    float lapHistoryTime[ARAP_MAX_RLAPS];
+    string lapHistName[ARAP_MAX_RLAPS];
+    float lapHistLapTime[ARAP_MAX_RLAPS];
+    float lapHistElpTime[ARAP_MAX_RLAPS];
     int flickerCount;
     int flickerValidCount;
     // QR reader
@@ -256,6 +257,7 @@ void keyPressedOverlayResult(int);
 void keyPressedOverlayNone(int);
 void mouseReleasedOverlayNone(int, int, int);
 void toggleRace();
+void initRaceVars();
 void startRace();
 void stopRace(bool);
 bool isVariousPilots(int);
