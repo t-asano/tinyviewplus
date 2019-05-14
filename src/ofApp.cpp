@@ -475,7 +475,7 @@ string getWatchString(float sec) {
     char buf[16];
     int h, m, s, ss;
     s = (int)(sec) % 60;
-    ss = (int)(sec * 100) % 100;
+    ss = (int)ceil(sec * 100) % 100;
     if (sec >= 3600) {
         h = (int)(sec) / 3600;
         m = ((int)(sec) % 3600) / 60;
@@ -1804,7 +1804,8 @@ int getMaxLaps() {
 //--------------------------------------------------------------
 string getLapStr(float lap) {
     stringstream stream;
-    stream << fixed << setprecision(2) << lap; // 2 digits
+    float val = ceil(lap * 100) / 100;
+    stream << fixed << setprecision(2) << val; // 2 digits
     return stream.str();
 }
 
