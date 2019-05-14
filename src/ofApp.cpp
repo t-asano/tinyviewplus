@@ -21,7 +21,6 @@ tvpCamView camView[CAMERA_MAXNUM];
 int cameraNum;
 int cameraNumVisible;
 int cameraIdxSolo;
-string helpMessage;
 bool cameraTrimEnabled;
 bool fullscreenEnabled;
 bool cameraLapHistEnabled;
@@ -31,7 +30,6 @@ int hideCursorTimer;
 ofxOscReceiver oscReceiver;
 
 // speech
-bool oscSpeechEnabled;
 bool speechLangJpn;
 
 // AR lap timer
@@ -75,10 +73,7 @@ void ofApp::setup() {
     ShowWindow(handleWindow, 0);
 #endif /* TARGET_WIN32 */
     // speech
-    oscSpeechEnabled = DFLT_SPCH_ENBLD;
     speechLangJpn = DFLT_SPCH_JPN;
-    // help
-    helpMessage = ofToString(HELP_MESSAGE);
     // screen
     ofSetWindowTitle(APP_INFO);
     ofBackground(0, 0, 0);
@@ -201,16 +196,16 @@ void ofApp::update() {
             if (anum == 0 && camView[i].enoughMarkers == true
                 && ((arLapMode == ARAP_MODE_LOOSE) || (arLapMode == ARAP_MODE_NORM && camView[i].foundMarkerNum == camView[i].foundValidMarkerNum))) {
                 float lap = elp - camView[i].prevElapsedSec;
+                if (camView[i].totalLaps >= raceDuraLaps
+                    || (raceDuraSecs > 0 && (camView[i].prevElapsedSec - WATCH_COUNT_SEC) >= raceDuraSecs)) {
+                    // already finished
+                    continue;
+                }
                 if (lap < minLapTime) {
                     // ignore too short lap
                     camView[i].foundMarkerNum = 0;
                     camView[i].foundValidMarkerNum = 0;
                     camView[i].enoughMarkers = false;
-                    continue;
-                }
-                if (camView[i].totalLaps >= raceDuraLaps
-                    || (raceDuraSecs > 0 && (camView[i].prevElapsedSec - WATCH_COUNT_SEC) >= raceDuraSecs)) {
-                    // already finished
                     continue;
                 }
                 // record
@@ -609,57 +604,75 @@ void keyPressedOverlayResult(int key) {
 
 //--------------------------------------------------------------
 void keyPressedOverlayNone(int key) {
-    if (key == '1') {
-        toggleCameraSolo(1);
-    } else if (key == '2') {
-        toggleCameraSolo(2);
-    } else if (key == '3') {
-        toggleCameraSolo(3);
-    } else if (key == '4') {
-        toggleCameraSolo(4);
-    } else if (key == '!') {
-        toggleCameraVisibility(1);
-    } else if (key == '"' || key == '@') {
-        toggleCameraVisibility(2);
-    } else if (key == '#') {
-        toggleCameraVisibility(3);
-    } else if (key == '$') {
-        toggleCameraVisibility(4);
-    } else if (key == 'h' || key == 'H') {
-        setOverlayMode(OVLMODE_HELP);
-    } else if (key == 'i' || key == 'I') {
-        initConfig();
-    } else if (key == 's' || key == 'S') {
-        toggleOscSpeech();
-    } else if (key == 'n' || key == 'N') {
-        toggleSpeechLang();
-    } else if (key == 'b' || key == 'B') {
-        changeWallImage();
-    } else if (key == 'q' || key == 'Q') {
-        if (raceStarted == false) {
-            toggleQrReader();
+    if (ofGetKeyPressed(OF_KEY_CONTROL)) {
+        if (key == '1') {
+            toggleCameraVisibility(1);
+        } else if (key == '2') {
+            toggleCameraVisibility(2);
+        } else if (key == '3') {
+            toggleCameraVisibility(3);
+        } else if (key == '4') {
+            toggleCameraVisibility(4);
+        } else if (key == '5') {
+            popLapRecord(1);
+        } else if (key == '6') {
+            popLapRecord(2);
+        } else if (key == '7') {
+            popLapRecord(3);
+        } else if (key == '8') {
+            popLapRecord(4);
         }
-    } else if (key == ' ') {
-        toggleRace();
-    } else if (key == 'v' || key == 'V') {
-        if (raceStarted == false) {
-            qrEnabled = false;
-            processRaceResultDisplay();
+    } else {
+        if (key == '1') {
+            toggleCameraSolo(1);
+        } else if (key == '2') {
+            toggleCameraSolo(2);
+        } else if (key == '3') {
+            toggleCameraSolo(3);
+        } else if (key == '4') {
+            toggleCameraSolo(4);
+        } else if (key == '5') {
+            pushLapRecord(1, ofGetElapsedTimef());
+        } else if (key == '6') {
+            pushLapRecord(2, ofGetElapsedTimef());
+        } else if (key == '7') {
+            pushLapRecord(3, ofGetElapsedTimef());
+        } else if (key == '8') {
+            pushLapRecord(4, ofGetElapsedTimef());
+        } else if (key == 'h' || key == 'H') {
+            setOverlayMode(OVLMODE_HELP);
+        } else if (key == 'i' || key == 'I') {
+            initConfig();
+        } else if (key == 'n' || key == 'N') {
+            toggleSpeechLang();
+        } else if (key == 'b' || key == 'B') {
+            changeWallImage();
+        } else if (key == 'q' || key == 'Q') {
+            if (raceStarted == false) {
+                toggleQrReader();
+            }
+        } else if (key == ' ') {
+            toggleRace();
+        } else if (key == 'v' || key == 'V') {
+            if (raceStarted == false) {
+                qrEnabled = false;
+                processRaceResultDisplay();
+            }
+        } else if (key == 'a' || key == 'A') {
+            toggleARLap();
+        } else if (key == 'm' || key == 'M') {
+            changeMinLap();
+        } else if (key == 'd' || key == 'D') {
+            changeRaceDuration();
+        } else if (key == 'f' || key == 'F') {
+            toggleFullscreen();
+        } else if (key == 't' || key == 'T') {
+            toggleSoloTrim();
+        } else if (key == 'l' || key == 'L') {
+            toggleLapHistory();
+        } else if (key == '.') {
+            ofExit();
         }
-    } else if (key == 'a' || key == 'A') {
-        toggleARLap();
-    } else if (key == 'm' || key == 'M') {
-        changeMinLap();
-    } else if (key == 'd' || key == 'D') {
-        changeRaceDuration();
-    } else if (key == 'f' || key == 'F') {
-        toggleFullscreen();
-    } else if (key == 't' || key == 'T') {
-        toggleSoloTrim();
-    } else if (key == 'l' || key == 'L') {
-        toggleLapHistory();
-    } else if (key == '.') {
-        ofExit();
     }
 }
 
@@ -720,12 +733,6 @@ void mouseReleasedOverlayNone(int x, int y, int button) {
         if (x >= camView[i].labelPosX && x <= (camView[i].posX + camView[i].width)
             && y >= camView[i].posY && y <= (camView[i].iconPosY + ICON_HEIGHT)) {
             changeCameraLabel(i + 1);
-        }
-        // lap
-        if (ofGetKeyPressed(OF_KEY_SHIFT)
-            && x >= camView[i].posX && x <= (camView[i].posX + camView[i].width)
-            && y > (camView[i].iconPosY + ICON_HEIGHT) && y <= camView[i].lapPosY) {
-            processLapCanceller(i);
         }
     }
 }
@@ -1370,7 +1377,6 @@ void initConfig() {
     fullscreenEnabled = DFLT_FSCR_ENBLD;
     cameraLapHistEnabled = DFLT_CAM_LAPHST;
     // speech
-    oscSpeechEnabled = DFLT_SPCH_ENBLD;
     speechLangJpn = DFLT_SPCH_JPN;
     // AR lap timer
     setOverlayMode(OVLMODE_NONE);
@@ -1475,9 +1481,6 @@ void recvOscCameraFloat(int camid, string method, float argfloat) {
         return;
     }
     beepSound.play();
-    if (oscSpeechEnabled == true){
-        speakLap(camid, argfloat, 0);
-    }
     int idx = camid - 1;
     int total = camView[idx].totalLaps + 1;
     camView[idx].prevElapsedSec += argfloat;
@@ -1486,16 +1489,6 @@ void recvOscCameraFloat(int camid, string method, float argfloat) {
     camView[idx].lapHistName[total - 1] = camView[idx].labelString;
     camView[idx].lapHistLapTime[total - 1] = argfloat;
     camView[idx].lapHistElpTime[total - 1] = camView[idx].prevElapsedSec;
-}
-
-//--------------------------------------------------------------
-void toggleOscSpeech() {
-    oscSpeechEnabled = !oscSpeechEnabled;
-    if (oscSpeechEnabled == true) {
-        setOverlayMessage("OSC speech: On");
-    } else {
-        setOverlayMessage("OSC speech: Off");
-    }
 }
 
 //--------------------------------------------------------------
@@ -1511,9 +1504,6 @@ void toggleSpeechLang() {
 //--------------------------------------------------------------
 void recvOscSpeech(string lang, string text) {
     ofLogNotice() << "osc spc(s): " << lang << "," << text;
-    if (oscSpeechEnabled == false) {
-        return;
-    }
     speakAny(lang, text);
 }
 
@@ -1523,29 +1513,31 @@ CComPtr<ISpVoice> cpVoice;
 
 class sayWin : public ofThread {
 public:
-    void exec(string lang, string text) {
+    void exec(string lang, string words) {
         if (FAILED(cpVicehr)) {
             cpVicehr = cpVoice.CoCreateInstance(CLSID_SpVoice);
         }
         if (SUCCEEDED(cpVicehr)) {
             if (lang == "en") {
-                this->text = "<xml><lang langid=\"409\">" + text + "</lang></xml>"; // 409:English
+                // 409: English
+                this->xmltext = "<xml><lang langid=\"409\"><rate speed=\"2\">" + words + "</rate></lang></xml>";
             }
             else if (lang == "jp") {
-                this->text = "<xml><lang langid=\"411\">" + text + "</lang></xml>"; // 411:Japanese
+                // 411: Japanese
+                this->xmltext = "<xml><lang langid=\"411\"><rate speed=\"2\">" + words + "</rate></lang></xml>";
             }
             startThread();
         }
     }
 private:
     void threadedFunction() {
-        int iBufferSize = ::MultiByteToWideChar(CP_ACP, 0, text.c_str(), -1, (wchar_t *)NULL, 0);
+        int iBufferSize = ::MultiByteToWideChar(CP_ACP, 0, xmltext.c_str(), -1, (wchar_t *)NULL, 0);
         wchar_t* wpBufWString = (wchar_t*)new wchar_t[iBufferSize];
-        ::MultiByteToWideChar(CP_ACP, 0, text.c_str(), -1, wpBufWString, iBufferSize);
+        ::MultiByteToWideChar(CP_ACP, 0, xmltext.c_str(), -1, wpBufWString, iBufferSize);
         cpVoice->Speak(wpBufWString, SPF_DEFAULT, NULL);
         delete[] wpBufWString;
     }
-    string text;
+    string xmltext;
 };
 
 sayWin mySayWin[SPCH_SLOT_NUM];
@@ -1810,24 +1802,72 @@ string getLapStr(float lap) {
 }
 
 //--------------------------------------------------------------
-void processLapCanceller(int camidx) {
-    int oldlaps = camView[camidx].totalLaps;
-    int newlaps = oldlaps - 1;
-    if (raceStarted == false || oldlaps == raceDuraLaps || oldlaps == 0) {
+void pushLapRecord(int cid, float elpsec) {
+    if (cid < 1 || cid > cameraNum
+        || raceStarted == false || ofGetElapsedTimef() < WATCH_COUNT_SEC) {
         return;
     }
-    cancelSound.play();
-    setOverlayMessage(camView[camidx].labelString + " lap" + ofToString(oldlaps) + " canceled");
-    camView[camidx].lapHistName[oldlaps - 1] = "";
-    camView[camidx].lapHistLapTime[oldlaps - 1] = 0;
-    camView[camidx].lapHistElpTime[oldlaps - 1] = 0;
-    camView[camidx].totalLaps--;
-    if (newlaps == 0) {
-        camView[camidx].prevElapsedSec = WATCH_COUNT_SEC;
-        camView[camidx].lastLapTime = 0;
+    int i = cid - 1;
+    float lap = elpsec - camView[i].prevElapsedSec;
+    if (camView[i].totalLaps >= raceDuraLaps
+        || (raceDuraSecs > 0 && (camView[i].prevElapsedSec - WATCH_COUNT_SEC) >= raceDuraSecs)) {
+        // already finished
+        return;
+    }
+    if (lap < minLapTime) {
+        // ignore short/negative lap
+        return;
+    }
+    // record
+    int total = camView[i].totalLaps + 1;
+    camView[i].prevElapsedSec = elpsec;
+    camView[i].totalLaps = total;
+    camView[i].lastLapTime = lap;
+    camView[i].lapHistName[total - 1] = camView[i].labelString;
+    camView[i].lapHistLapTime[total - 1] = lap;
+    camView[i].lapHistElpTime[total - 1] = elpsec;
+    if (total == raceDuraLaps || (raceDuraSecs > 0 && (elpsec - WATCH_COUNT_SEC) >= raceDuraSecs)) {
+        // finish by laps / time
+        camView[i].foundMarkerNum = 0;
+        camView[i].foundValidMarkerNum = 0;
+        camView[i].enoughMarkers = false;
+        finishSound.play();
+        return;
+    }
+    // notify
+    if (total == (raceDuraLaps - 1)) {
+        beep3Sound.play();
     } else {
-        camView[camidx].prevElapsedSec = camView[camidx].lapHistElpTime[newlaps - 1];
-        camView[camidx].lastLapTime = camView[camidx].lapHistLapTime[newlaps - 1];
+        beepSound.play();
+    }
+    speakLap(cid, lap, total);
+}
+
+//--------------------------------------------------------------
+void popLapRecord(int cid) {
+    if (raceStarted == false || cid < 1 || cid > cameraNum) {
+        return;
+    }
+    int i = cid - 1;
+    int oldlaps = camView[i].totalLaps;
+    if (oldlaps == 0 || oldlaps >= raceDuraLaps
+        || (camView[i].prevElapsedSec - WATCH_COUNT_SEC) >= raceDuraSecs) {
+        // no record / already finished
+        return;
+    }
+    int newlaps = oldlaps - 1;
+    cancelSound.play();
+    setOverlayMessage(camView[i].labelString + " lap" + ofToString(oldlaps) + " canceled");
+    camView[i].lapHistName[oldlaps - 1] = "";
+    camView[i].lapHistLapTime[oldlaps - 1] = 0;
+    camView[i].lapHistElpTime[oldlaps - 1] = 0;
+    camView[i].totalLaps--;
+    if (newlaps == 0) {
+        camView[i].prevElapsedSec = WATCH_COUNT_SEC;
+        camView[i].lastLapTime = 0;
+    } else {
+        camView[i].prevElapsedSec = camView[i].lapHistElpTime[newlaps - 1];
+        camView[i].lastLapTime = camView[i].lapHistLapTime[newlaps - 1];
     }
 }
 
@@ -2236,7 +2276,7 @@ void drawHelp() {
     // background
     ofSetColor(myColorBGDark);
     ofDrawRectangle(0, 0, ofGetWidth(), ofGetHeight());
-    // title
+    // title(3 lines)
     line = 1;
     ofSetColor(myColorYellow);
     drawStringBlock(&myFontOvlayP2x, APP_INFO, 0, line, ALIGN_CENTER, 1, szl);
@@ -2244,7 +2284,7 @@ void drawHelp() {
     line = 3;
     ofSetColor(myColorWhite);
     drawStringBlock(&myFontOvlayP, HELP_MESSAGE, 0, line, ALIGN_CENTER, 1, szl);
-    // message
+    // message(3 lines)
     line = HELP_LINES - 2;
     ofSetColor(myColorYellow);
     drawStringBlock(&myFontOvlayP, "Press H key to exit...", 0, line, ALIGN_CENTER, 1, szl);

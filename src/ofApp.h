@@ -13,6 +13,33 @@
 // system
 #define APP_INFO        "Tiny View Plus v0.9.18"
 #define DEBUG_ENABLED   false
+// help
+#define HELP_LINES      30
+#define HELP_MESSAGE    "Operations\n"\
+                        "  System\n"\
+                        "    [H] Display help\n"\
+                        "    [N] Change speech language\n"\
+                        "    [I] Initialize configuration\n"\
+                        "    [.] Exit application\n"\
+                        "  View\n"\
+                        "    [T] Camera view trimming on/off\n"\
+                        "    [1~4] Camera 1~4 solo view on/off\n"\
+                        "    [Ctrl + 1~4] Camera 1~4 on/off\n"\
+                        "    [Click camera icon] Change icon\n"\
+                        "    [Click camera label] Change label\n"\
+                        "    [Q] Start/Stop QR Code reader for label\n"\
+                        "    [B] Change background image\n"\
+                        "    [F] Fullscreen mode on/off\n"\
+                        "  Race\n"\
+                        "    [A] AR lap timer on/loose/off\n"\
+                        "    [D] Set race duration (time/laps)\n"\
+                        "    [M] Set minimum lap time (1~100sec)\n"\
+                        "    [Space] Start/Stop race\n"\
+                        "    [5~8] Add lap at camera 1~4\n"\
+                        "    [Ctrl + 5~8] Delete last lap at camera 1~4\n"\
+                        "    [L] Display lap history during race on/off\n"\
+                        "    [V] Display race result"
+// color
 #define COLOR_YELLOW    255,215,0
 #define COLOR_WHITE     255,255,255
 #define COLOR_LGRAY     127,127,127
@@ -104,26 +131,6 @@
 #define SPCH_SLOT_NUM	8
 // QR code reader
 #define QR_CYCLE        6
-// help
-#define HELP_LINES      24
-#define HELP_MESSAGE    "Keyboard shortcuts:\n"\
-                        "[H] Display help\n"\
-                        "[1~4] Camera 1~4 solo view on/off\n"\
-                        "[T] Solo view trimming on/off\n"\
-                        "[Shift + 1~4] Camera 1~4 on/off\n"\
-                        "[Q] Start/Stop QR reader for camera label\n"\
-                        "[B] Change background image\n"\
-                        "[F] Fullscreen mode on/off\n"\
-                        "[L] Lap history display during race on/off\n"\
-                        "[A] AR lap timer on/loose/off\n"\
-                        "[Space] Start/Stop race\n"\
-                        "[V] Display race result\n"\
-                        "[D] Set race duration (time/laps)\n"\
-                        "[M] Set minimum lap time (1~100sec)\n"\
-                        "[N] Change speech language\n"\
-                        "[S] OSC speech on/off\n"\
-                        "[I] Initialize configuration\n"\
-                        "[.] Exit application"
 
 /* ---------- classes ---------- */
 
@@ -210,12 +217,16 @@ public:
 /* ---------- functions ---------- */
 
 void bindCameras();
+void initConfig();
+// view
 void toggleCameraSolo(int);
 void enableCameraSolo(int);
 void resetCameraSolo();
 void toggleCameraVisibility(int);
 int getCameraIdxNthVisibleAll(int);
 int getCameraIdxNthVisibleSub(int);
+void toggleFullscreen();
+void toggleSoloTrim();
 void setupColors();
 void changeCameraLabel(int);
 void changeCameraLabelAll();
@@ -227,17 +238,18 @@ void setWallParams();
 void setViewParams();
 int calcViewParam(int, int, int);
 void updateViewParams();
-void initConfig();
+// osc
 void recvOsc();
 void recvOscCameraString(int, string, string);
 void recvOscCameraFloat(int, string, float);
-void toggleOscSpeech();
-void toggleSpeechLang();
 void recvOscSpeech(string, string);
+// speech
+void toggleSpeechLang();
 void speakLap(int, float, int);
 void setNextSpeechRemainSecs(int);
 void speakRemainTime(int);
 void speakAny(string, string);
+// draw
 void drawCameraImage(int);
 void drawCameraARMarker(int, bool);
 void drawCameraPilot(int, bool);
@@ -248,11 +260,13 @@ string getWatchString(float);
 void drawWatch();
 void drawInfo();
 void drawStringWithShadow(ofxTrueTypeFontUC*, ofColor, string, int, int);
+// input
 void keyPressedOverlayHelp(int);
 void keyPressedOverlayHelp(int);
 void keyPressedOverlayResult(int);
 void keyPressedOverlayNone(int);
 void mouseReleasedOverlayNone(int, int, int);
+// race
 void toggleRace();
 void initRaceVars();
 void startRace();
@@ -263,12 +277,12 @@ bool isRecordedLaps();
 float getBestLap(int);
 int getMaxLaps();
 string getLapStr(float);
+void pushLapRecord(int, float);
+void popLapRecord(int);
 void processLapCanceller(int);
 void toggleARLap();
 void changeMinLap();
 void changeRaceDuration();
-void toggleFullscreen();
-void toggleSoloTrim();
 // overlay - common
 void setOverlayMode(int);
 void loadOverlayFont();
@@ -286,7 +300,7 @@ void drawHelp();
 void initOverlayMessage();
 void setOverlayMessage(string);
 void drawOverlayMessage();
-// QR code reader
+// QR Code reader
 #ifdef TARGET_WIN32
 string utf8ToAnsi(string);
 #endif /* TARGET_WIN32 */

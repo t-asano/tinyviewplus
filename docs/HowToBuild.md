@@ -16,7 +16,7 @@
 
 ### Windowsの場合
 
-1. Visual StudioとopenFrameworksをインストールする
+1. Visual Studioをインストールする
     - [こちらのドキュメント](https://openframeworks.cc/setup/vs/)を参考とする
       - Visual Studio Community 2017を前提に書かれているが、2019でも問題無い
       - 「openFrameworks plugin for Visual Studio」は実施しない

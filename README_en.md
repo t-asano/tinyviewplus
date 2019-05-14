@@ -65,25 +65,26 @@ On Windows, you can check the detection status of the camera (receiver) with the
 | key | Function | Default value |
 |---|---|---|
 | H | Display help | - |
-| 1~4 | Camera 1~4 solo view on/off | off |
-| T | Camera triming on/off (\*1) | off |
-| Shift + 1~4 | Camera 1~4 display on/off | on |
-| Q | Start/Stop QR code reader (\*2) | - |
-| B | Change background image | built-in image |
-| F | Fullscreen mode on/off | off |
-| L | Lap history display during race on/off | off |
-| A | Switch AR lap timer mode (normal/loose/off) (\*3) | normal |
-| Space | Start/Stop race | - |
-| V | Display race results (\*4) | - |
-| D | Set race duration time (0~36,000sec) and laps (1\~10,000) | 0(no limit), 10 |
-| M | Set minimum lap time (1~100sec) | 3 |
 | N | Change speech language (Japanese/English) | Japanese |
-| S | OSC speech on/off | off |
 | I | Initialize configuration | - |
 | . | Exit application | - |
+| T | Camera triming on/off (\*1) | off |
+| 1~4 | Camera 1~4 solo view on/off | off |
+| Ctrl + 1~4 | Camera 1~4 display on/off | on |
+| Q | Start/Stop QR Code reader (\*2) | - |
+| B | Change background image | built-in image |
+| F | Fullscreen mode on/off | off |
+| A | Switch AR lap timer mode (normal/loose/off) (\*3) | normal |
+| D | Set race duration time (0~36,000sec) and laps (1\~10,000) | 0(no limit), 10 |
+| M | Set minimum lap time (1~100sec) | 3 |
+| Space | Start/Stop race | - |
+| 5~8 | Add lap at camera 1~4 | - |
+| Ctrl + 5~8 | Delete last lap at camera 1~4 | - |
+| L | Display Lap history during race on/off | off |
+| V | Display race results (\*4) | - |
 
 - (\*1) When 1 or 3 cameras are connected, the image will be cropped and displayed as large as possible.
-- (\*2) Sets the characters scanned from the QR code to the camera label.
+- (\*2) Sets the characters scanned from the QR Code to the camera label.
 - The background image is scaled according to the screen, and the upper left is displayed in priority.
 - (\*3) In loose mode, lap time will be measured even if the drone passes outside the gate.
 - (\*4) Race results will be saved under predefined folder when race finish.
@@ -92,15 +93,14 @@ On Windows, you can check the detection status of the camera (receiver) with the
 - When you exit the application settings will be initialized.
 - Camera audio is not supported.
 
-### Mouse operation
+### Mouse operations
 
 Some functions can also be operated with the mouse.
 
 | Operation | Function |
 | --- | --- |
-| Click at camera 1~4 icon | Change icon (\*1) |
-| Click at camera 1~4 label | Change label (\*2) |
-| Shift key + Click at camaera 1~4 | Cancel previous lap time |
+| Click camera 1~4 icon | Change icon (\*1) |
+| Click camera 1~4 label | Change label (\*2) |
 
 - (\*1) Camera label will be automatically changed according to changing camera icon.
 	- The file name of the icon (excluding the extension) will be adopted.
@@ -147,69 +147,9 @@ Lap time will be measured only during the race. After detecting two or more corr
 
 Depending on the environment, recognition processing of markers might be heavy. In that case, please disable the function.
 
-## Control by OSC
+## OSC API
 
-Tiny View Plus can be controlled by OSC protocol. It receives OSC packet at UDP port 4000.
-
-### Message format
-
-#### Toggle camera solo mode on / off
-
-/v1/camera/{id}/solo {switch}
-
-- Parameters
-	- id ... Number from 1 to 4
-	- switch ... "on" or "off"
-- [Example] camera 1 solo mode on
-    - /v1/camera/1/solo "on"
-
-#### Toggle camera visibility on / off
-
-/v1/camera/{id}/display {switch}
-
-- Parameters
-	- id ... Number from 1 to 4
-	- switch ... "on" or "off"
-- [Example] camera 1 off
-	- /v1/camera/1/display "off"
-
-#### Change camera label
-
-/v1/camera/{id}/label {label}
-
-- Parameters
-	- id ... Number from 1 to 4
-	- label ... Any string (such as pilot name)
-- [Example] Set the label of camera 2 to "Whooper 2"
-	- /v1/camera/2/label "Whooper 2"
-
-Camera icon is also automatically changed in conjunction with the camera label change.
-
-- If {label string}.png or {label string}.jpg was found under "Tiny View Plus.app / Contents / Presents / data / pilots" folder (on macOS binary), otherwise under the "data / pilots" folder,	it is adopted as an icon image in this priority order.
-- If no image file is found, the default icon will be adopted.
-- The aspect ratio is forced to 1:1.
-
-#### Set camera laptime
-
-/v1/camera/{id}/laptime {time}
-
-- Parameters
-	- id ... Number from 1 to 4
-	- time ... Number indicating the lap time (seconds)
-- [Example] Set the lap time of camera 3 to 128.64 seconds
-	- /v1/camera/3/laptime 128.64
-- [Example] Clear the lap time of camera 4
-	- /v1/camera/4/laptime 0
-
-#### Speech synthesis
-
-/v1/speech/{language}/say {text}
-
-- Parameters
-	- language ... "en" (English) or "jp" (Japanese)
-	- text ... sentence to speak
-- [Example] Say "We can fly!" in English
-	- /v1/speeech/en/say "We can fly!"
+Tiny View Plus can be controlled by OSC protocol. Detailed information is [here](docs/OSCAPI_en.md).
 
 ## License
 
