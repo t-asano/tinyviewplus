@@ -789,6 +789,7 @@ void ofApp::dragEvent(ofDragInfo dragInfo){
     
 }
 
+//--------------------------------------------------------------
 void ofApp::exit() {
     stopRace(true);
     for (int i = 0; i < cameraNum; i++) {
@@ -1851,7 +1852,7 @@ void popLapRecord(int cid) {
     int i = cid - 1;
     int oldlaps = camView[i].totalLaps;
     if (oldlaps == 0 || oldlaps >= raceDuraLaps
-        || (camView[i].prevElapsedSec - WATCH_COUNT_SEC) >= raceDuraSecs) {
+        || (raceDuraSecs > 0 && (camView[i].prevElapsedSec - WATCH_COUNT_SEC) >= raceDuraSecs)) {
         // no record / already finished
         return;
     }
