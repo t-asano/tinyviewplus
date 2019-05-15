@@ -12,33 +12,8 @@
 
 // system
 #define APP_INFO        "Tiny View Plus v0.9.18"
-#define DEBUG_ENABLED   false
-// help
-#define HELP_LINES      30
-#define HELP_MESSAGE    "Operations\n"\
-                        "  System\n"\
-                        "    [H] Display help\n"\
-                        "    [N] Change speech language\n"\
-                        "    [I] Initialize configuration\n"\
-                        "    [.] Exit application\n"\
-                        "  View\n"\
-                        "    [T] Camera view trimming on/off\n"\
-                        "    [1~4] Camera 1~4 solo view on/off\n"\
-                        "    [Ctrl + 1~4] Camera 1~4 on/off\n"\
-                        "    [Click camera icon] Change icon\n"\
-                        "    [Click camera label] Change label\n"\
-                        "    [Q] Start/Stop QR Code reader for label\n"\
-                        "    [B] Change background image\n"\
-                        "    [F] Fullscreen mode on/off\n"\
-                        "  Race\n"\
-                        "    [A] AR lap timer on/loose/off\n"\
-                        "    [D] Set race duration (time/laps)\n"\
-                        "    [M] Set minimum lap time (1~100sec)\n"\
-                        "    [Space] Start/Stop race\n"\
-                        "    [5~8] Add lap at camera 1~4\n"\
-                        "    [Ctrl + 5~8] Delete last lap at camera 1~4\n"\
-                        "    [L] Display lap history during race on/off\n"\
-                        "    [V] Display race result"
+#define DEBUG_ENABLED   flse
+#define HELP_LINES      35
 // color
 #define COLOR_YELLOW    255,215,0
 #define COLOR_WHITE     255,255,255
@@ -94,7 +69,7 @@
 #define OVLMODE_MSG     2
 #define OVLMODE_RCRSLT  3
 #define OVLTXT_BLKS     12
-#define OVLTXT_LINES    34
+#define OVLTXT_LINES    33
 #define OVLTXT_LAPS     25
 #define OVLTXT_MARG     10
 #define OLVMSG_TIME     FRAME_RATE
@@ -296,6 +271,7 @@ void processRaceResultDisplay();
 void drawRaceResult(int);
 // overlay - help
 void drawHelp();
+void drawHelpBody(int);
 // overlay - message
 void initOverlayMessage();
 void setOverlayMessage(string);

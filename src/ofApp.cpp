@@ -581,8 +581,19 @@ void ofApp::draw() {
 
 //--------------------------------------------------------------
 void keyPressedOverlayHelp(int key) {
-    if (key == 'h' || key == 'H') {
+    if (key == 'h' || key == 'H' || ofGetKeyPressed(OF_KEY_ESC)) {
         setOverlayMode(OVLMODE_NONE);
+    } else if (key == 'N' || key == 'n'
+               || key == 'H' || key == 'h'
+               || key == 'F' || key == 'f'
+               || key == 'T' || key == 't'
+               || key == '1' || key == '2' || key == '3' || key == '4'
+               || ofGetKeyPressed(OF_KEY_CONTROL)
+               || key == 'A' || key == 'a'
+               || key == 'D' || key == 'd'
+               || key == 'M' || key == 'm'
+               || key == 'L' || key == 'l') {
+        keyPressedOverlayNone(key);
     } else {
         setOverlayMode(OVLMODE_NONE);
         keyPressedOverlayNone(key);
@@ -599,6 +610,9 @@ void keyPressedOverlayMessage(int key) {
 void keyPressedOverlayResult(int key) {
     if (key == 'v' || key == 'V') {
         processRaceResultDisplay();
+    } else if (ofGetKeyPressed(OF_KEY_ESC)) {
+        raceResultPage = 0;
+        setOverlayMode(OVLMODE_NONE);
     }
 }
 
@@ -2068,10 +2082,12 @@ void loadOverlayFont() {
 //--------------------------------------------------------------
 void drawStringBlock(ofxTrueTypeFontUC *font, string text,
                      int xblock, int yline, int align, int blocks, int lines) {
-    int bw, bh, x, y;
+    int bw, bh, x, y, xo, yo;
     int margin = OVLTXT_MARG;
     bw = (ofGetWidth() - (margin * 2)) / blocks;
+    xo = (ofGetWidth() - (margin * 2)) % blocks / 2;
     bh = (ofGetHeight() - (margin * 2)) / lines;
+    yo = (ofGetHeight() - (margin * 2)) % lines / 2;
     // pos-x
     switch (align) {
         case ALIGN_LEFT:
@@ -2086,25 +2102,26 @@ void drawStringBlock(ofxTrueTypeFontUC *font, string text,
         default:
             return;
     }
-    x += margin;
+    x += (margin + xo);
     // pos-y
-    y = bh * (yline + 1) + margin;
+    y = margin + ((yline + 1) * bh) + yo;
     // draw
-    font->setLineHeight(bh);
     font->drawString(text, x, y);
 }
 
 //--------------------------------------------------------------
 void drawLineBlock(int xblock1, int xblock2, int yline, int blocks, int lines) {
-    int bw, bh, x, y, w, h;
+    int bw, bh, x, y, w, h, xo, yo;
     int margin = OVLTXT_MARG;
 
     bw = (ofGetWidth() - (margin * 2)) / blocks;
-    x = (bw * xblock1) + margin;
+    xo = (ofGetWidth() - (margin * 2)) % blocks / 2;
+    x = (bw * xblock1) + margin + xo;
     w = bw * (xblock2 - xblock1 + 1);
 
     bh = (ofGetHeight() - (margin * 2)) / lines;
-    y = (bh * yline) + (bh * 0.5) + margin - 1;
+    yo = (ofGetHeight() - (margin * 2)) % lines / 2;
+    y = (bh * yline) + (bh * 0.5) + margin - 1 + yo;
     h = 2;
 
     ofDrawRectangle(x, y, w, h);
@@ -2186,13 +2203,13 @@ void drawRaceResult(int pageidx) {
     ofDrawRectangle(0, 0, ofGetWidth(), ofGetHeight());
 
     // title
-    line = 2;
+    line = 1;
     ofSetColor(myColorYellow);
     drawStringBlock(&myFontOvlayP2x, "Race Result", 0, line, ALIGN_CENTER, 1, szl);
 
     // summary : name laps bestlap total
     // _header
-    line = 4;
+    line = 3;
     ofSetColor(myColorWhite);
     drawStringBlock(&myFontOvlayP, "Name", 1, line, ALIGN_CENTER, szb, szl);
     drawStringBlock(&myFontOvlayP, "Laps", 2, line, ALIGN_CENTER, szb, szl);
@@ -2227,7 +2244,7 @@ void drawRaceResult(int pageidx) {
     // laptimes : lap p1 p2 p3 p4
     // _header
     int xoff = 6;
-    line = 4;
+    line = 3;
     drawStringBlock(&myFontOvlayP, "Lap", xoff, line, ALIGN_CENTER, szb, szl);
     for (int i = 0; i < cameraNum; i++) {
         string pilot = (camView[i].labelString == "") ? ("Pilot" + ofToString(i + 1)) : camView[i].labelString;
@@ -2269,7 +2286,7 @@ void drawRaceResult(int pageidx) {
     // message
     line = OVLTXT_LINES - 1;
     ofSetColor(myColorYellow);
-    drawStringBlock(&myFontOvlayP, "Press V key to continue...", 0, line, ALIGN_CENTER, 1, szl);
+    drawStringBlock(&myFontOvlayP, "Press V key to continue, Esc key to exit", 0, line, ALIGN_CENTER, 1, szl);
 }
 
 //--------------------------------------------------------------
@@ -2284,13 +2301,178 @@ void drawHelp() {
     ofSetColor(myColorYellow);
     drawStringBlock(&myFontOvlayP2x, APP_INFO, 0, line, ALIGN_CENTER, 1, szl);
     // body
-    line = 3;
-    ofSetColor(myColorWhite);
-    drawStringBlock(&myFontOvlayP, HELP_MESSAGE, 0, line, ALIGN_CENTER, 1, szl);
-    // message(3 lines)
-    line = HELP_LINES - 2;
+    drawHelpBody(3);
+    // message(2 lines)
+    line = HELP_LINES - 1;
     ofSetColor(myColorYellow);
-    drawStringBlock(&myFontOvlayP, "Press H key to exit...", 0, line, ALIGN_CENTER, 1, szl);
+    drawStringBlock(&myFontOvlayP, "Press Esc or H key to exit", 0, line, ALIGN_CENTER, 1, szl);
+}
+
+//--------------------------------------------------------------
+void drawHelpBody(int line) {
+    string value;
+    int szl = HELP_LINES;
+    int szb = 21;
+    int blk0 = 6;
+    int blk1 = 3;
+    int blk2 = 11;
+    int blk3 = 15;
+    int blk4 = 17;
+
+    // TITLE
+    ofSetColor(myColorWhite);
+    drawStringBlock(&myFontOvlayP, "Settings / Commands", 0, line, ALIGN_CENTER, 1, szl);
+    line++;
+
+    // SYSTEM
+    line++;
+    drawStringBlock(&myFontOvlayP, "System Function", blk0, line, ALIGN_CENTER, szb, szl);
+    drawStringBlock(&myFontOvlayP, "Key Map", blk2, line, ALIGN_CENTER, szb, szl);
+    drawStringBlock(&myFontOvlayP, "Current Setting", blk3, line, ALIGN_CENTER, szb, szl);
+    line++;
+    ofSetColor(myColorYellow);
+    drawLineBlock(blk1, blk4, line, szb, szl);
+    line++;
+    ofSetColor(myColorWhite);
+    // Set speech language
+    value = speechLangJpn ? "Japanese" : "English";
+    drawStringBlock(&myFontOvlayP, "Set speech language", blk1, line, ALIGN_LEFT, szb, szl);
+    drawStringBlock(&myFontOvlayP, "N", blk2, line, ALIGN_CENTER, szb, szl);
+    drawStringBlock(&myFontOvlayP, value, blk3, line, ALIGN_CENTER, szb, szl);
+    line++;
+    // Display help
+    drawStringBlock(&myFontOvlayP, "Display help", blk1, line, ALIGN_LEFT, szb, szl);
+    drawStringBlock(&myFontOvlayP, "H", blk2, line, ALIGN_CENTER, szb, szl);
+    drawStringBlock(&myFontOvlayP, "-", blk3, line, ALIGN_CENTER, szb, szl);
+    line++;
+    // Initialize settings
+    drawStringBlock(&myFontOvlayP, "Initialize settings", blk1, line, ALIGN_LEFT, szb, szl);
+    drawStringBlock(&myFontOvlayP, "I", blk2, line, ALIGN_CENTER, szb, szl);
+    drawStringBlock(&myFontOvlayP, "-", blk3, line, ALIGN_CENTER, szb, szl);
+    line++;
+    // Exit application
+    drawStringBlock(&myFontOvlayP, "Exit application", blk1, line, ALIGN_LEFT, szb, szl);
+    drawStringBlock(&myFontOvlayP, ".(period)", blk2, line, ALIGN_CENTER, szb, szl);
+    drawStringBlock(&myFontOvlayP, "-", blk3, line, ALIGN_CENTER, szb, szl);
+    line++;
+
+    // VIEW
+    line++;
+    drawStringBlock(&myFontOvlayP, "View Function", blk0, line, ALIGN_CENTER, szb, szl);
+    drawStringBlock(&myFontOvlayP, "Key Map", blk2, line, ALIGN_CENTER, szb, szl);
+    drawStringBlock(&myFontOvlayP, "Current Setting", blk3, line, ALIGN_CENTER, szb, szl);
+    line++;
+    ofSetColor(myColorYellow);
+    drawLineBlock(blk1, blk4, line, szb, szl);
+    line++;
+    ofSetColor(myColorWhite);
+    // Set fullscreen mode
+    value = fullscreenEnabled ? "On" : "Off";
+    drawStringBlock(&myFontOvlayP, "Set fullscreen mode", blk1, line, ALIGN_LEFT, szb, szl);
+    drawStringBlock(&myFontOvlayP, "F", blk2, line, ALIGN_CENTER, szb, szl);
+    drawStringBlock(&myFontOvlayP, value, blk3, line, ALIGN_CENTER, szb, szl);
+    line++;
+    // Set camera view trimming
+    value = cameraTrimEnabled ? "On" : "Off";
+    drawStringBlock(&myFontOvlayP, "Set camera view trimming", blk1, line, ALIGN_LEFT, szb, szl);
+    drawStringBlock(&myFontOvlayP, "T", blk2, line, ALIGN_CENTER, szb, szl);
+    drawStringBlock(&myFontOvlayP, value, blk3, line, ALIGN_CENTER, szb, szl);
+    line++;
+    // Set camera 1~4 enhanced view
+    value = (cameraIdxSolo == -1) ? "No camera" : "Camera " + ofToString(cameraIdxSolo + 1);
+    drawStringBlock(&myFontOvlayP, "Set camera 1~4 enhanced view", blk1, line, ALIGN_LEFT, szb, szl);
+    drawStringBlock(&myFontOvlayP, "1~4", blk2, line, ALIGN_CENTER, szb, szl);
+    drawStringBlock(&myFontOvlayP, value, blk3, line, ALIGN_CENTER, szb, szl);
+    line++;
+    // Set camera 1~4 view
+    value = "";
+    for (int i = 0; i < cameraNum; i++) {
+        if (i > 0) {
+            value += ", ";
+        }
+        value += (camView[i].visible == true) ? "On" : "Off";
+    }
+    drawStringBlock(&myFontOvlayP, "Set camera 1~4 view", blk1, line, ALIGN_LEFT, szb, szl);
+    drawStringBlock(&myFontOvlayP, "Ctrl + 1~4", blk2, line, ALIGN_CENTER, szb, szl);
+    drawStringBlock(&myFontOvlayP, value, blk3, line, ALIGN_CENTER, szb, szl);
+    line++;
+    // Set camera icon
+    drawStringBlock(&myFontOvlayP, "Set camera icon", blk1, line, ALIGN_LEFT, szb, szl);
+    drawStringBlock(&myFontOvlayP, "Click icon", blk2, line, ALIGN_CENTER, szb, szl);
+    drawStringBlock(&myFontOvlayP, "-", blk3, line, ALIGN_CENTER, szb, szl);
+    line++;
+    // Set camera label
+    drawStringBlock(&myFontOvlayP, "Set camera label", blk1, line, ALIGN_LEFT, szb, szl);
+    drawStringBlock(&myFontOvlayP, "Click label", blk2, line, ALIGN_CENTER, szb, szl);
+    drawStringBlock(&myFontOvlayP, "-", blk3, line, ALIGN_CENTER, szb, szl);
+    line++;
+    // Set background image
+    drawStringBlock(&myFontOvlayP, "Set background image", blk1, line, ALIGN_LEFT, szb, szl);
+    drawStringBlock(&myFontOvlayP, "B", blk2, line, ALIGN_CENTER, szb, szl);
+    drawStringBlock(&myFontOvlayP, "-", blk3, line, ALIGN_CENTER, szb, szl);
+    line++;
+    // Start/Stop QR Code reader for labal
+    drawStringBlock(&myFontOvlayP, "Start/Stop QR Code reader for labal", blk1, line, ALIGN_LEFT, szb, szl);
+    drawStringBlock(&myFontOvlayP, "Q", blk2, line, ALIGN_CENTER, szb, szl);
+    drawStringBlock(&myFontOvlayP, "-", blk3, line, ALIGN_CENTER, szb, szl);
+    line++;
+
+    // RACE
+    line++;
+    ofSetColor(myColorWhite);
+    drawStringBlock(&myFontOvlayP, "Race Function", blk0, line, ALIGN_CENTER, szb, szl);
+    drawStringBlock(&myFontOvlayP, "Key Map", blk2, line, ALIGN_CENTER, szb, szl);
+    drawStringBlock(&myFontOvlayP, "Current Setting", blk3, line, ALIGN_CENTER, szb, szl);
+    line++;
+    ofSetColor(myColorYellow);
+    drawLineBlock(blk1, blk4, line, szb, szl);
+    line++;
+    ofSetColor(myColorWhite);
+    // Set AR lap timer mode
+    value = (arLapMode == ARAP_MODE_NORM) ? "Normal" : ((arLapMode == ARAP_MODE_LOOSE) ? "Loose" : "Off");
+    drawStringBlock(&myFontOvlayP, "Set AR lap timer mode", blk1, line, ALIGN_LEFT, szb, szl);
+    drawStringBlock(&myFontOvlayP, "A", blk2, line, ALIGN_CENTER, szb, szl);
+    drawStringBlock(&myFontOvlayP, value, blk3, line, ALIGN_CENTER, szb, szl);
+    line++;
+    // Set race duration
+    value = (raceDuraSecs <= 0) ? "No limit" : (ofToString(raceDuraSecs) + "s");
+    value += ", " + ofToString(raceDuraLaps) + "laps";
+    drawStringBlock(&myFontOvlayP, "Set race duration", blk1, line, ALIGN_LEFT, szb, szl);
+    drawStringBlock(&myFontOvlayP, "D", blk2, line, ALIGN_CENTER, szb, szl);
+    drawStringBlock(&myFontOvlayP, value, blk3, line, ALIGN_CENTER, szb, szl);
+    line++;
+    // Set minimum lap time
+    value = ofToString(minLapTime) + "s";
+    drawStringBlock(&myFontOvlayP, "Set minimum lap time", blk1, line, ALIGN_LEFT, szb, szl);
+    drawStringBlock(&myFontOvlayP, "M", blk2, line, ALIGN_CENTER, szb, szl);
+    drawStringBlock(&myFontOvlayP, value, blk3, line, ALIGN_CENTER, szb, szl);
+    line++;
+    // Set lap history view during race
+    value = cameraLapHistEnabled ? "On" : "Off";
+    drawStringBlock(&myFontOvlayP, "Set lap history view during race", blk1, line, ALIGN_LEFT, szb, szl);
+    drawStringBlock(&myFontOvlayP, "L", blk2, line, ALIGN_CENTER, szb, szl);
+    drawStringBlock(&myFontOvlayP, value, blk3, line, ALIGN_CENTER, szb, szl);
+    line++;
+    // Start/Stop race
+    drawStringBlock(&myFontOvlayP, "Start/Stop race", blk1, line, ALIGN_LEFT, szb, szl);
+    drawStringBlock(&myFontOvlayP, "Space", blk2, line, ALIGN_CENTER, szb, szl);
+    drawStringBlock(&myFontOvlayP, "-", blk3, line, ALIGN_CENTER, szb, szl);
+    line++;
+    // Add lap at camera 1~4
+    drawStringBlock(&myFontOvlayP, "Add lap at camera", blk1, line, ALIGN_LEFT, szb, szl);
+    drawStringBlock(&myFontOvlayP, "5~8", blk2, line, ALIGN_CENTER, szb, szl);
+    drawStringBlock(&myFontOvlayP, "-", blk3, line, ALIGN_CENTER, szb, szl);
+    line++;
+    // Delete previous lap at camera 1~4
+    drawStringBlock(&myFontOvlayP, "Delete previous lap at camera 1~4", blk1, line, ALIGN_LEFT, szb, szl);
+    drawStringBlock(&myFontOvlayP, "Ctrl + 5~8", blk2, line, ALIGN_CENTER, szb, szl);
+    drawStringBlock(&myFontOvlayP, "-", blk3, line, ALIGN_CENTER, szb, szl);
+    line++;
+    // Display race result
+    drawStringBlock(&myFontOvlayP, "Display race result", blk1, line, ALIGN_LEFT, szb, szl);
+    drawStringBlock(&myFontOvlayP, "V", blk2, line, ALIGN_CENTER, szb, szl);
+    drawStringBlock(&myFontOvlayP, "-", blk3, line, ALIGN_CENTER, szb, szl);
+    line++;
 }
 
 //--------------------------------------------------------------
