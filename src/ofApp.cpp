@@ -678,7 +678,6 @@ void keyPressedOverlayNone(int key) {
 
 //--------------------------------------------------------------
 void ofApp::keyPressed(int key) {
-    activateCursor();
     switch (overlayMode) {
         case OVLMODE_HELP:
             keyPressedOverlayHelp(key);
@@ -1012,6 +1011,7 @@ void autoSelectCameraIcon(int camid, string pname) {
 
 //--------------------------------------------------------------
 void changeWallImage() {
+    activateCursor();
     ofFileDialogResult result = ofSystemLoadDialog("Wallpaper");
     if (result.bSuccess) {
         string path = result.getPath();
@@ -1970,6 +1970,7 @@ void toggleARLap() {
 void changeMinLap() {
     string str;
     int lap;
+    activateCursor();
     str = ofToString(minLapTime);
     str = ofSystemTextBoxDialog("Min. lap time (1~" + ofToString(ARAP_MAX_MNLAP) + "sec):", str);
     lap = (str == "") ? 0 : ofToInt(str);
@@ -1984,6 +1985,7 @@ void changeMinLap() {
 //--------------------------------------------------------------
 void changeRaceDuration() {
     string str;
+    activateCursor();
     // time (seconds)
     while (true) {
         int sec;
