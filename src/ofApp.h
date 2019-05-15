@@ -12,7 +12,7 @@
 
 // system
 #define APP_INFO        "Tiny View Plus v0.9.18"
-#define DEBUG_ENABLED   flse
+#define DEBUG_ENABLED   false
 #define HELP_LINES      35
 // color
 #define COLOR_YELLOW    255,215,0
