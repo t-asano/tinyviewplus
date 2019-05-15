@@ -504,7 +504,7 @@ void drawWatch() {
     }
     int x = (ofGetWidth() / 2) - (myFontWatch.stringWidth(str) / 2);
     x = (int)(x / 5) * 5;
-    drawStringWithShadow(&myFontWatch, myColorWhite, str, x, ofGetHeight() - 10);
+    drawStringWithShadow(&myFontWatch, myColorYellow, str, x, ofGetHeight() - 10);
 }
 
 //--------------------------------------------------------------
