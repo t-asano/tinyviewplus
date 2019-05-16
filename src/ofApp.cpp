@@ -514,21 +514,25 @@ void drawWatch() {
 
 //--------------------------------------------------------------
 void drawInfo() {
+    ofColor *tcolor;
     string str;
     int x, y;
+
+    tcolor = &myColorWhite;
     y = ofGetHeight() - 10;
     // logo
     if (overlayMode == OVLMODE_HELP || overlayMode == OVLMODE_RCRSLT) {
         ofSetColor(myColorWhite);
         logoImage.draw(0, 0);
+        tcolor = &myColorLGray;
     }
     // appinfo
-    drawStringWithShadow(&myFontInfo1m, myColorLGray, APP_INFO, 10, y);
+    drawStringWithShadow(&myFontInfo1m, *tcolor, APP_INFO, 10, y);
     // date/time
     str = ofGetTimestampString("%F %T");
     x = ofGetWidth() - (myFontInfo1m.stringWidth(str) + 10);
     x = (int)(x / 10) * 10;
-    drawStringWithShadow(&myFontInfo1m, myColorLGray, str, x, y);
+    drawStringWithShadow(&myFontInfo1m, *tcolor, str, x, y);
 }
 
 //--------------------------------------------------------------
@@ -2389,19 +2393,19 @@ void drawHelpBody(int line) {
     drawStringBlock(&myFontOvlayP, value, blk2, line, ALIGN_CENTER, szb, szl);
     drawStringBlock(&myFontOvlayP, "1~4", blk3, line, ALIGN_CENTER, szb, szl);
     line++;
-    // Set camera 1~4 view
+    // Set camera 1~4 visibility
     value = "";
     for (int i = 0; i < CAMERA_MAXNUM; i++) {
         if (i > 0) {
             value += ", ";
         }
         if (i < cameraNum) {
-            value += "-";
-        } else {
             value += (camView[i].visible == true) ? "On" : "Off";
+        } else {
+            value += "-";
         }
     }
-    drawStringBlock(&myFontOvlayP, "Set Camera 1~4 Display", blk1, line, ALIGN_LEFT, szb, szl);
+    drawStringBlock(&myFontOvlayP, "Set Camera 1~4 Visibility", blk1, line, ALIGN_LEFT, szb, szl);
     drawStringBlock(&myFontOvlayP, value, blk2, line, ALIGN_CENTER, szb, szl);
     drawStringBlock(&myFontOvlayP, "Ctrl + 1~4", blk3, line, ALIGN_CENTER, szb, szl);
     line++;
