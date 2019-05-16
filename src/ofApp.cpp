@@ -2399,7 +2399,7 @@ void drawHelpBody(int line) {
     line++;
     // Set camera 1~4 view
     value = "";
-    for (int i = 0; i < cameraNum; i++) {
+    for (int i = 0; i < CAMERA_MAXNUM; i++) {
         if (i > 0) {
             value += ", ";
         }
