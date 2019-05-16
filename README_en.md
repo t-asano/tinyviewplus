@@ -78,7 +78,7 @@ On Windows, you can check the detection status of the camera (receiver) with the
 | F | Set fullscreen mode (on/off) | off |
 | T | Set camera view trimming (on/off) (\*1) | off |
 | 1~4 | Set camera 1~4 enhanced view (on/off) | off |
-| Ctrl + 1~4 | Set camera 1~4 view (on/off) | on |
+| Ctrl + 1~4 | Set camera 1~4 visibility (on/off) | on |
 | B | Set background image (\*2) | built-in image |
 | Q | Start/Stop QR Code reader for camera label (\*3) | - |
 

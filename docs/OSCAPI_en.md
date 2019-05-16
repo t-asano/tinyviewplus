@@ -40,7 +40,7 @@ Camera icon is also automatically changed in conjunction with the camera label c
 - If no image file is found, the default icon will be adopted.
 - The aspect ratio is forced to 1:1.
 
-### Set laptime (Beta)
+### Set laptime
 
 /v1/camera/{id}/laptime {time}
 
