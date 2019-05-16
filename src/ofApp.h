@@ -13,7 +13,7 @@
 // system
 #define APP_INFO        "Tiny View Plus v0.9.18"
 #define DEBUG_ENABLED   false
-#define HELP_LINES      35
+#define HELP_LINES      33
 // color
 #define COLOR_YELLOW    255,215,0
 #define COLOR_WHITE     255,255,255
@@ -26,6 +26,7 @@
 #define MOVE_STEPS      10
 #define VERTICAL_SYNC   true
 #define WALL_FILE       "system/background.png"
+#define LOGO_FILE       "system/logo.png"
 #define CAMERA_MAXNUM   4
 #define CAMERA_WIDTH    640
 #define CAMERA_HEIGHT   480
@@ -73,6 +74,7 @@
 #define OVLTXT_LAPS     25
 #define OVLTXT_MARG     10
 #define OLVMSG_TIME     FRAME_RATE
+#define INFO_HEIGHT    15
 // sound
 #define SND_BEEP_FILE   "system/beep.wav"
 #define SND_BEEP3_FILE  "system/beep3.wav"
@@ -97,7 +99,6 @@
 #define ARAP_RSLT_SCRN  0
 #define ARAP_RSLT_FILE  1
 #define WATCH_COUNT_SEC 5
-#define WATCH_HEIGHT    15
 // osc
 #define OSC_LISTEN_PORT 4000
 // speech

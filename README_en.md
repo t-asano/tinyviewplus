@@ -60,37 +60,53 @@ On macOS, you can check a list of cameras (receivers) with the QuickTime. If you
 
 On Windows, you can check the detection status of the camera (receiver) with the device manager. In addition, if multiple receivers are connected to same USB hub, only one of them may operate.
 
-### Keyboard shortcuts
+### Keyboard operations
+
+#### System
 
 | key | Function | Default value |
 |---|---|---|
-| H | Display help | - |
-| N | Change speech language (Japanese/English) | Japanese |
-| I | Initialize configuration | - |
-| . | Exit application | - |
-| T | Camera triming on/off (\*1) | off |
-| 1~4 | Camera 1~4 solo view on/off | off |
-| Ctrl + 1~4 | Camera 1~4 display on/off | on |
-| Q | Start/Stop QR Code reader (\*2) | - |
-| B | Change background image | built-in image |
-| F | Fullscreen mode on/off | off |
-| A | Switch AR lap timer mode (normal/loose/off) (\*3) | normal |
-| D | Set race duration time (0~36,000sec) and laps (1\~10,000) | 0(no limit), 10 |
-| M | Set minimum lap time (1~100sec) | 3 |
-| Space | Start/Stop race | - |
-| 5~8 | Add lap at camera 1~4 | - |
-| Ctrl + 5~8 | Delete last lap at camera 1~4 | - |
-| L | Display Lap history during race on/off | off |
-| V | Display race results (\*4) | - |
+| N | Set speech language (Japanese/English) | Japanese |
+| H | Display help (Settings/Commands) | - |
+| I | Initialize settings | - |
+| .(period) | Exit application | - |
+
+#### Display
+
+| key | Function | Default value |
+|---|---|---|
+| F | Set fullscreen mode (on/off) | off |
+| T | Set camera view trimming (on/off) (\*1) | off |
+| 1~4 | Set camera 1~4 enhanced view (on/off) | off |
+| Ctrl + 1~4 | Set camera 1~4 view (on/off) | on |
+| B | Set background image (\*2) | built-in image |
+| Q | Start/Stop QR Code reader for camera label (\*3) | - |
 
 - (\*1) When 1 or 3 cameras are connected, the image will be cropped and displayed as large as possible.
 - (\*2) Sets the characters scanned from the QR Code to the camera label.
-- The background image is scaled according to the screen, and the upper left is displayed in priority.
-- (\*3) In loose mode, lap time will be measured even if the drone passes outside the gate.
-- (\*4) Race results will be saved under predefined folder when race finish.
+- (\*3) The background image is scaled according to the screen, and the upper left is displayed in priority.
+
+#### Race
+
+| key | Function | Default value |
+|---|---|---|
+| A | Set AR lap timer mode (normal/loose/off) (\*1) | normal |
+| D | Set race duration time (0\~36,000s) and laps (1\~10,000) | 0s (no limit), 10 laps |
+| M | Set minimum lap time (1~100s) | 3s |
+| L | Set lap history during race (on/off) | off |
+| Space | Start/Stop race | - |
+| 5~8 | Add lap at camera 1~4 | - |
+| Ctrl + 5~8 | Delete previos lap at camera 1~4 | - |
+| R | Display race results (\*2) | - |
+
+- (\*1) In loose mode, lap time will be measured even if the drone passes outside the gate.
+- (\*2) Race results will be saved under predefined folder when race finish.
 	- macOS binary: Tiny View Plus.app/Contents/ Resources/data/pilots
 	- others: data/pilots
-- When you exit the application settings will be initialized.
+
+#### Attention
+
+- When you exit the application, the settings will be initialized.
 - Camera audio is not supported.
 
 ### Mouse operations

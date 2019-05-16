@@ -4,17 +4,17 @@ Tiny View Plus can be controlled by OSC protocol. It receives OSC packet at UDP 
 
 ## Message format
 
-### Toggle camera solo mode on / off
+### Set camera enhanced view on / off
 
 /v1/camera/{id}/solo {switch}
 
 - Parameters
 	- id ... Camera ID(1~4)
 	- switch ... "on" or "off"
-- Example: Camera 1 solo mode on
+- Example: Camera 1 enhanced view on
     - /v1/camera/1/solo "on"
 
-### Toggle camera visibility on / off
+### Set camera display on / off
 
 /v1/camera/{id}/display {switch}
 
@@ -24,7 +24,7 @@ Tiny View Plus can be controlled by OSC protocol. It receives OSC packet at UDP 
 - Example: Camera 1 off
 	- /v1/camera/1/display "off"
 
-### Change camera label
+### Set camera label
 
 /v1/camera/{id}/label {label}
 
@@ -40,7 +40,7 @@ Camera icon is also automatically changed in conjunction with the camera label c
 - If no image file is found, the default icon will be adopted.
 - The aspect ratio is forced to 1:1.
 
-### Set laptime
+### Set laptime (Beta)
 
 /v1/camera/{id}/laptime {time}
 
@@ -49,8 +49,6 @@ Camera icon is also automatically changed in conjunction with the camera label c
 	- time ... lap time(seconds)
 - Example: Set the lap time of camera 3 to 128.64 seconds
 	- /v1/camera/3/laptime 128.64
-- Example: Clear the lap time of camera 4
-	- /v1/camera/4/laptime 0
 
 ### Speech synthesis
 

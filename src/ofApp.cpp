@@ -13,7 +13,8 @@ ofVideoGrabber grabber[CAMERA_MAXNUM];
 ofColor myColorYellow, myColorWhite, myColorLGray, myColorBGDark, myColorBGLight, myColorAlert;
 ofxTrueTypeFontUC myFontNumber, myFontLabel, myFontLap, myFontLapHist;
 ofxTrueTypeFontUC myFontNumberSub, myFontLabelSub, myFontLapSub;
-ofImage wallImage;
+ofxTrueTypeFontUC myFontInfo1m, myFontInfo1p, myFontInfo2m;
+ofImage wallImage, logoImage;
 float wallRatio;
 int wallDrawWidth;
 int wallDrawHeight;
@@ -33,7 +34,6 @@ ofxOscReceiver oscReceiver;
 bool speechLangJpn;
 
 // AR lap timer
-ofxTrueTypeFontUC myFontWatch;
 ofSoundPlayer beepSound, beep3Sound, notifySound, cancelSound;
 ofSoundPlayer countSound, finishSound;
 ofFile resultsFile;
@@ -86,6 +86,9 @@ void ofApp::setup() {
     myFontNumberSub.load(FONT_P_FILE, NUMBER_HEIGHT / 2);
     myFontLabelSub.load(FONT_P_FILE, LABEL_HEIGHT / 2);
     myFontLapSub.load(FONT_P_FILE, LAP_HEIGHT / 2);
+    myFontInfo1m.load(FONT_M_FILE, INFO_HEIGHT);
+    myFontInfo1p.load(FONT_P_FILE, INFO_HEIGHT);
+    myFontInfo2m.load(FONT_M_FILE, INFO_HEIGHT * 2);
     loadOverlayFont();
     cameraTrimEnabled = DFLT_CAM_TRIM;
     fullscreenEnabled = DFLT_FSCR_ENBLD;
@@ -94,6 +97,8 @@ void ofApp::setup() {
     wallImage.load(WALL_FILE);
     wallRatio = wallImage.getWidth() / wallImage.getHeight();
     setWallParams();
+    // logo
+    logoImage.load(LOGO_FILE);
     // camera
     bindCameras();
     // view common
@@ -118,7 +123,6 @@ void ofApp::setup() {
     finishSound.load(SND_FINISH_FILE);
     notifySound.load(SND_NOTIFY_FILE);
     cancelSound.load(SND_CANCEL_FILE);
-    myFontWatch.load(FONT_M_FILE, WATCH_HEIGHT);
     for (int i = 0; i < cameraNum; i++) {
         camView[i].aruco.setUseHighlyReliableMarker(ARAP_MKR_FILE);
         camView[i].aruco.setThreaded(true);
@@ -484,13 +488,17 @@ string getWatchString(float sec) {
 
 //--------------------------------------------------------------
 void drawWatch() {
+    ofxTrueTypeFontUC *font;
     string str;
     if (raceStarted == false) {
         str = "Finished";
+        font = &myFontInfo1p;
     } else if (elapsedTime < 5) {
         str = ofToString(5 - (int)elapsedTime);
+        font = &myFontInfo2m;
     } else if (elapsedTime < 7) {
         str = "Go!";
+        font = &myFontInfo2m;
     } else {
         float sec;
         sec = elapsedTime - WATCH_COUNT_SEC;
@@ -501,10 +509,11 @@ void drawWatch() {
             }
             str = str + " / " + getWatchString(raceDuraSecs);
         }
+        font = &myFontInfo2m;
     }
-    int x = (ofGetWidth() / 2) - (myFontWatch.stringWidth(str) / 2);
-    x = (int)(x / 5) * 5;
-    drawStringWithShadow(&myFontWatch, myColorYellow, str, x, ofGetHeight() - 10);
+    int x = (ofGetWidth() / 2) - (font->stringWidth(str) / 2);
+    x = (int)(x / 10) * 10;
+    drawStringWithShadow(font, myColorWhite, str, x, ofGetHeight() - 10);
 }
 
 //--------------------------------------------------------------
@@ -512,13 +521,18 @@ void drawInfo() {
     string str;
     int x, y;
     y = ofGetHeight() - 10;
+    // logo
+    if (overlayMode == OVLMODE_HELP || overlayMode == OVLMODE_RCRSLT) {
+        ofSetColor(myColorWhite);
+        logoImage.draw(0, 0);
+    }
     // app
-    drawStringWithShadow(&myFontWatch, myColorWhite, APP_INFO, 10, y);
+    drawStringWithShadow(&myFontInfo1m, myColorWhite, APP_INFO, 10, y);
     // date/time
     str = ofGetTimestampString("%F %T");
-    x = ofGetWidth() - (myFontWatch.stringWidth(str) + 10);
-    x = (int)(x / 5) * 5;
-    drawStringWithShadow(&myFontWatch, myColorWhite, str, x, y);
+    x = ofGetWidth() - (myFontInfo1m.stringWidth(str) + 10);
+    x = (int)(x / 10) * 10;
+    drawStringWithShadow(&myFontInfo1m, myColorWhite, str, x, y);
 }
 
 //--------------------------------------------------------------
@@ -549,13 +563,11 @@ void ofApp::draw() {
     if (raceStarted == true || elapsedTime != 0) {
         drawWatch();
     }
-    // current date
-    drawInfo();
     // QR reader
     if (qrEnabled == true) {
-        string str = "Scanning QR code...";
-        int x = (ofGetWidth() / 2) - (myFontWatch.stringWidth(str) / 2);
-        drawStringWithShadow(&myFontWatch, myColorYellow, str, x, ofGetHeight() - 10);
+        string str = "Scanning QR Code...";
+        int x = (ofGetWidth() / 2) - (myFontInfo1p.stringWidth(str) / 2);
+        drawStringWithShadow(&myFontInfo1p, myColorYellow, str, x, ofGetHeight() - 10);
     }
     // overlay
     switch (overlayMode) {
@@ -572,10 +584,12 @@ void ofApp::draw() {
         default:
             break;
     }
+    // more info
+    drawInfo();
     // debug
     if (DEBUG_ENABLED == true) {
         ofSetColor(myColorYellow);
-        ofDrawBitmapString("FPS: " + ofToString(ofGetFrameRate()), 10, ofGetHeight() - 10);
+        ofDrawBitmapString("FPS: " + ofToString(ofGetFrameRate()), ofGetWidth() - 100, 10);
     }
 }
 
@@ -608,7 +622,7 @@ void keyPressedOverlayMessage(int key) {
 
 //--------------------------------------------------------------
 void keyPressedOverlayResult(int key) {
-    if (key == 'v' || key == 'V') {
+    if (key == 'r' || key == 'R') {
         processRaceResultDisplay();
     } else if (ofGetKeyPressed(OF_KEY_ESC)) {
         raceResultPage = 0;
@@ -667,7 +681,7 @@ void keyPressedOverlayNone(int key) {
             }
         } else if (key == ' ') {
             toggleRace();
-        } else if (key == 'v' || key == 'V') {
+        } else if (key == 'r' || key == 'R') {
             if (raceStarted == false) {
                 qrEnabled = false;
                 processRaceResultDisplay();
@@ -1492,18 +1506,21 @@ void recvOscCameraFloat(int camid, string method, float argfloat) {
     if (camid < 1 || camid > cameraNum) {
         return;
     }
-    if (method != "laptime") {
-        return;
+    if (method == "laptime") {
+        // xxx experimental
+        if (argfloat <= 0) {
+            return;
+        }
+        beepSound.play();
+        int idx = camid - 1;
+        int total = camView[idx].totalLaps + 1;
+        camView[idx].prevElapsedSec += argfloat;
+        camView[idx].totalLaps = total;
+        camView[idx].lastLapTime = argfloat;
+        camView[idx].lapHistName[total - 1] = camView[idx].labelString;
+        camView[idx].lapHistLapTime[total - 1] = argfloat;
+        camView[idx].lapHistElpTime[total - 1] = camView[idx].prevElapsedSec;
     }
-    beepSound.play();
-    int idx = camid - 1;
-    int total = camView[idx].totalLaps + 1;
-    camView[idx].prevElapsedSec += argfloat;
-    camView[idx].totalLaps = total;
-    camView[idx].lastLapTime = argfloat;
-    camView[idx].lapHistName[total - 1] = camView[idx].labelString;
-    camView[idx].lapHistLapTime[total - 1] = argfloat;
-    camView[idx].lapHistElpTime[total - 1] = camView[idx].prevElapsedSec;
 }
 
 //--------------------------------------------------------------
@@ -2286,7 +2303,7 @@ void drawRaceResult(int pageidx) {
     // message
     line = OVLTXT_LINES - 1;
     ofSetColor(myColorYellow);
-    drawStringBlock(&myFontOvlayP, "Press V key to continue, Esc key to exit", 0, line, ALIGN_CENTER, 1, szl);
+    drawStringBlock(&myFontOvlayP, "Press R key to continue, Esc key to exit", 0, line, ALIGN_CENTER, 1, szl);
 }
 
 //--------------------------------------------------------------
@@ -2299,9 +2316,10 @@ void drawHelp() {
     // title(3 lines)
     line = 1;
     ofSetColor(myColorYellow);
-    drawStringBlock(&myFontOvlayP2x, APP_INFO, 0, line, ALIGN_CENTER, 1, szl);
+    drawStringBlock(&myFontOvlayP2x, "Settings / Commands", 0, line, ALIGN_CENTER, 1, szl);
+    line += 2;
     // body
-    drawHelpBody(3);
+    drawHelpBody(line);
     // message(2 lines)
     line = HELP_LINES - 1;
     ofSetColor(myColorYellow);
@@ -2319,13 +2337,8 @@ void drawHelpBody(int line) {
     int blk3 = 15;
     int blk4 = 17;
 
-    // TITLE
-    ofSetColor(myColorWhite);
-    drawStringBlock(&myFontOvlayP, "Settings / Commands", 0, line, ALIGN_CENTER, 1, szl);
-    line++;
-
     // SYSTEM
-    line++;
+    ofSetColor(myColorWhite);
     drawStringBlock(&myFontOvlayP, "System Function", blk0, line, ALIGN_CENTER, szb, szl);
     drawStringBlock(&myFontOvlayP, "Key Map", blk2, line, ALIGN_CENTER, szb, szl);
     drawStringBlock(&myFontOvlayP, "Current Setting", blk3, line, ALIGN_CENTER, szb, szl);
@@ -2341,7 +2354,7 @@ void drawHelpBody(int line) {
     drawStringBlock(&myFontOvlayP, value, blk3, line, ALIGN_CENTER, szb, szl);
     line++;
     // Display help
-    drawStringBlock(&myFontOvlayP, "Display help", blk1, line, ALIGN_LEFT, szb, szl);
+    drawStringBlock(&myFontOvlayP, "Display help (settings/commands)", blk1, line, ALIGN_LEFT, szb, szl);
     drawStringBlock(&myFontOvlayP, "H", blk2, line, ALIGN_CENTER, szb, szl);
     drawStringBlock(&myFontOvlayP, "-", blk3, line, ALIGN_CENTER, szb, szl);
     line++;
@@ -2390,7 +2403,11 @@ void drawHelpBody(int line) {
         if (i > 0) {
             value += ", ";
         }
-        value += (camView[i].visible == true) ? "On" : "Off";
+        if (i < cameraNum) {
+            value += "-";
+        } else {
+            value += (camView[i].visible == true) ? "On" : "Off";
+        }
     }
     drawStringBlock(&myFontOvlayP, "Set camera 1~4 view", blk1, line, ALIGN_LEFT, szb, szl);
     drawStringBlock(&myFontOvlayP, "Ctrl + 1~4", blk2, line, ALIGN_CENTER, szb, szl);
@@ -2412,7 +2429,7 @@ void drawHelpBody(int line) {
     drawStringBlock(&myFontOvlayP, "-", blk3, line, ALIGN_CENTER, szb, szl);
     line++;
     // Start/Stop QR Code reader for labal
-    drawStringBlock(&myFontOvlayP, "Start/Stop QR Code reader for labal", blk1, line, ALIGN_LEFT, szb, szl);
+    drawStringBlock(&myFontOvlayP, "Start/Stop QR Code reader for label", blk1, line, ALIGN_LEFT, szb, szl);
     drawStringBlock(&myFontOvlayP, "Q", blk2, line, ALIGN_CENTER, szb, szl);
     drawStringBlock(&myFontOvlayP, "-", blk3, line, ALIGN_CENTER, szb, szl);
     line++;
@@ -2464,13 +2481,13 @@ void drawHelpBody(int line) {
     drawStringBlock(&myFontOvlayP, "-", blk3, line, ALIGN_CENTER, szb, szl);
     line++;
     // Delete previous lap at camera 1~4
-    drawStringBlock(&myFontOvlayP, "Delete previous lap at camera 1~4", blk1, line, ALIGN_LEFT, szb, szl);
+    drawStringBlock(&myFontOvlayP, "Delete prev. lap at camera 1~4", blk1, line, ALIGN_LEFT, szb, szl);
     drawStringBlock(&myFontOvlayP, "Ctrl + 5~8", blk2, line, ALIGN_CENTER, szb, szl);
     drawStringBlock(&myFontOvlayP, "-", blk3, line, ALIGN_CENTER, szb, szl);
     line++;
     // Display race result
     drawStringBlock(&myFontOvlayP, "Display race result", blk1, line, ALIGN_LEFT, szb, szl);
-    drawStringBlock(&myFontOvlayP, "V", blk2, line, ALIGN_CENTER, szb, szl);
+    drawStringBlock(&myFontOvlayP, "R", blk2, line, ALIGN_CENTER, szb, szl);
     drawStringBlock(&myFontOvlayP, "-", blk3, line, ALIGN_CENTER, szb, szl);
     line++;
 }
