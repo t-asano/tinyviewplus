@@ -12,7 +12,7 @@
 /* ---------- definitions ---------- */
 
 // system
-#define APP_INFO        "Tiny View Plus v0.9.18"
+#define APP_INFO        "Tiny View Plus v0.9.19"
 #define DEBUG_ENABLED   false
 #define HELP_LINES      33
 // color
