@@ -31,7 +31,7 @@ Tiny View Plusは、FPV映像を手軽に表示するためのアプリです。
 
 1. [リリースページ](https://github.com/t-asano/tinyviewplus/releases)よりzipファイルをダウンロード
 2. zipファイルを展開して適当な場所に配置
-    - 必ず「アプリケーション」フォルダの下に配置してください。それ以外の場所に配置すると、ファイルの書き込みを伴う機能が正しく動作しません。
+    - 必ず「アプリケーション」フォルダの下に配置してください。それ以外の場所に配置すると、ファイルの書き込みを伴う機能が正しく動作しません。  
     ![install_mac.png](docs/img/install_mac.png)
 
 ### Windowsの場合
@@ -39,7 +39,8 @@ Tiny View Plusは、FPV映像を手軽に表示するためのアプリです。
 1. [リリースページ](https://github.com/t-asano/tinyviewplus/releases)よりzipファイルをダウンロード
 2. zipファイルを展開して適当な場所に配置
 3. [Microsoft Visual C++ 2015 再頒布可能パッケージ(vc_redist.x64.exe)
-](https://www.microsoft.com/ja-jp/download/details.aspx?id=53587)をインストール(起動時にVCOMP140.DLLのエラーが出る場合のみ)
+](https://www.microsoft.com/ja-jp/download/details.aspx?id=53587)をインストール  
+(起動時にVCOMP140.DLLのエラーが出る場合のみ)
 
 ## 使い方
 
@@ -128,6 +129,15 @@ Windowsでは、デバイスマネージャーでカメラ(受信機)の検出�
 		- それ以外: data/pilots
 	- 画像ファイルが見つからない場合は、デフォルトアイコンが採用されます
 	- 縦横比は強制的に1:1となります
+
+### ゲームパッドによる操作
+
+一部の機能は、ゲームパッドでも操作もできます。ゲームパッドは、最大4台まで同時に利用できます。
+
+| ボタン | 機能 |
+|---|---|---|
+| ボタン1~4 | カメラ1~4のラップの追加 |
+| ボタン5 + ボタン1~4 | カメラ1~4の直前ラップの削除 |
 
 ### QRコードによるラベル設定
 

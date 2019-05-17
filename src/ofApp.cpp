@@ -57,6 +57,9 @@ bool qrEnabled;
 int qrUpdCount;
 int qrCamIndex;
 
+// gamepad
+ofxJoystick gamePad[GPAD_MAX_DEVS];
+
 //--------------------------------------------------------------
 void ofApp::setup() {
     // system
@@ -134,6 +137,11 @@ void ofApp::setup() {
     initRaceVars();
     // QR reader
     qrEnabled = false;
+    // gamepad (GPAD_MAX_DEVS: 4)
+    gamePad[0].setup(GLFW_JOYSTICK_1);
+    gamePad[1].setup(GLFW_JOYSTICK_2);
+    gamePad[2].setup(GLFW_JOYSTICK_3);
+    gamePad[3].setup(GLFW_JOYSTICK_4);
     // debug
     if (DEBUG_ENABLED == true) {
         generateDummyData();
@@ -145,6 +153,7 @@ void ofApp::update() {
     // timer
     if (raceStarted == true) {
         elapsedTime = ofGetElapsedTimef();
+        checkGamePad(elapsedTime);
         // time limited race
         if (raceDuraSecs > 0) {
             float relp = elapsedTime - WATCH_COUNT_SEC;
@@ -1885,7 +1894,7 @@ void popLapRecord(int cid) {
     }
     int newlaps = oldlaps - 1;
     cancelSound.play();
-    setOverlayMessage(camView[i].labelString + " lap" + ofToString(oldlaps) + " canceled");
+    setOverlayMessage(camView[i].labelString + " Lap" + ofToString(oldlaps) + " canceled");
     camView[i].lapHistName[oldlaps - 1] = "";
     camView[i].lapHistLapTime[oldlaps - 1] = 0;
     camView[i].lapHistElpTime[oldlaps - 1] = 0;
@@ -2604,6 +2613,26 @@ void processQrReader() {
     }
     if (count == cameraNum) {
         toggleQrReader(); // finished
+    }
+}
+
+//--------------------------------------------------------------
+void checkGamePad(float elpsec) {
+    int dev, btn;
+    for (dev = 0; dev < GPAD_MAX_DEVS; dev++) {
+        if (gamePad[dev].isConnect() == false) {
+            continue;
+        }
+        for (btn = 0; btn < cameraNum; btn++) {
+            if (gamePad[dev].isPressed(btn) == true) {
+                if (gamePad[dev].isPressed(GPAD_CTRL_BTN) == true
+                    || gamePad[dev].isPushing(GPAD_CTRL_BTN) == true) {
+                    popLapRecord((btn + 1));
+                } else {
+                    pushLapRecord((btn + 1), elpsec);
+                }
+            }
+        }
     }
 }
 

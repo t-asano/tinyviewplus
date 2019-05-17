@@ -29,7 +29,7 @@ If you want to build from source code, please refer to [this document](docs/HowT
 
 1. Download a zip file from [Release page](https://github.com/t-asano/tinyviewplus/releases).
 2. Extract it and place its contents in the proper place.
-    - Be sure to put the application under the "Application" folder. If you place it anywhere else, functions that writing to file will not work correctly.
+    - Be sure to put the application under the "Application" folder. If you place it anywhere else, functions that writing to file will not work correctly.  
     ![install_mac.png](docs/img/install_mac.png)
 
 ### Windows
@@ -37,7 +37,8 @@ If you want to build from source code, please refer to [this document](docs/HowT
 1. Download a zip file from [Release page](https://github.com/t-asano/tinyviewplus/releases).
 2. Extract it and place its contents in the proper place.
 3. Install [Microsoft Visual C++ 2015 Redistributable(vc_redist.x64.exe)
-](https://www.microsoft.com/ja-jp/download/details.aspx?id=53587)(Only if VCOMP140.DLL error occurs at startup.)
+](https://www.microsoft.com/ja-jp/download/details.aspx?id=53587)  
+(Only if VCOMP140.DLL error occurs at startup.)
 
 ## Usage
 
@@ -111,7 +112,7 @@ On Windows, you can check the detection status of the camera (receiver) with the
 
 ### Mouse operations
 
-Some functions can also be operated with the mouse.
+Some functions can be operated with mouse.
 
 | Operation | Function |
 | --- | --- |
@@ -126,6 +127,15 @@ Some functions can also be operated with the mouse.
 		- others: data/pilots
 	- If no image file is found, the default icon will be adopted.
 	- The aspect ratio is forced to 1:1.
+
+### Gamepad operations
+
+Some functions can also be operated with gamepad. Up to 4 gamepads can be used simultaneously.
+
+| Button | Function |
+| --- | --- |
+| 1~4 | Add lap at camera 1~4 |
+| 5 + 1~4 | Delete previos lap at camera 1~4 |
 
 ### QR Code for label setting
 

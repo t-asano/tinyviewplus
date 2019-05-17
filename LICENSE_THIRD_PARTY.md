@@ -6,7 +6,7 @@
 
 ## ofxTrueTypeFontUC
 
-[https://github.com/kr15h/ofxTrueTypeFontUC/blob/fix-of_v0.10/License.txt](https://github.com/kr15h/ofxTrueTypeFontUC/blob/fix-of_v0.10/License.txt)
+[https://github.com/kr15h/ofxTrueTypeFontUC](https://github.com/kr15h/ofxTrueTypeFontUC)
 
 ## M+ FONTS
 
@@ -18,8 +18,12 @@
 
 ## ofxCv
 
-[https://github.com/kylemcdonald/ofxCv/blob/master/license.md](https://github.com/kylemcdonald/ofxCv/blob/master/license.md)
+[https://github.com/kylemcdonald/ofxCv](https://github.com/kylemcdonald/ofxCv)
 
 ## ofxZxing
 
 [https://github.com/Iwanaka/ofxZxing](https://github.com/Iwanaka/ofxZxing)
+
+## ofxJoystick
+
+[https://github.com/Lacty/ofxJoystick](https://github.com/Lacty/ofxJoystick)

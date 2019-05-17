@@ -7,6 +7,7 @@
 #include "ofxAruco.h"
 #include "highlyreliablemarkers.h"
 #include "ofxZxing.h"
+#include "ofxJoystick.h"
 
 /* ---------- definitions ---------- */
 
@@ -107,6 +108,9 @@
 #define SPCH_SLOT_NUM	8
 // QR code reader
 #define QR_CYCLE        6
+// gamepad
+#define GPAD_MAX_DEVS   4
+#define GPAD_CTRL_BTN   4
 
 /* ---------- classes ---------- */
 
@@ -283,5 +287,8 @@ string utf8ToAnsi(string);
 #endif /* TARGET_WIN32 */
 void toggleQrReader();
 void processQrReader();
+// gamepad
+void checkGamePad(float);
+// others
 void toggleLapHistory();
 void activateCursor();

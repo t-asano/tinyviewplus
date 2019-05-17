@@ -35,6 +35,7 @@
     $ git clone https://github.com/t-asano/ofxAruco.git
     $ git clone https://github.com/kylemcdonald/ofxCv.git
     $ git clone https://github.com/t-asano/ofxZxing.git
+    $ git clone https://github.com/t-asano/ofxJoystick.git
     ```
 	
 2. プロジェクトジェネレーターで、以下のアドオンを含むプロジェクトを作成する。プロジェクト名は「tinyviewplus」とする。
@@ -45,6 +46,7 @@
     - ofxOpenCv
     - ofxPoco
     - ofxZxing
+    - ofxJoystick
     
 3. 作成したプロジェクトに、Tiny View Plusのファイル一式をマージする
     ```
