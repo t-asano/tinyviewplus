@@ -75,9 +75,6 @@ void ofApp::setup() {
     handleWindow = FindWindowA("ConsoleWindowClass", NULL);
     ShowWindow(handleWindow, 0);
 #endif /* TARGET_WIN32 */
-    // speech
-    speechLangJpn = DFLT_SPCH_JPN;
-    speakAny(speechLangJpn ? "jp" : "en", "."); // warmup
     // screen
     ofSetWindowTitle(APP_INFO);
     ofBackground(0, 0, 0);
@@ -145,6 +142,13 @@ void ofApp::setup() {
     // debug
     if (DEBUG_ENABLED == true) {
         generateDummyData();
+    }
+    // speech
+    autoSelectSpeechLang();
+    if (speechLangJpn == true) {
+        speakAny("jp", "タイニービュープラスが起動しました。");
+    } else {
+        speakAny("en", "Tiny View Plus is ready.");
     }
 }
 
@@ -1415,7 +1419,7 @@ void initConfig() {
     fullscreenEnabled = DFLT_FSCR_ENBLD;
     cameraLapHistEnabled = DFLT_CAM_LAPHST;
     // speech
-    speechLangJpn = DFLT_SPCH_JPN;
+    autoSelectSpeechLang();
     // AR lap timer
     setOverlayMode(OVLMODE_NONE);
     arLapMode = DFLT_ARAP_MODE;
@@ -1426,6 +1430,24 @@ void initConfig() {
     raceStarted = false;
     initRaceVars();
     setOverlayMessage("Configuration initialized");
+}
+
+//--------------------------------------------------------------
+string getUserLocaleName() {
+    string name = "";
+#ifdef TARGET_OSX
+    FILE *pipe = popen("defaults read -g AppleLocale", "r");
+    char buf[8];
+    fgets(buf, 8, pipe);
+    name = ofToString(buf);
+    pclose(pipe);
+#endif /* TARGET_OSX */
+#ifdef TARGET_WIN32
+    string org = ofToString(setlocale(LC_ALL, NULL));
+    name = ofToString(setlocale(LC_ALL, ""));
+    setlocale(LC_ALL, org.c_str());
+#endif /* TARGET_WIN32 */
+    return name;
 }
 
 //--------------------------------------------------------------
@@ -1536,6 +1558,18 @@ void toggleSpeechLang() {
     } else {
         setOverlayMessage("Speech language: English");
     }
+}
+
+//--------------------------------------------------------------
+void autoSelectSpeechLang() {
+    string lname = getUserLocaleName();
+    bool isjpn = true;
+    if (lname.find("ja_JP") == std::string::npos
+        && lname.find("932") == std::string::npos
+        && ofToLower(lname).find("japan") == std::string::npos) {
+        isjpn = false;
+    }
+    speechLangJpn = isjpn;
 }
 
 //--------------------------------------------------------------
@@ -2418,15 +2452,26 @@ void drawHelpBody(int line) {
     drawStringBlock(&myFontOvlayP, value, blk2, line, ALIGN_CENTER, szb, szl);
     drawStringBlock(&myFontOvlayP, "Ctrl + 1~4", blk3, line, ALIGN_CENTER, szb, szl);
     line++;
+    // Set camera label
+    value = "";
+    for (int i = 0; i < CAMERA_MAXNUM; i++) {
+        if (i > 0) {
+            value += ", ";
+        }
+        if (i < cameraNum) {
+            value += camView[i].labelString;
+        } else {
+            value += "-";
+        }
+    }
+    drawStringBlock(&myFontOvlayP, "Set Camera Label", blk1, line, ALIGN_LEFT, szb, szl);
+    drawStringBlock(&myFontOvlayP, value, blk2, line, ALIGN_CENTER, szb, szl);
+    drawStringBlock(&myFontOvlayP, "Click Label", blk3, line, ALIGN_CENTER, szb, szl);
+    line++;
     // Set camera icon
     drawStringBlock(&myFontOvlayP, "Set Camera Icon", blk1, line, ALIGN_LEFT, szb, szl);
     drawStringBlock(&myFontOvlayP, "-", blk2, line, ALIGN_CENTER, szb, szl);
     drawStringBlock(&myFontOvlayP, "Click Icon", blk3, line, ALIGN_CENTER, szb, szl);
-    line++;
-    // Set camera label
-    drawStringBlock(&myFontOvlayP, "Set Camera Label", blk1, line, ALIGN_LEFT, szb, szl);
-    drawStringBlock(&myFontOvlayP, "-", blk2, line, ALIGN_CENTER, szb, szl);
-    drawStringBlock(&myFontOvlayP, "Click Label", blk3, line, ALIGN_CENTER, szb, szl);
     line++;
     // Set background image
     drawStringBlock(&myFontOvlayP, "Set Background Image", blk1, line, ALIGN_LEFT, szb, szl);
@@ -2456,10 +2501,10 @@ void drawHelpBody(int line) {
     drawStringBlock(&myFontOvlayP, value, blk2, line, ALIGN_CENTER, szb, szl);
     drawStringBlock(&myFontOvlayP, "A", blk3, line, ALIGN_CENTER, szb, szl);
     line++;
-    // Set race duration
+    // Set race duration (time, laps)
     value = (raceDuraSecs <= 0) ? "No Limit" : (ofToString(raceDuraSecs) + "s");
     value += ", " + ofToString(raceDuraLaps) + " laps";
-    drawStringBlock(&myFontOvlayP, "Set Race Duration", blk1, line, ALIGN_LEFT, szb, szl);
+    drawStringBlock(&myFontOvlayP, "Set Race Duration (Time, Laps)", blk1, line, ALIGN_LEFT, szb, szl);
     drawStringBlock(&myFontOvlayP, value, blk2, line, ALIGN_CENTER, szb, szl);
     drawStringBlock(&myFontOvlayP, "D", blk3, line, ALIGN_CENTER, szb, szl);
     line++;
@@ -2481,7 +2526,7 @@ void drawHelpBody(int line) {
     drawStringBlock(&myFontOvlayP, "Space", blk3, line, ALIGN_CENTER, szb, szl);
     line++;
     // Add lap at camera 1~4
-    drawStringBlock(&myFontOvlayP, "Add Lap at Camera", blk1, line, ALIGN_LEFT, szb, szl);
+    drawStringBlock(&myFontOvlayP, "Add Lap at Camera 1~4", blk1, line, ALIGN_LEFT, szb, szl);
     drawStringBlock(&myFontOvlayP, "-", blk2, line, ALIGN_CENTER, szb, szl);
     drawStringBlock(&myFontOvlayP, "5~8", blk3, line, ALIGN_CENTER, szb, szl);
     line++;

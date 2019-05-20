@@ -104,7 +104,6 @@
 #define OSC_LISTEN_PORT 4000
 // speech
 #define DFLT_SPCH_ENBLD false
-#define DFLT_SPCH_JPN   true
 #define SPCH_SLOT_NUM	8
 // QR code reader
 #define QR_CYCLE        6
@@ -198,6 +197,7 @@ public:
 
 void bindCameras();
 void initConfig();
+string getUserLocaleName();
 // view
 void toggleCameraSolo(int);
 void enableCameraSolo(int);
@@ -225,6 +225,7 @@ void recvOscCameraFloat(int, string, float);
 void recvOscSpeech(string, string);
 // speech
 void toggleSpeechLang();
+void autoSelectSpeechLang();
 void speakLap(int, float, int);
 void setNextSpeechRemainSecs(int);
 void speakRemainTime(int);
