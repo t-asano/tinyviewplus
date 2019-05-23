@@ -202,7 +202,7 @@ void setupMain() {
     initRaceVars();
     // speech
     if (speechLangJpn == true) {
-        speakAny("jp", "タイニービュープラスが起動しました。");
+        speakAny("jp", "タイニービュープラスへ、ようこそ。");
     } else {
         speakAny("en", "Welcome to Tiny View Plus.");
     }
