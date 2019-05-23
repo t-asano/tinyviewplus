@@ -574,7 +574,7 @@ void drawCameraLapTime(int idx, bool isSub) {
                 drawStringWithShadow(&myFontLap, myColorWhite,
                                      sout, camView[i].lapPosX, camView[i].lapPosY + LAP_HEIGHT + 10);
             }
-            sout = "Time: " + getWatchString(camView[i].prevElapsedSec - WATCH_COUNT_SEC);
+            sout = "TotalTime: " + getWatchString(camView[i].prevElapsedSec - WATCH_COUNT_SEC);
             if (isSub) {
                 drawStringWithShadow(&myFontLapSub, myColorWhite,
                                      sout, camView[i].lapPosX, camView[i].lapPosY + LAP_HEIGHT + 10);
@@ -2396,6 +2396,7 @@ void processRaceResultDisplay() {
 
 //--------------------------------------------------------------
 void drawRaceResult(int pageidx) {
+    string str;
     int szb = OVLTXT_BLKS - (CAMERA_MAXNUM - cameraNum);
     int szl = OVLTXT_LINES;
     int pages, line;
@@ -2492,8 +2493,13 @@ void drawRaceResult(int pageidx) {
 
     // message
     line = OVLTXT_LINES - 1;
+    if (pages > 1 && (pageidx + 1) < pages) {
+        str = "Press R key to continue, Esc key to exit";
+    } else {
+        str = "Press R or Esc key to exit";
+    }
     ofSetColor(myColorYellow);
-    drawStringBlock(&myFontOvlayP, "Press R key to continue, Esc key to exit", 0, line, ALIGN_CENTER, 1, szl);
+    drawStringBlock(&myFontOvlayP, str, 0, line, ALIGN_CENTER, 1, szl);
 }
 
 //--------------------------------------------------------------
