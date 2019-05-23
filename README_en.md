@@ -67,8 +67,8 @@ On Windows, you can check the detection status of the camera (receiver) with the
 
 | key | Function | Default value |
 |---|---|---|
-| N | Set speech language (Japanese/English) | Japanese |
-| H | Display help (Settings/Commands) | - |
+| N | Set speech language (Japanese/English) | same as system locale |
+| H | Display help (aka "Settings/Commands") | - |
 | I | Initialize settings | - |
 | .(period) | Exit application | - |
 
@@ -76,11 +76,11 @@ On Windows, you can check the detection status of the camera (receiver) with the
 
 | key | Function | Default value |
 |---|---|---|
-| F | Set fullscreen mode (on/off) | off |
-| T | Set camera view trimming (on/off) (\*1) | off |
-| 1~4 | Set camera 1~4 enhanced view (on/off) | off |
-| Ctrl + 1~4 | Set camera 1~4 visibility (on/off) | on |
-| B | Set background image (\*2) | built-in image |
+| F | Set fullscreen mode (On/Off) | Off |
+| T | Set camera view trimming (On/Off) (\*1) | Off |
+| 1~4 | Set camera 1~4 enhanced view (On/Off) | Off |
+| Ctrl + 1~4 | Set camera 1~4 visibility (On/Off) | On |
+| B | Set background image (\*2) | Built-in image |
 | Q | Start/Stop QR Code reader for camera label (\*3) | - |
 
 - (\*1) When 1 or 3 cameras are connected, the image will be cropped and displayed as large as possible.
@@ -91,10 +91,10 @@ On Windows, you can check the detection status of the camera (receiver) with the
 
 | key | Function | Default value |
 |---|---|---|
-| A | Set AR lap timer mode (normal/loose/off) (\*1) | normal |
-| D | Set race duration time (0\~36,000s) and laps (1\~10,000) | 0s (no limit), 10 laps |
+| A | Set AR lap timer mode (Normal/Loose/Off) (\*1) | normal |
+| D | Set race duration time (0\~36,000s) and laps (1\~10,000) | 0s (No limit), 10 laps |
 | M | Set minimum lap time (1~100s) | 3s |
-| L | Set lap history during race (on/off) | off |
+| L | Set lap history during race (On/Off) | Off |
 | Space | Start/Stop race | - |
 | 5~8 | Add lap at camera 1~4 | - |
 | Ctrl + 5~8 | Delete previos lap at camera 1~4 | - |
