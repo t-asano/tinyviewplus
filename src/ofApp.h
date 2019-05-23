@@ -15,6 +15,9 @@
 #define APP_INFO        "Tiny View Plus v0.9.19"
 #define DEBUG_ENABLED   false
 #define HELP_LINES      33
+#define SCENE_INIT      0
+#define SCENE_CAMS      1
+#define SCENE_MAIN      2
 // color
 #define COLOR_YELLOW    255,215,0
 #define COLOR_WHITE     255,255,255
@@ -26,6 +29,7 @@
 #define FRAME_RATE      60
 #define MOVE_STEPS      10
 #define VERTICAL_SYNC   true
+#define SPLASH_FILE     "system/splash.png"
 #define WALL_FILE       "system/background.png"
 #define LOGO_FILE       "system/logo.png"
 #define CAMERA_MAXNUM   4
@@ -195,6 +199,18 @@ public:
 
 /* ---------- functions ---------- */
 
+// -- splash --
+void setupInit();
+void updateInit();
+void drawInit();
+// -- camera setup --
+void setupCamCheck();
+void updateCamCheck();
+void drawCamCheck();
+void keyPressedCamCheck();
+void reloadCameras();
+// -- main --
+// common
 void bindCameras();
 void initConfig();
 string getUserLocaleName();
@@ -281,6 +297,7 @@ void drawHelpBody(int);
 // overlay - message
 void initOverlayMessage();
 void setOverlayMessage(string);
+void drawOverlayMessageCore(ofxTrueTypeFontUC*, string);
 void drawOverlayMessage();
 // QR Code reader
 #ifdef TARGET_WIN32

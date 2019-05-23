@@ -8,13 +8,16 @@
 
 /* ---------- variables ---------- */
 
+// system
+int camCheckCount;
+int tvpScene;
 // view
 ofVideoGrabber grabber[CAMERA_MAXNUM];
 ofColor myColorYellow, myColorWhite, myColorLGray, myColorBGDark, myColorBGLight, myColorAlert;
 ofxTrueTypeFontUC myFontNumber, myFontLabel, myFontLap, myFontLapHist;
 ofxTrueTypeFontUC myFontNumberSub, myFontLabelSub, myFontLapSub;
 ofxTrueTypeFontUC myFontInfo1m, myFontInfo1p, myFontInfo2m;
-ofImage wallImage, logoImage;
+ofImage splashImage, wallImage, logoImage;
 float wallRatio;
 int wallDrawWidth;
 int wallDrawHeight;
@@ -26,13 +29,10 @@ bool cameraTrimEnabled;
 bool fullscreenEnabled;
 bool cameraLapHistEnabled;
 int hideCursorTimer;
-
 // osc
 ofxOscReceiver oscReceiver;
-
 // speech
 bool speechLangJpn;
-
 // AR lap timer
 ofSoundPlayer beepSound, beep3Sound, notifySound, cancelSound;
 ofSoundPlayer countSound, finishSound;
@@ -44,24 +44,21 @@ int nextSpeechRemainSecs;
 int raceDuraLaps;
 int minLapTime;
 float elapsedTime;
-
 // overlay
 ofxTrueTypeFontUC myFontOvlayP, myFontOvlayP2x, myFontOvlayM;
 int overlayMode;
 int raceResultPage;
 int ovlayMsgTimer;
 string ovlayMsgString;
-
 // QR code reader
 bool qrEnabled;
 int qrUpdCount;
 int qrCamIndex;
-
 // gamepad
 ofxJoystick gamePad[GPAD_MAX_DEVS];
 
 //--------------------------------------------------------------
-void ofApp::setup() {
+void setupInit() {
     // system
     ofSetEscapeQuitsApp(false);
     ofDirectory dir;
@@ -75,6 +72,9 @@ void ofApp::setup() {
     handleWindow = FindWindowA("ConsoleWindowClass", NULL);
     ShowWindow(handleWindow, 0);
 #endif /* TARGET_WIN32 */
+    // scene
+    tvpScene = SCENE_INIT;
+    ofResetElapsedTimeCounter();
     // screen
     ofSetWindowTitle(APP_INFO);
     ofBackground(0, 0, 0);
@@ -94,17 +94,16 @@ void ofApp::setup() {
     cameraTrimEnabled = DFLT_CAM_TRIM;
     fullscreenEnabled = DFLT_FSCR_ENBLD;
     cameraLapHistEnabled = DFLT_CAM_LAPHST;
+    // splash
+    splashImage.load(SPLASH_FILE);
     // wallpaper
     wallImage.load(WALL_FILE);
     wallRatio = wallImage.getWidth() / wallImage.getHeight();
     setWallParams();
     // logo
     logoImage.load(LOGO_FILE);
-    // camera
-    bindCameras();
     // view common
     setupColors();
-    setViewParams();
     hideCursorTimer = HIDECUR_TIME;
     // overlay
     setOverlayMode(OVLMODE_NONE);
@@ -112,6 +111,11 @@ void ofApp::setup() {
     raceResultPage = 0;
     // osc
     oscReceiver.setup(OSC_LISTEN_PORT);
+    // gamepad (GPAD_MAX_DEVS: 4)
+    gamePad[0].setup(GLFW_JOYSTICK_1);
+    gamePad[1].setup(GLFW_JOYSTICK_2);
+    gamePad[2].setup(GLFW_JOYSTICK_3);
+    gamePad[3].setup(GLFW_JOYSTICK_4);
     // AR lap timer
     arLapMode = DFLT_ARAP_MODE;
     minLapTime = DFLT_ARAP_MNLAP;
@@ -124,36 +128,121 @@ void ofApp::setup() {
     finishSound.load(SND_FINISH_FILE);
     notifySound.load(SND_NOTIFY_FILE);
     cancelSound.load(SND_CANCEL_FILE);
+    raceStarted = false;
+    elapsedTime = 0;
+    // QR reader
+    qrEnabled = false;
+    // speech
+    autoSelectSpeechLang();
+    // debug
+    if (DEBUG_ENABLED == true) {
+        generateDummyData();
+    }
+}
+
+//--------------------------------------------------------------
+void setupCamCheck() {
+    tvpScene = SCENE_CAMS;
+    cameraNum = 0;
+    camCheckCount = 0;
+    reloadCameras();
+}
+
+//--------------------------------------------------------------
+void reloadCameras() {
+    ofVideoGrabber tmpgrb;
+    // clear
+    for (int i = 0; i < cameraNum; i++) {
+        grabber[i].close();
+    }
+    // load
+    cameraNum = 0;
+    vector<ofVideoDevice> devices = tmpgrb.listDevices();
+    ofLog() << "Scanning camera... " << devices.size() << " devices";
+    for (size_t i = 0; i < devices.size(); i++) {
+        if (regex_search(devices[i].deviceName, regex("USB2.0 PC CAMERA")) == false
+            && regex_search(devices[i].deviceName, regex("GV-USB2")) == false) {
+            continue;
+        }
+        if (devices[i].bAvailable == false) {
+            continue;
+        }
+        grabber[cameraNum].setDeviceID(devices[i].id);
+        if (grabber[cameraNum].initGrabber(CAMERA_WIDTH, CAMERA_HEIGHT) == false) {
+            continue;
+        }
+        ofLog() << devices[i].id << ": " << devices[i].deviceName;
+        cameraNum++;
+        if (cameraNum == 4) {
+            break;
+        }
+    }
+    tmpgrb.close();
+}
+
+//--------------------------------------------------------------
+void setupMain() {
+    // scene
+    tvpScene = SCENE_MAIN;
+    // camera
+    cameraIdxSolo = -1;
+    cameraNumVisible = cameraNum;
+    for (int i = 0; i < cameraNum; i++) {
+        camView[i].visible = true;
+        camView[i].iconImage.load(ICON_FILE);
+        camView[i].labelString = "Pilot" + ofToString(i + 1);
+    }
+    setViewParams();
+    // AR laptimer
     for (int i = 0; i < cameraNum; i++) {
         camView[i].aruco.setUseHighlyReliableMarker(ARAP_MKR_FILE);
         camView[i].aruco.setThreaded(true);
         camView[i].aruco.setup2d(CAMERA_WIDTH, CAMERA_HEIGHT);
     }
-    raceStarted = false;
-    elapsedTime = 0;
     initRaceVars();
-    // QR reader
-    qrEnabled = false;
-    // gamepad (GPAD_MAX_DEVS: 4)
-    gamePad[0].setup(GLFW_JOYSTICK_1);
-    gamePad[1].setup(GLFW_JOYSTICK_2);
-    gamePad[2].setup(GLFW_JOYSTICK_3);
-    gamePad[3].setup(GLFW_JOYSTICK_4);
-    // debug
-    if (DEBUG_ENABLED == true) {
-        generateDummyData();
-    }
     // speech
-    autoSelectSpeechLang();
     if (speechLangJpn == true) {
         speakAny("jp", "タイニービュープラスが起動しました。");
     } else {
-        speakAny("en", "Tiny View Plus is ready.");
+        speakAny("en", "Welcome to Tiny View Plus.");
     }
 }
 
 //--------------------------------------------------------------
+void ofApp::setup() {
+    setupInit();
+}
+
+//--------------------------------------------------------------
+void updateInit() {
+    if (ofGetElapsedTimeMillis() >= 3000) {
+        setupCamCheck();
+    }
+}
+
+//--------------------------------------------------------------
+void updateCamCheck() {
+    for (int i = 0; i < cameraNum; i++) {
+        grabber[i].update();
+    }
+    if (camCheckCount > 180) {
+        reloadCameras();
+        camCheckCount = 0;
+        return;
+    }
+    camCheckCount++;
+}
+
+//--------------------------------------------------------------
 void ofApp::update() {
+    // scene
+    if (tvpScene == SCENE_INIT) {
+        updateInit();
+        return;
+    } else if (tvpScene == SCENE_CAMS) {
+        updateCamCheck();
+        return;
+    }
     // timer
     if (raceStarted == true) {
         elapsedTime = ofGetElapsedTimef();
@@ -302,6 +391,64 @@ void ofApp::update() {
     } else {
         hideCursorTimer--;
     }
+}
+
+//--------------------------------------------------------------
+void drawInit() {
+    int x = (ofGetWidth() - splashImage.getWidth()) / 2;
+    int y = (ofGetHeight() - splashImage.getHeight()) / 2;
+    int elpm = ofGetElapsedTimeMillis();
+    if (elpm >= 2700) {
+        ofSetColor((3000 - elpm) * 255 / 300);
+    } else {
+        ofSetColor(255);
+    }
+    splashImage.draw(x, y);
+}
+
+//--------------------------------------------------------------
+void drawCamCheck() {
+    int w, h , x, xoff, y;
+    string altstr;
+    bool isalt;
+    w = (ofGetWidth() / 4) - 4;
+    h = w / CAMERA_RATIO;
+    y = (ofGetHeight() / 2) - (h / 2);
+    ofSetColor(255);
+    // header
+    ofSetColor(myColorYellow);
+    drawStringBlock(&myFontOvlayP2x, "Camera Setup", 0, 1, ALIGN_CENTER, 1, OVLTXT_LINES);
+    // camera
+    if (cameraNum == 0) {
+        isalt = true;
+        altstr = "No device";
+    } else {
+        ofSetColor(myColorWhite);
+        xoff = (ofGetWidth() - ((w + 4) * cameraNum)) / 2;
+        for (int i = 0; i < cameraNum; i++) {
+            x = ((w + 4) * i) + xoff;
+            if (grabber[i].isInitialized() == true) {
+                grabber[i].draw(x, y, w, h);
+            }
+            ofNoFill();
+            ofDrawRectangle(x, y, w, h);
+            ofFill();
+        }
+        isalt = false;
+    }
+    if (camCheckCount >= 150 || camCheckCount < 30) {
+        isalt = true;
+        altstr = "Scanning camera...";
+    }
+    // alert
+    if (isalt == true) {
+        drawOverlayMessageCore(&myFontLap, altstr);
+    }
+    // footer
+    ofSetColor(myColorYellow);
+    drawStringBlock(&myFontOvlayP, "Press any key to continue",
+                    0, OVLTXT_LINES - 1, ALIGN_CENTER, 1, OVLTXT_LINES);
+    drawInfo();
 }
 
 //--------------------------------------------------------------
@@ -558,6 +705,13 @@ void drawStringWithShadow(ofxTrueTypeFontUC *font, ofColor color, string str, in
 
 //--------------------------------------------------------------
 void ofApp::draw() {
+    if (tvpScene == SCENE_INIT) {
+        drawInit();
+        return;
+    } else if (tvpScene == SCENE_CAMS) {
+        drawCamCheck();
+        return;
+    }
     // wallpaper
     ofSetColor(myColorWhite);
     wallImage.draw(0, 0, wallDrawWidth, wallDrawHeight);
@@ -718,7 +872,23 @@ void keyPressedOverlayNone(int key) {
 }
 
 //--------------------------------------------------------------
+void keyPressedCamCheck() {
+    if (cameraNum == 0) {
+        ofSystemAlertDialog("Could not find receiver");
+        ofExit();
+    }
+    setupMain();
+}
+
+//--------------------------------------------------------------
 void ofApp::keyPressed(int key) {
+    if (tvpScene == SCENE_INIT) {
+        setupCamCheck();
+        return;
+    } else if (tvpScene == SCENE_CAMS) {
+        keyPressedCamCheck();
+        return;
+    }
     switch (overlayMode) {
         case OVLMODE_HELP:
             keyPressedOverlayHelp(key);
@@ -779,6 +949,9 @@ void mouseReleasedOverlayNone(int x, int y, int button) {
 
 //--------------------------------------------------------------
 void ofApp::mouseReleased(int x, int y, int button) {
+    if (tvpScene != SCENE_MAIN) {
+        return;
+    }
     activateCursor();
     switch (overlayMode) {
         case OVLMODE_HELP:
@@ -813,10 +986,13 @@ void ofApp::mouseExited(int x, int y){
 void ofApp::windowResized(int w, int h){
     // wallpaper
     setWallParams();
-    // view
-    setViewParams();
     // overlay
     loadOverlayFont();
+    if (tvpScene != SCENE_MAIN) {
+        return;
+    }
+    // view
+    setViewParams();
 }
 
 //--------------------------------------------------------------
@@ -831,42 +1007,12 @@ void ofApp::dragEvent(ofDragInfo dragInfo){
 
 //--------------------------------------------------------------
 void ofApp::exit() {
+    if (tvpScene != SCENE_MAIN) {
+        return;
+    }
     stopRace(true);
     for (int i = 0; i < cameraNum; i++) {
         camView[i].aruco.setThreaded(false);
-    }
-}
-
-//--------------------------------------------------------------
-void bindCameras() {
-    cameraNum = 0;
-    cameraIdxSolo = -1;
-    vector<ofVideoDevice> devices = grabber[0].listDevices();
-    for (vector<ofVideoDevice>::iterator it = devices.begin(); it != devices.end(); ++it) {
-        if (regex_search(it->deviceName, regex("USB2.0 PC CAMERA")) == true
-            || regex_search(it->deviceName, regex("GV-USB2")) == true) {
-            if (cameraNum < CAMERA_MAXNUM) {
-                int idx = cameraNum;
-                grabber[idx].setDeviceID(it->id);
-                if (grabber[idx].initGrabber(CAMERA_WIDTH, CAMERA_HEIGHT) == true) {
-                    ofLogNotice() << "Pilot" << (cameraNum + 1) << ": " << it->deviceName;
-                    camView[idx].visible = true;
-                    camView[idx].iconImage.load(ICON_FILE);
-                    camView[idx].labelString = "Pilot" + ofToString(idx + 1);
-                    cameraNum++;
-                }
-            }
-            if (cameraNum == CAMERA_MAXNUM) {
-                break;
-            }
-        }
-    }
-    cameraNumVisible = cameraNum;
-    if (cameraNum == 0) {
-        ofSystemAlertDialog("No FPV receiver");
-        if (DEBUG_ENABLED == false) {
-            ofExit();
-        }
     }
 }
 
@@ -1429,7 +1575,7 @@ void initConfig() {
     nextSpeechRemainSecs = -1;
     raceStarted = false;
     initRaceVars();
-    setOverlayMessage("Configuration initialized");
+    setOverlayMessage("Settings initialized");
 }
 
 //--------------------------------------------------------------
@@ -2431,7 +2577,7 @@ void drawHelpBody(int line) {
     drawStringBlock(&myFontOvlayP, "T", blk3, line, ALIGN_CENTER, szb, szl);
     line++;
     // Set camera 1~4 enhanced view
-    value = (cameraIdxSolo == -1) ? "No Camera" : "Camera " + ofToString(cameraIdxSolo + 1);
+    value = (cameraIdxSolo == -1) ? "Disabled" : "Camera " + ofToString(cameraIdxSolo + 1);
     drawStringBlock(&myFontOvlayP, "Set Camera 1~4 Enhanced View", blk1, line, ALIGN_LEFT, szb, szl);
     drawStringBlock(&myFontOvlayP, value, blk2, line, ALIGN_CENTER, szb, szl);
     drawStringBlock(&myFontOvlayP, "1~4", blk3, line, ALIGN_CENTER, szb, szl);
@@ -2559,9 +2705,7 @@ void setOverlayMessage(string msg) {
 }
 
 //--------------------------------------------------------------
-void drawOverlayMessage() {
-    ofxTrueTypeFontUC *font = &myFontLap;
-    string msg = ovlayMsgString;
+void drawOverlayMessageCore(ofxTrueTypeFontUC *font, string msg) {
     float sw, fh, sx, sy, margin;
     margin = 10;
     sw = font->stringWidth(msg);
@@ -2574,6 +2718,13 @@ void drawOverlayMessage() {
     // message
     ofSetColor(myColorWhite);
     font->drawString(msg, sx, sy);
+}
+
+//--------------------------------------------------------------
+void drawOverlayMessage() {
+    ofxTrueTypeFontUC *font = &myFontLap;
+    string msg = ovlayMsgString;
+    drawOverlayMessageCore(font, msg);
 }
 
 #ifdef TARGET_WIN32

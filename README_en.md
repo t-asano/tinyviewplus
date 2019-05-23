@@ -51,15 +51,13 @@ If you want to build from source code, please refer to [this document](docs/HowT
 
 If receivers are not successfully detected, please try following operation.
 
-1. Exit the application.
-2. Remove all receivers.
-3. If using a USB hub, reconnect it or remove it.
-4. Connect receivers one by one at intervals of several seconds.
-5. Launch the application.
+1. Remove all receivers.
+2. If using a USB hub, reconnect it or remove it.
+3. Connect receivers one by one at intervals of several seconds.
 
-On macOS, you can check a list of cameras (receivers) with the QuickTime. If you are using a USB hub and the picture drops, please reduce the number of receivers per USB hub.
+On macOS, if you are using a USB hub and the picture drops, please reduce the number of receivers per USB hub.
 
-On Windows, you can check the detection status of the camera (receiver) with the device manager. In addition, if multiple receivers are connected to same USB hub, only one of them may operate.
+On Windows, if multiple receivers are connected to same USB hub, only one of them may operate.
 
 ### Keyboard operations
 
