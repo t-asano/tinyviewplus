@@ -193,6 +193,9 @@ void setupMain() {
         camView[i].labelString = "Pilot" + ofToString(i + 1);
     }
     setViewParams();
+    for (int i = 0; i < cameraNum; i++) {
+        camView[i].moveSteps = 1;
+    }
     // AR laptimer
     for (int i = 0; i < cameraNum; i++) {
         camView[i].aruco.setUseHighlyReliableMarker(ARAP_MKR_FILE);
@@ -413,20 +416,25 @@ void drawInit() {
 
 //--------------------------------------------------------------
 void drawCamCheck() {
-    int w, h , x, xoff, y;
-    string altstr;
+    ofxTrueTypeFontUC *font;
+    int w, h , x, xoff, y, margin;
+    string str;
     bool isalt;
+    // common
     w = (ofGetWidth() / 4) - 4;
     h = w / CAMERA_RATIO;
     y = (ofGetHeight() / 2) - (h / 2);
     ofSetColor(255);
     // header
+    font = &myFontOvlayP2x;
+    margin = font->getLineHeight();
+    str = "Camera Setup";
     ofSetColor(myColorYellow);
-    drawStringBlock(&myFontOvlayP2x, "Camera Setup", 0, 1, ALIGN_CENTER, 1, OVLTXT_LINES);
+    font->drawString(str, (ofGetWidth() - font->stringWidth(str)) / 2, y - margin);
     // camera
     if (cameraNum == 0) {
         isalt = true;
-        altstr = "No device";
+        str = "No device";
     } else {
         ofSetColor(myColorWhite);
         xoff = (ofGetWidth() - ((w + 4) * cameraNum)) / 2;
@@ -443,16 +451,18 @@ void drawCamCheck() {
     }
     if (camCheckCount >= 150 || camCheckCount < 30) {
         isalt = true;
-        altstr = "Scanning camera...";
+        str = "Scanning...";
     }
     // alert
     if (isalt == true) {
-        drawOverlayMessageCore(&myFontLap, altstr);
+        drawOverlayMessageCore(&myFontLap, str);
     }
     // footer
+    font = &myFontOvlayP;
+    str = "Press any key to continue";
     ofSetColor(myColorYellow);
-    drawStringBlock(&myFontOvlayP, "Press any key to continue",
-                    0, OVLTXT_LINES - 1, ALIGN_CENTER, 1, OVLTXT_LINES);
+    font->drawString(str, (ofGetWidth() - font->stringWidth(str)) / 2,
+                     y + h + margin + font->getLineHeight());
     drawInfo();
 }
 
@@ -686,7 +696,7 @@ void drawInfo() {
     tcolor = &myColorWhite;
     y = ofGetHeight() - 10;
     // logo
-    if (overlayMode == OVLMODE_HELP || overlayMode == OVLMODE_RCRSLT) {
+    if (tvpScene == SCENE_CAMS || overlayMode == OVLMODE_HELP || overlayMode == OVLMODE_RCRSLT) {
         ofSetColor(myColorWhite);
         logoImage.draw(0, 0);
         tcolor = &myColorLGray;
@@ -2519,7 +2529,7 @@ void drawHelp() {
     // message(2 lines)
     line = HELP_LINES - 1;
     ofSetColor(myColorYellow);
-    drawStringBlock(&myFontOvlayP, "Press Esc or H key to exit", 0, line, ALIGN_CENTER, 1, szl);
+    drawStringBlock(&myFontOvlayP, "Press H or Esc key to exit", 0, line, ALIGN_CENTER, 1, szl);
 }
 
 //--------------------------------------------------------------
