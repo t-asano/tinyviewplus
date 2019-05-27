@@ -12,7 +12,7 @@
 /* ---------- definitions ---------- */
 
 // system
-#define APP_INFO        "Tiny View Plus v0.9.20"
+#define APP_VER         "v0.9.20"
 #define DEBUG_ENABLED   false
 #define HELP_LINES      33
 #define SCENE_INIT      0
@@ -22,16 +22,16 @@
 #define COLOR_YELLOW    255,215,0
 #define COLOR_WHITE     255,255,255
 #define COLOR_LGRAY     127,127,127
-#define COLOR_BG_DARK   0,0,0,223
+#define COLOR_BG_DARK   0,0,0,239
 #define COLOR_BG_LIGHT  0,0,0,31
 #define COLOR_ALERT     255,0,0
 // view
 #define FRAME_RATE      60
 #define MOVE_STEPS      10
 #define VERTICAL_SYNC   true
-#define SPLASH_FILE     "system/splash.png"
+#define LOGO_LARGE_FILE "system/logo_large.png"
+#define LOGO_SMALL_FILE "system/logo_small.png"
 #define WALL_FILE       "system/background.png"
-#define LOGO_FILE       "system/logo.png"
 #define CAMERA_MAXNUM   4
 #define CAMERA_WIDTH    640
 #define CAMERA_HEIGHT   480

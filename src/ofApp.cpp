@@ -17,7 +17,7 @@ ofColor myColorYellow, myColorWhite, myColorLGray, myColorBGDark, myColorBGLight
 ofxTrueTypeFontUC myFontNumber, myFontLabel, myFontLap, myFontLapHist;
 ofxTrueTypeFontUC myFontNumberSub, myFontLabelSub, myFontLapSub;
 ofxTrueTypeFontUC myFontInfo1m, myFontInfo1p, myFontInfo2m;
-ofImage splashImage, wallImage, logoImage;
+ofImage wallImage, logoLargeImage, logoSmallImage;
 float wallRatio;
 int wallDrawWidth;
 int wallDrawHeight;
@@ -76,7 +76,7 @@ void setupInit() {
     tvpScene = SCENE_INIT;
     ofResetElapsedTimeCounter();
     // screen
-    ofSetWindowTitle(APP_INFO);
+    ofSetWindowTitle("Tiny View Plus " + ofToString(APP_VER));
     ofBackground(0, 0, 0);
     ofSetVerticalSync(VERTICAL_SYNC);
     ofSetFrameRate(FRAME_RATE);
@@ -95,13 +95,13 @@ void setupInit() {
     fullscreenEnabled = DFLT_FSCR_ENBLD;
     cameraLapHistEnabled = DFLT_CAM_LAPHST;
     // splash
-    splashImage.load(SPLASH_FILE);
+    logoLargeImage.load(LOGO_LARGE_FILE);
     // wallpaper
     wallImage.load(WALL_FILE);
     wallRatio = wallImage.getWidth() / wallImage.getHeight();
     setWallParams();
     // logo
-    logoImage.load(LOGO_FILE);
+    logoSmallImage.load(LOGO_SMALL_FILE);
     // view common
     setupColors();
     hideCursorTimer = HIDECUR_TIME;
@@ -134,10 +134,6 @@ void setupInit() {
     qrEnabled = false;
     // speech
     autoSelectSpeechLang();
-    // debug
-    if (DEBUG_ENABLED == true) {
-        generateDummyData();
-    }
 }
 
 //--------------------------------------------------------------
@@ -213,6 +209,10 @@ void setupMain() {
 #endif /* TARGET_WIN32 */
     } else {
         speakAny("en", "Welcome to Tiny View Plus.");
+    }
+    // debug
+    if (DEBUG_ENABLED == true) {
+        generateDummyData();
     }
 }
 
@@ -403,15 +403,15 @@ void ofApp::update() {
 
 //--------------------------------------------------------------
 void drawInit() {
-    int x = (ofGetWidth() - splashImage.getWidth()) / 2;
-    int y = (ofGetHeight() - splashImage.getHeight()) / 2;
+    int x = (ofGetWidth() - logoLargeImage.getWidth()) / 2;
+    int y = (ofGetHeight() - logoLargeImage.getHeight()) / 2;
     int elpm = ofGetElapsedTimeMillis();
     if (elpm >= 2700) {
         ofSetColor((3000 - elpm) * 255 / 300);
     } else {
         ofSetColor(255);
     }
-    splashImage.draw(x, y);
+    logoLargeImage.draw(x, y);
 }
 
 //--------------------------------------------------------------
@@ -432,20 +432,22 @@ void drawCamCheck() {
     ofSetColor(myColorYellow);
     font->drawString(str, (ofGetWidth() - font->stringWidth(str)) / 2, y - margin);
     // camera
+    ofNoFill();
+    ofSetColor(myColorLGray);
+    ofDrawRectangle(-2, y - 2, ofGetWidth() + 4, h + 4);
     if (cameraNum == 0) {
         isalt = true;
         str = "No device";
     } else {
         ofSetColor(myColorWhite);
         xoff = (ofGetWidth() - ((w + 4) * cameraNum)) / 2;
+        ofNoFill();
         for (int i = 0; i < cameraNum; i++) {
             x = ((w + 4) * i) + xoff;
             if (grabber[i].isInitialized() == true) {
                 grabber[i].draw(x, y, w, h);
             }
-            ofNoFill();
             ofDrawRectangle(x, y, w, h);
-            ofFill();
         }
         isalt = false;
     }
@@ -453,6 +455,7 @@ void drawCamCheck() {
         isalt = true;
         str = "Scanning...";
     }
+    ofFill();
     // alert
     if (isalt == true) {
         drawOverlayMessageCore(&myFontLap, str);
@@ -693,16 +696,15 @@ void drawInfo() {
     string str;
     int x, y;
 
-    tcolor = &myColorWhite;
     y = ofGetHeight() - 10;
     // logo
     if (tvpScene == SCENE_CAMS || overlayMode == OVLMODE_HELP || overlayMode == OVLMODE_RCRSLT) {
         ofSetColor(myColorWhite);
-        logoImage.draw(0, 0);
-        tcolor = &myColorLGray;
+        logoSmallImage.draw(0, 0);
     }
+    tcolor = &myColorLGray;
     // appinfo
-    drawStringWithShadow(&myFontInfo1m, *tcolor, APP_INFO, 10, y);
+    drawStringWithShadow(&myFontInfo1m, *tcolor, APP_VER, 10, y);
     // date/time
     str = ofGetTimestampString("%F %T");
     x = ofGetWidth() - (myFontInfo1m.stringWidth(str) + 10);
@@ -770,8 +772,16 @@ void ofApp::draw() {
     drawInfo();
     // debug
     if (DEBUG_ENABLED == true) {
+        // fps
         ofSetColor(myColorYellow);
-        ofDrawBitmapString("FPS: " + ofToString(ofGetFrameRate()), ofGetWidth() - 100, 10);
+        ofDrawBitmapString("FPS: " + ofToString(ofGetFrameRate()), 10, 60);
+        // window
+        ofDrawBitmapString("Screen size: "
+                           + ofToString(ofGetScreenWidth())
+                           + ", " + ofToString(ofGetScreenHeight()), 10, 70);
+        ofDrawBitmapString("Window size: "
+                           + ofToString(ofGetWidth())
+                           + ", " + ofToString(ofGetHeight()), 10, 80);
     }
 }
 
@@ -890,7 +900,9 @@ void keyPressedOverlayNone(int key) {
 void keyPressedCamCheck() {
     if (cameraNum == 0) {
         ofSystemAlertDialog("Could not find receiver");
-        ofExit();
+        if (DEBUG_ENABLED == false) {
+            ofExit();
+        }
     }
     setupMain();
 }
