@@ -65,7 +65,7 @@ On Windows, if multiple receivers are connected to same USB hub, only one of the
 
 | key | Function | Default value |
 |---|---|---|
-| N | Set speech language (Japanese/English) | same as system locale |
+| N | Set speech language (Japanese/English) | Same as system locale |
 | H | Display help (aka "Settings/Commands") | - |
 | I | Initialize settings | - |
 | .(period) | Exit application | - |
@@ -89,7 +89,7 @@ On Windows, if multiple receivers are connected to same USB hub, only one of the
 
 | key | Function | Default value |
 |---|---|---|
-| A | Set AR lap timer mode (Normal/Loose/Off) (\*1) | normal |
+| A | Set AR lap timer mode (Normal/Loose/Off) (\*1) | Normal |
 | D | Set race duration time (0\~36,000s) and laps (1\~10,000) | 0s (No limit), 10 laps |
 | M | Set minimum lap time (1~100s) | 3s |
 | G | Set for ignoring first lap (On/Off) (\*2) | Off |
