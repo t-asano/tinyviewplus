@@ -178,7 +178,8 @@ void reloadCameras() {
 
 //--------------------------------------------------------------
 void setupMain() {
-    // scene
+    // system
+    ofSetFullscreen(fullscreenEnabled);
     tvpScene = SCENE_MAIN;
     // camera
     cameraIdxSolo = -1;

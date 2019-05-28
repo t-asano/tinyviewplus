@@ -63,7 +63,7 @@
 #define LAP_MARGIN_Y    80
 #define LAPHIST_HEIGHT  15
 #define DFLT_CAM_TRIM   false
-#define DFLT_FSCR_ENBLD false
+#define DFLT_FSCR_ENBLD true
 #define DFLT_CAM_LAPHST false
 #define ALIGN_LEFT      0
 #define ALIGN_CENTER    1
