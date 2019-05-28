@@ -94,8 +94,8 @@ On Windows, if multiple receivers are connected to same USB hub, only one of the
 | M | Set minimum lap time (1~100s) | 3s |
 | L | Set lap history during race (On/Off) | Off |
 | Space | Start/Stop race | - |
-| 5~8 | Add lap at camera 1~4 | - |
-| Ctrl + 5~8 | Delete previos lap at camera 1~4 | - |
+| 5~8,Z,/ | Add lap at camera 1~4,1,3 | - |
+| Ctrl + 5~8,Z,/ | Delete previos lap at camera 1~4,1,3 | - |
 | R | Display race results (\*2) | - |
 
 - (\*1) In loose mode, lap time will be measured even if the drone passes outside the gate.
