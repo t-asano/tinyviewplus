@@ -13,7 +13,7 @@ int camCheckCount;
 int tvpScene;
 // view
 ofVideoGrabber grabber[CAMERA_MAXNUM];
-ofColor myColorYellow, myColorWhite, myColorLGray, myColorBGDark, myColorBGLight, myColorAlert;
+ofColor myColorYellow, myColorWhite, myColorLGray, myColorDGray, myColorBGDark, myColorBGLight, myColorAlert;
 ofxTrueTypeFontUC myFontNumber, myFontLabel, myFontLap, myFontLapHist;
 ofxTrueTypeFontUC myFontNumberSub, myFontLabelSub, myFontLapSub;
 ofxTrueTypeFontUC myFontInfo1m, myFontInfo1p, myFontInfo2m;
@@ -44,6 +44,7 @@ int nextSpeechRemainSecs;
 int raceDuraLaps;
 int minLapTime;
 float elapsedTime;
+bool ignoreFirstLap;
 // overlay
 ofxTrueTypeFontUC myFontOvlayP, myFontOvlayP2x, myFontOvlayM;
 int overlayMode;
@@ -122,6 +123,7 @@ void setupInit() {
     raceDuraSecs = DFLT_ARAP_RSECS;
     nextSpeechRemainSecs = -1;
     raceDuraLaps = DFLT_ARAP_RLAPS;
+    ignoreFirstLap = DFLT_ARAP_IGNFS;
     beepSound.load(SND_BEEP_FILE);
     beep3Sound.load(SND_BEEP3_FILE);
     countSound.load(SND_COUNT_FILE);
@@ -317,8 +319,10 @@ void ofApp::update() {
                     // already finished
                     continue;
                 }
-                if (lap < minLapTime) {
-                    // ignore too short lap
+                if ((ignoreFirstLap == true && camView[i].totalLaps > 0 && lap < minLapTime)
+                    || (ignoreFirstLap == false && lap < minLapTime)
+                    || lap < 0) {
+                    // ignore short/negative lap
                     camView[i].foundMarkerNum = 0;
                     camView[i].foundValidMarkerNum = 0;
                     camView[i].enoughMarkers = false;
@@ -572,7 +576,7 @@ void drawCameraLapTime(int idx, bool isSub) {
         || camView[i].totalLaps == raceDuraLaps
         || (raceDuraSecs > 0 && (camView[i].prevElapsedSec - WATCH_COUNT_SEC) >= raceDuraSecs)) {
         // race/laps finished
-        sout = "Laps: " + ofToString(laps);
+        sout = "Laps: " + ofToString((ignoreFirstLap == true && laps > 0) ? laps - 1 : laps);
         if (isSub) {
             drawStringWithShadow(&myFontLapSub, myColorWhite, sout, camView[i].lapPosX, camView[i].lapPosY);
         } else {
@@ -588,7 +592,12 @@ void drawCameraLapTime(int idx, bool isSub) {
                 drawStringWithShadow(&myFontLap, myColorWhite,
                                      sout, camView[i].lapPosX, camView[i].lapPosY + LAP_HEIGHT + 10);
             }
-            sout = "TotalTime: " + getWatchString(camView[i].prevElapsedSec - WATCH_COUNT_SEC);
+            sout = "TotalTime: ";
+            if (ignoreFirstLap == true) {
+                sout += getWatchString(camView[i].prevElapsedSec - camView[i].lapHistElpTime[0]);
+            } else {
+                sout += getWatchString(camView[i].prevElapsedSec - WATCH_COUNT_SEC);
+            }
             if (isSub) {
                 drawStringWithShadow(&myFontLapSub, myColorWhite,
                                      sout, camView[i].lapPosX, camView[i].lapPosY + LAP_HEIGHT + 10);
@@ -599,7 +608,8 @@ void drawCameraLapTime(int idx, bool isSub) {
         }
     } else {
         // not finished
-        sout = "Lap" + ofToString(laps) + ": " + getLapStr(camView[i].lastLapTime) + "s";
+        sout = "Lap" + ofToString(ignoreFirstLap == true ? laps - 1 : laps) + ": ";
+        sout += getLapStr(camView[i].lastLapTime) + "s";
         if (isSub) {
             drawStringWithShadow(&myFontLapSub, myColorWhite,
                                  sout, camView[i].lapPosX, camView[i].lapPosY);
@@ -627,9 +637,8 @@ void drawCameraLapHistory(int camidx) {
             break;
         }
         lap = camView[camidx].lapHistLapTime[lapidx];
-        text = ofToString(lapidx + 1) + ": " + getLapStr(lap) + "s";
-        drawStringWithShadow(&myFontLapHist, myColorWhite,
-                             text, camView[camidx].lapPosX, posy);
+        text = ofToString((ignoreFirstLap == true) ? lapidx : lapidx + 1) + ": " + getLapStr(lap) + "s";
+        drawStringWithShadow(&myFontLapHist, myColorWhite, text, camView[camidx].lapPosX, posy);
     }
 }
 
@@ -891,6 +900,8 @@ void keyPressedOverlayNone(int key) {
             toggleSoloTrim();
         } else if (key == 'l' || key == 'L') {
             toggleLapHistory();
+        } else if (key == 'g' || key == 'G') {
+            toggleIgnoreFirstLap();
         } else if (key == '.') {
             ofExit();
         }
@@ -1135,6 +1146,7 @@ void setupColors() {
     myColorYellow = ofColor(COLOR_YELLOW);
     myColorWhite = ofColor(COLOR_WHITE);
     myColorLGray = ofColor(COLOR_LGRAY);
+    myColorDGray = ofColor(COLOR_DGRAY);
     myColorBGDark = ofColor(COLOR_BG_DARK);
     myColorBGLight = ofColor(COLOR_BG_LIGHT);
     myColorAlert = ofColor(COLOR_ALERT);
@@ -1600,6 +1612,7 @@ void initConfig() {
     minLapTime = DFLT_ARAP_MNLAP;
     raceDuraLaps = DFLT_ARAP_RLAPS;
     raceDuraSecs = DFLT_ARAP_RSECS;
+    ignoreFirstLap = DFLT_ARAP_IGNFS;
     nextSpeechRemainSecs = -1;
     raceStarted = false;
     initRaceVars();
@@ -1728,9 +1741,9 @@ void recvOscCameraFloat(int camid, string method, float argfloat) {
 void toggleSpeechLang() {
     speechLangJpn = !speechLangJpn;
     if (speechLangJpn == true) {
-        setOverlayMessage("Speech language: Japanese");
+        setOverlayMessage("Speech Language: Japanese");
     } else {
-        setOverlayMessage("Speech language: English");
+        setOverlayMessage("Speech Language: English");
     }
 }
 
@@ -2017,6 +2030,9 @@ float getBestLap(int camidx) {
         return blap;
     }
     for (int i = 0; i < camView[camidx].totalLaps; i++) {
+        if (i == 0 && ignoreFirstLap == true) {
+            continue;
+        }
         float t = camView[camidx].lapHistLapTime[i];
         if (blap == 0) {
             blap = t;
@@ -2059,7 +2075,9 @@ void pushLapRecord(int cid, float elpsec) {
         // already finished
         return;
     }
-    if (lap < minLapTime) {
+    if ((ignoreFirstLap == true && camView[i].totalLaps > 0 && lap < minLapTime)
+        || (ignoreFirstLap == false && lap < minLapTime)
+        || lap < 0) {
         // ignore short/negative lap
         return;
     }
@@ -2102,7 +2120,9 @@ void popLapRecord(int cid) {
     }
     int newlaps = oldlaps - 1;
     cancelSound.play();
-    setOverlayMessage(camView[i].labelString + " Lap" + ofToString(oldlaps) + " canceled");
+    setOverlayMessage(camView[i].labelString + " Lap"
+                      + ofToString(ignoreFirstLap == true ? oldlaps - 1 : oldlaps)
+                      + " canceled");
     camView[i].lapHistName[oldlaps - 1] = "";
     camView[i].lapHistLapTime[oldlaps - 1] = 0;
     camView[i].lapHistElpTime[oldlaps - 1] = 0;
@@ -2140,11 +2160,19 @@ void fwriteRaceResult() {
     strsumm += "Name" + sep  + "Laps" + sep + "BestLap" + sep + "TotalTime" + newline;
     // - body
     for (int i = 0; i < cameraNum; i++) {
-        float blap = getBestLap(i);
-        float total = camView[i].prevElapsedSec - WATCH_COUNT_SEC;
         string pilot = (camView[i].labelString == "") ? ("Pilot" + ofToString(i + 1)) : camView[i].labelString;
+        int lps = camView[i].totalLaps;
+        float blap = getBestLap(i);
+        float total;
+        // ignore first lap
+        if (ignoreFirstLap == true) {
+            lps--;
+            total = camView[i].prevElapsedSec - camView[i].lapHistElpTime[0];
+        } else {
+            total = camView[i].prevElapsedSec - WATCH_COUNT_SEC;
+        }
         strsumm += pilot + sep; // PILOT
-        strsumm += ofToString(camView[i].totalLaps) + sep; // LAPS
+        strsumm += ((lps < 0) ? "-" : ofToString(lps)) + sep; // LAPS
         strsumm += ((blap == 0) ? "-.-" : getLapStr(blap)) + sep; // BESTLAP
         strsumm += ((total <= 0) ? "-:-.-" : getWatchString(total)) + sep; // TOTAL
         strsumm += newline;
@@ -2164,7 +2192,7 @@ void fwriteRaceResult() {
     maxlap = getMaxLaps();
     // - body
     for (int lap = 1; lap <= maxlap; lap++) {
-        strlapb += ofToString(lap) + sep;
+        strlapb += ofToString(ignoreFirstLap == true ? (lap - 1) : lap) + sep;
         for (int i = 0; i < cameraNum; i++) {
             if (lap > camView[i].totalLaps) {
                 // laptime
@@ -2173,11 +2201,17 @@ void fwriteRaceResult() {
                 strlapb += sep;
                 strlapb += "-";
             } else {
+                float elp;
                 // laptime
                 strlapb += getLapStr(camView[i].lapHistLapTime[lap - 1]);
                 // totaltime
+                if (ignoreFirstLap == true) {
+                    elp = camView[i].lapHistElpTime[lap - 1] - camView[i].lapHistElpTime[0];
+                } else {
+                    elp = camView[i].lapHistElpTime[lap - 1] - WATCH_COUNT_SEC;
+                }
                 strlapb += sep;
-                strlapb += getWatchString(camView[i].lapHistElpTime[lap - 1] - WATCH_COUNT_SEC);
+                strlapb += (elp < 0) ? "-" : getWatchString(elp);
             }
             if (i < (cameraNum - 1)) {
                 strlapb += sep;
@@ -2197,15 +2231,15 @@ void toggleARLap() {
     switch (arLapMode) {
         case ARAP_MODE_NORM:
             arLapMode = ARAP_MODE_LOOSE;
-            setOverlayMessage("AR lap timer mode: loose");
+            setOverlayMessage("AR Lap Timer Mode: Loose");
             break;
         case ARAP_MODE_LOOSE:
             arLapMode = ARAP_MODE_OFF;
-            setOverlayMessage("AR lap timer mode: off");
+            setOverlayMessage("AR Lap Timer Mode: Off");
             break;
         case ARAP_MODE_OFF:
             arLapMode = ARAP_MODE_NORM;
-            setOverlayMessage("AR lap timer mode: normal");
+            setOverlayMessage("AR Lap Timer Mode: Normal");
             break;
     }
 }
@@ -2216,7 +2250,7 @@ void changeMinLap() {
     int lap;
     activateCursor();
     str = ofToString(minLapTime);
-    str = ofSystemTextBoxDialog("Min. lap time (1~" + ofToString(ARAP_MAX_MNLAP) + "sec):", str);
+    str = ofSystemTextBoxDialog("Minimum Lap Time (1~" + ofToString(ARAP_MAX_MNLAP) + "sec):", str);
     lap = (str == "") ? 0 : ofToInt(str);
     if (lap > 0 && lap <= ARAP_MAX_MNLAP) {
         minLapTime = lap;
@@ -2234,7 +2268,7 @@ void changeRaceDuration() {
     while (true) {
         int sec;
         str = (raceDuraSecs == 0) ? "" : ofToString(raceDuraSecs);
-        str = ofSystemTextBoxDialog("Race time (0~" + ofToString(ARAP_MAX_RSECS) + " secs):", str);
+        str = ofSystemTextBoxDialog("Race Time (0~" + ofToString(ARAP_MAX_RSECS) + " secs):", str);
         sec = (str == "") ? 0 : ofToInt(str);
         if (sec <= 0) {
             // no limit
@@ -2260,7 +2294,7 @@ void changeRaceDuration() {
     while (true) {
         int laps;
         str = (raceDuraLaps == 0) ? "" : ofToString(raceDuraLaps);
-        str = ofSystemTextBoxDialog("Race laps (1~"  + ofToString(ARAP_MAX_RLAPS) + "):", str);
+        str = ofSystemTextBoxDialog("Race Laps (1~"  + ofToString(ARAP_MAX_RLAPS) + "):", str);
         laps = (str == "") ? 0 : ofToInt(str);
         if (laps > 0 && laps <= ARAP_MAX_RLAPS) {
             raceDuraLaps = laps;
@@ -2269,6 +2303,16 @@ void changeRaceDuration() {
             ofSystemAlertDialog("Please enter 1~" + ofToString(ARAP_MAX_RLAPS));
             // -> retry
         }
+    }
+}
+
+//--------------------------------------------------------------
+void toggleIgnoreFirstLap() {
+    ignoreFirstLap = !ignoreFirstLap;
+    if (ignoreFirstLap == true) {
+        setOverlayMessage("Ignore First Lap: On");
+    } else {
+        setOverlayMessage("Ignore First Lap: Off");
     }
 }
 
@@ -2352,6 +2396,24 @@ void drawLineBlock(int xblock1, int xblock2, int yline, int blocks, int lines) {
     bh = (ofGetHeight() - (margin * 2)) / lines;
     yo = (ofGetHeight() - (margin * 2)) % lines / 2;
     y = (bh * yline) + (bh * 0.5) + margin - 1 + yo;
+    h = 2;
+
+    ofDrawRectangle(x, y, w, h);
+}
+
+//--------------------------------------------------------------
+void drawULineBlock(int xblock1, int xblock2, int yline, int blocks, int lines) {
+    int bw, bh, x, y, w, h, xo, yo;
+    int margin = OVLTXT_MARG;
+
+    bw = (ofGetWidth() - (margin * 2)) / blocks;
+    xo = (ofGetWidth() - (margin * 2)) % blocks / 2;
+    x = (bw * xblock1) + margin + xo;
+    w = bw * (xblock2 - xblock1 + 1);
+
+    bh = (ofGetHeight() - (margin * 2)) / lines;
+    yo = (ofGetHeight() - (margin * 2)) % lines / 2;
+    y = (bh * yline) + margin - 1 + yo;
     h = 2;
 
     ofDrawRectangle(x, y, w, h);
@@ -2445,7 +2507,7 @@ void drawRaceResult(int pageidx) {
     drawStringBlock(&myFontOvlayP, "Name", 1, line, ALIGN_CENTER, szb, szl);
     drawStringBlock(&myFontOvlayP, "Laps", 2, line, ALIGN_CENTER, szb, szl);
     drawStringBlock(&myFontOvlayP, "BestLap", 3, line, ALIGN_CENTER, szb, szl);
-    drawStringBlock(&myFontOvlayP, "Total", 4, line, ALIGN_CENTER, szb, szl);
+    drawStringBlock(&myFontOvlayP, "TotalTime", 4, line, ALIGN_CENTER, szb, szl);
     line += 1;
     ofSetColor(myColorYellow);
     drawLineBlock(1, 4, line, szb, szl);
@@ -2454,20 +2516,29 @@ void drawRaceResult(int pageidx) {
     for (int i = 0; i < cameraNum; i++) {
         string str;
         float fval;
+        int lps;
         // _newline
         line += 1;
         // pilot
         str = (camView[i].labelString == "") ? ("Pilot" + ofToString(i + 1)) : camView[i].labelString;
         drawStringBlock(&myFontOvlayP, str, 1, line, ALIGN_CENTER, szb, szl);
         // laps
-        str = ofToString(camView[i].totalLaps);
+        lps = camView[i].totalLaps;
+        if (ignoreFirstLap == true) {
+            lps--;
+        }
+        str = (lps < 0) ? "-" : ofToString(lps);
         drawStringBlock(&myFontOvlayM, str, 2, line, ALIGN_CENTER, szb, szl);
         // bestlap
         fval = getBestLap(i);
         str = (fval == 0) ? "-.-" : getLapStr(fval);
         drawStringBlock(&myFontOvlayM, str, 3, line, ALIGN_CENTER, szb, szl);
-        // time
-        fval = camView[i].prevElapsedSec - WATCH_COUNT_SEC;
+        // totaltime
+        if (ignoreFirstLap == true) {
+            fval = camView[i].prevElapsedSec - camView[i].lapHistElpTime[0];
+        } else {
+            fval = camView[i].prevElapsedSec - WATCH_COUNT_SEC;
+        }
         str = (fval <= 0) ? "-:-.-" : getWatchString(fval);
         drawStringBlock(&myFontOvlayM, str, 4, line, ALIGN_CENTER, szb, szl);
     }
@@ -2492,8 +2563,12 @@ void drawRaceResult(int pageidx) {
         if ((lapidx + 1) > lnum) {
             break;
         }
+        // lap#
         line += 1;
-        drawStringBlock(&myFontOvlayM, ofToString(lapidx + 1), xoff, line, ALIGN_CENTER, szb, szl);
+        drawStringBlock(&myFontOvlayM,
+                        ofToString(ignoreFirstLap == true ? lapidx : lapidx + 1),
+                        xoff, line, ALIGN_CENTER, szb, szl);
+        // laptime
         for (int i = 0; i < cameraNum; i++) {
             string str;
             if ((lapidx + 1) > camView[i].totalLaps) {
@@ -2567,22 +2642,34 @@ void drawHelpBody(int line) {
     line++;
     ofSetColor(myColorWhite);
     // Set speech language
+    ofSetColor(myColorDGray);
+    drawULineBlock(blk1, blk4, line + 1, szb, szl);
+    ofSetColor(myColorWhite);
     value = speechLangJpn ? "Japanese" : "English";
     drawStringBlock(&myFontOvlayP, "Set Speech Language", blk1, line, ALIGN_LEFT, szb, szl);
     drawStringBlock(&myFontOvlayP, value, blk2, line, ALIGN_CENTER, szb, szl);
     drawStringBlock(&myFontOvlayP, "N", blk3, line, ALIGN_CENTER, szb, szl);
     line++;
     // Display help
+    ofSetColor(myColorDGray);
+    drawULineBlock(blk1, blk4, line + 1, szb, szl);
+    ofSetColor(myColorWhite);
     drawStringBlock(&myFontOvlayP, "Display Help (Settings/Commands)", blk1, line, ALIGN_LEFT, szb, szl);
     drawStringBlock(&myFontOvlayP, "-", blk2, line, ALIGN_CENTER, szb, szl);
     drawStringBlock(&myFontOvlayP, "H", blk3, line, ALIGN_CENTER, szb, szl);
     line++;
     // Initialize settings
+    ofSetColor(myColorDGray);
+    drawULineBlock(blk1, blk4, line + 1, szb, szl);
+    ofSetColor(myColorWhite);
     drawStringBlock(&myFontOvlayP, "Initialize Settings", blk1, line, ALIGN_LEFT, szb, szl);
     drawStringBlock(&myFontOvlayP, "-", blk2, line, ALIGN_CENTER, szb, szl);
     drawStringBlock(&myFontOvlayP, "I", blk3, line, ALIGN_CENTER, szb, szl);
     line++;
     // Exit application
+    ofSetColor(myColorDGray);
+    drawULineBlock(blk1, blk4, line + 1, szb, szl);
+    ofSetColor(myColorWhite);
     drawStringBlock(&myFontOvlayP, "Exit Application", blk1, line, ALIGN_LEFT, szb, szl);
     drawStringBlock(&myFontOvlayP, "-", blk2, line, ALIGN_CENTER, szb, szl);
     drawStringBlock(&myFontOvlayP, ".(period)", blk3, line, ALIGN_CENTER, szb, szl);
@@ -2599,24 +2686,36 @@ void drawHelpBody(int line) {
     line++;
     ofSetColor(myColorWhite);
     // Set fullscreen mode
+    ofSetColor(myColorDGray);
+    drawULineBlock(blk1, blk4, line + 1, szb, szl);
+    ofSetColor(myColorWhite);
     value = fullscreenEnabled ? "On" : "Off";
     drawStringBlock(&myFontOvlayP, "Set Fullscreen Mode", blk1, line, ALIGN_LEFT, szb, szl);
     drawStringBlock(&myFontOvlayP, value, blk2, line, ALIGN_CENTER, szb, szl);
     drawStringBlock(&myFontOvlayP, "F", blk3, line, ALIGN_CENTER, szb, szl);
     line++;
     // Set camera view trimming
+    ofSetColor(myColorDGray);
+    drawULineBlock(blk1, blk4, line + 1, szb, szl);
+    ofSetColor(myColorWhite);
     value = cameraTrimEnabled ? "On" : "Off";
     drawStringBlock(&myFontOvlayP, "Set Camera View Trimming", blk1, line, ALIGN_LEFT, szb, szl);
     drawStringBlock(&myFontOvlayP, value, blk2, line, ALIGN_CENTER, szb, szl);
     drawStringBlock(&myFontOvlayP, "T", blk3, line, ALIGN_CENTER, szb, szl);
     line++;
     // Set camera 1~4 enhanced view
+    ofSetColor(myColorDGray);
+    drawULineBlock(blk1, blk4, line + 1, szb, szl);
+    ofSetColor(myColorWhite);
     value = (cameraIdxSolo == -1) ? "Disabled" : "Camera " + ofToString(cameraIdxSolo + 1);
     drawStringBlock(&myFontOvlayP, "Set Camera 1~4 Enhanced View", blk1, line, ALIGN_LEFT, szb, szl);
     drawStringBlock(&myFontOvlayP, value, blk2, line, ALIGN_CENTER, szb, szl);
     drawStringBlock(&myFontOvlayP, "1~4", blk3, line, ALIGN_CENTER, szb, szl);
     line++;
     // Set camera 1~4 visibility
+    ofSetColor(myColorDGray);
+    drawULineBlock(blk1, blk4, line + 1, szb, szl);
+    ofSetColor(myColorWhite);
     value = "";
     for (int i = 0; i < CAMERA_MAXNUM; i++) {
         if (i > 0) {
@@ -2633,6 +2732,9 @@ void drawHelpBody(int line) {
     drawStringBlock(&myFontOvlayP, "Ctrl + 1~4", blk3, line, ALIGN_CENTER, szb, szl);
     line++;
     // Set camera label
+    ofSetColor(myColorDGray);
+    drawULineBlock(blk1, blk4, line + 1, szb, szl);
+    ofSetColor(myColorWhite);
     value = "";
     for (int i = 0; i < CAMERA_MAXNUM; i++) {
         if (i > 0) {
@@ -2649,16 +2751,25 @@ void drawHelpBody(int line) {
     drawStringBlock(&myFontOvlayP, "Click Label", blk3, line, ALIGN_CENTER, szb, szl);
     line++;
     // Set camera icon
+    ofSetColor(myColorDGray);
+    drawULineBlock(blk1, blk4, line + 1, szb, szl);
+    ofSetColor(myColorWhite);
     drawStringBlock(&myFontOvlayP, "Set Camera Icon", blk1, line, ALIGN_LEFT, szb, szl);
     drawStringBlock(&myFontOvlayP, "-", blk2, line, ALIGN_CENTER, szb, szl);
     drawStringBlock(&myFontOvlayP, "Click Icon", blk3, line, ALIGN_CENTER, szb, szl);
     line++;
     // Set background image
+    ofSetColor(myColorDGray);
+    drawULineBlock(blk1, blk4, line + 1, szb, szl);
+    ofSetColor(myColorWhite);
     drawStringBlock(&myFontOvlayP, "Set Background Image", blk1, line, ALIGN_LEFT, szb, szl);
     drawStringBlock(&myFontOvlayP, "-", blk2, line, ALIGN_CENTER, szb, szl);
     drawStringBlock(&myFontOvlayP, "B", blk3, line, ALIGN_CENTER, szb, szl);
     line++;
     // Start/Stop QR Code reader for labal
+    ofSetColor(myColorDGray);
+    drawULineBlock(blk1, blk4, line + 1, szb, szl);
+    ofSetColor(myColorWhite);
     drawStringBlock(&myFontOvlayP, "Start/Stop QR Code Reader for Label", blk1, line, ALIGN_LEFT, szb, szl);
     drawStringBlock(&myFontOvlayP, "-", blk2, line, ALIGN_CENTER, szb, szl);
     drawStringBlock(&myFontOvlayP, "Q", blk3, line, ALIGN_CENTER, szb, szl);
@@ -2676,12 +2787,18 @@ void drawHelpBody(int line) {
     line++;
     ofSetColor(myColorWhite);
     // Set AR lap timer mode
+    ofSetColor(myColorDGray);
+    drawULineBlock(blk1, blk4, line + 1, szb, szl);
+    ofSetColor(myColorWhite);
     value = (arLapMode == ARAP_MODE_NORM) ? "Normal" : ((arLapMode == ARAP_MODE_LOOSE) ? "Loose" : "Off");
     drawStringBlock(&myFontOvlayP, "Set AR Lap Timer Mode", blk1, line, ALIGN_LEFT, szb, szl);
     drawStringBlock(&myFontOvlayP, value, blk2, line, ALIGN_CENTER, szb, szl);
     drawStringBlock(&myFontOvlayP, "A", blk3, line, ALIGN_CENTER, szb, szl);
     line++;
     // Set race duration (time, laps)
+    ofSetColor(myColorDGray);
+    drawULineBlock(blk1, blk4, line + 1, szb, szl);
+    ofSetColor(myColorWhite);
     value = (raceDuraSecs <= 0) ? "No Limit" : (ofToString(raceDuraSecs) + "s");
     value += ", " + ofToString(raceDuraLaps) + " laps";
     drawStringBlock(&myFontOvlayP, "Set Race Duration (Time, Laps)", blk1, line, ALIGN_LEFT, szb, szl);
@@ -2689,33 +2806,60 @@ void drawHelpBody(int line) {
     drawStringBlock(&myFontOvlayP, "D", blk3, line, ALIGN_CENTER, szb, szl);
     line++;
     // Set minimum lap time
+    ofSetColor(myColorDGray);
+    drawULineBlock(blk1, blk4, line + 1, szb, szl);
+    ofSetColor(myColorWhite);
     value = ofToString(minLapTime) + "s";
     drawStringBlock(&myFontOvlayP, "Set Minimum Lap Time", blk1, line, ALIGN_LEFT, szb, szl);
     drawStringBlock(&myFontOvlayP, value, blk2, line, ALIGN_CENTER, szb, szl);
     drawStringBlock(&myFontOvlayP, "M", blk3, line, ALIGN_CENTER, szb, szl);
     line++;
+    // Set for ignoring first lap
+    ofSetColor(myColorDGray);
+    drawULineBlock(blk1, blk4, line + 1, szb, szl);
+    ofSetColor(myColorWhite);
+    value = ignoreFirstLap ? "On" : "Off";
+    drawStringBlock(&myFontOvlayP, "Set for Ignoring First Lap", blk1, line, ALIGN_LEFT, szb, szl);
+    drawStringBlock(&myFontOvlayP, value, blk2, line, ALIGN_CENTER, szb, szl);
+    drawStringBlock(&myFontOvlayP, "G", blk3, line, ALIGN_CENTER, szb, szl);
+    line++;
     // Set lap history view during race
+    ofSetColor(myColorDGray);
+    drawULineBlock(blk1, blk4, line + 1, szb, szl);
+    ofSetColor(myColorWhite);
     value = cameraLapHistEnabled ? "On" : "Off";
     drawStringBlock(&myFontOvlayP, "Set Lap History View at Race", blk1, line, ALIGN_LEFT, szb, szl);
     drawStringBlock(&myFontOvlayP, value, blk2, line, ALIGN_CENTER, szb, szl);
     drawStringBlock(&myFontOvlayP, "L", blk3, line, ALIGN_CENTER, szb, szl);
     line++;
     // Start/Stop race
+    ofSetColor(myColorDGray);
+    drawULineBlock(blk1, blk4, line + 1, szb, szl);
+    ofSetColor(myColorWhite);
     drawStringBlock(&myFontOvlayP, "Start/Stop Race", blk1, line, ALIGN_LEFT, szb, szl);
     drawStringBlock(&myFontOvlayP, "-", blk2, line, ALIGN_CENTER, szb, szl);
     drawStringBlock(&myFontOvlayP, "Space", blk3, line, ALIGN_CENTER, szb, szl);
     line++;
     // Add lap at camera 1~4
+    ofSetColor(myColorDGray);
+    drawULineBlock(blk1, blk4, line + 1, szb, szl);
+    ofSetColor(myColorWhite);
     drawStringBlock(&myFontOvlayP, "Add Lap at Camera 1~4,1,3", blk1, line, ALIGN_LEFT, szb, szl);
     drawStringBlock(&myFontOvlayP, "-", blk2, line, ALIGN_CENTER, szb, szl);
     drawStringBlock(&myFontOvlayP, "5~8,Z,/", blk3, line, ALIGN_CENTER, szb, szl);
     line++;
     // Delete previous lap at camera 1~4
+    ofSetColor(myColorDGray);
+    drawULineBlock(blk1, blk4, line + 1, szb, szl);
+    ofSetColor(myColorWhite);
     drawStringBlock(&myFontOvlayP, "Delete Previous Lap at Camera 1~4,1,3", blk1, line, ALIGN_LEFT, szb, szl);
     drawStringBlock(&myFontOvlayP, "-", blk2, line, ALIGN_CENTER, szb, szl);
     drawStringBlock(&myFontOvlayP, "Ctrl + 5~8,Z,/", blk3, line, ALIGN_CENTER, szb, szl);
     line++;
     // Display race result
+    ofSetColor(myColorDGray);
+    drawULineBlock(blk1, blk4, line + 1, szb, szl);
+    ofSetColor(myColorWhite);
     drawStringBlock(&myFontOvlayP, "Display Race Result", blk1, line, ALIGN_LEFT, szb, szl);
     drawStringBlock(&myFontOvlayP, "-", blk2, line, ALIGN_CENTER, szb, szl);
     drawStringBlock(&myFontOvlayP, "R", blk3, line, ALIGN_CENTER, szb, szl);

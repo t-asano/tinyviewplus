@@ -14,7 +14,7 @@
 // system
 #define APP_VER         "v0.9.20"
 #define DEBUG_ENABLED   false
-#define HELP_LINES      33
+#define HELP_LINES      34
 #define SCENE_INIT      0
 #define SCENE_CAMS      1
 #define SCENE_MAIN      2
@@ -22,6 +22,7 @@
 #define COLOR_YELLOW    255,215,0
 #define COLOR_WHITE     255,255,255
 #define COLOR_LGRAY     127,127,127
+#define COLOR_DGRAY     15
 #define COLOR_BG_DARK   0,0,0,239
 #define COLOR_BG_LIGHT  0,0,0,31
 #define COLOR_ALERT     255,0,0
@@ -75,7 +76,7 @@
 #define OVLMODE_MSG     2
 #define OVLMODE_RCRSLT  3
 #define OVLTXT_BLKS     12
-#define OVLTXT_LINES    33
+#define OVLTXT_LINES    HELP_LINES
 #define OVLTXT_LAPS     25
 #define OVLTXT_MARG     10
 #define OLVMSG_TIME     FRAME_RATE
@@ -95,6 +96,7 @@
 #define DFLT_ARAP_RLAPS 10
 #define DFLT_ARAP_RSECS 0
 #define DFLT_ARAP_MNLAP 3
+#define DFLT_ARAP_IGNFS false
 #define ARAP_MKR_FILE   "system/marker.xml"
 #define ARAP_RESULT_DIR "results/"
 #define ARAP_MNUM_THR   2
@@ -280,11 +282,13 @@ void processLapCanceller(int);
 void toggleARLap();
 void changeMinLap();
 void changeRaceDuration();
+void toggleIgnoreFirstLap();
 // overlay - common
 void setOverlayMode(int);
 void loadOverlayFont();
 void drawStringBlock(ofxTrueTypeFontUC*, string, int , int, int, int, int);
 void drawLineBlock(int, int, int, int, int);
+void drawULineBlock(int, int, int, int, int);
 // overlay - race result
 void generateDummyData();
 void fwriteRaceResult();
