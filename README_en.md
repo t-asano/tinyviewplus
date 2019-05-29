@@ -28,8 +28,8 @@ If you want to build from source code, please refer to [this document](docs/HowT
 ### macOS
 
 1. Download a zip file from [Release page](https://github.com/t-asano/tinyviewplus/releases).
-2. Extract it and place its contents in the proper place.
-    - Be sure to put the application under the "Application" folder. If you place it anywhere else, functions that writing to file will not work correctly.  
+2. Extract it and place its contents in the "Application" folder.
+    - If you place it anywhere else, functions that writing to file will not work correctly.
     ![install_mac.png](docs/img/install_mac.png)
 
 ### Windows
