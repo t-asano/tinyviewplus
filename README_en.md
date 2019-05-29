@@ -95,7 +95,7 @@ On Windows, if multiple receivers are connected to same USB hub, only one of the
 | G | Set for ignoring first lap (On/Off) (\*2) | Off |
 | L | Set lap history during race (On/Off) | Off |
 | Space | Start/Stop race | - |
-| 5~8,Z,/ | Add lap at camera 1~4,1,3 | - |
+| 5~8,Z,/ | Add lap at camera 1~4,1,3 (manual measurement) | - |
 | Ctrl + 5~8,Z,/ | Delete previos lap at camera 1~4,1,3 | - |
 | R | Display race results (\*3) | - |
 
@@ -134,7 +134,7 @@ Some functions can also be operated with gamepad. Up to 4 gamepads can be used s
 
 | Button | Function |
 | --- | --- |
-| 1~4 | Add lap at camera 1~4 |
+| 1~4 | Add lap at camera 1~4 (manual measurement) |
 | 5 + 1~4 | Delete previos lap at camera 1~4 |
 
 ### QR Code for label setting
@@ -172,6 +172,12 @@ The size of the marker should be 150mm per side. Larger marker will be suitable 
 Lap time will be measured only during the race. After detecting two or more correctly oriented markers simultaneously, when the marker disappears from the screen, lap time will be confirmed. However, if the direction of the last displayed marker is incorrect, the measurement will be canceled.
 
 Depending on the environment, recognition processing of markers might be heavy. In that case, please disable the function.
+
+### Combination of automatic and manual measurement
+
+When automatic and manual measurement are used together, the one with earlier timing will be adopted and recorded. The one with later timing will be rejected and not be recorded.
+
+However, if the interval between the two is equal to or greater than the minimum lap time setting, it will be considered as individual laps, both will be adopted and will be recorded.
 
 ## OSC API
 
