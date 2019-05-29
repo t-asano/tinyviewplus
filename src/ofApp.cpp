@@ -1180,12 +1180,16 @@ void changeCameraLabel(int camid) {
     if (camid < 1 || camid > cameraNum) {
         return;
     }
+#ifdef TARGET_WIN32
     ofSetFullscreen(false);
+#endif /* TARGET_WIN32 */
     str = camView[camid - 1].labelString;
     str = ofSystemTextBoxDialog("Camera" + ofToString(camid) + " label:", str);
     camView[camid - 1].labelString = str;
     autoSelectCameraIcon(camid, str);
+#ifdef TARGET_WIN32
     ofSetFullscreen(fullscreenEnabled);
+#endif/* TARGET_WIN32 */
 }
 
 //--------------------------------------------------------------
@@ -1194,14 +1198,18 @@ void changeCameraIcon(int camid) {
     if (camid < 1 || camid > cameraNum) {
         return;
     }
+#ifdef TARGET_WIN32
     ofSetFullscreen(false);
+#endif /* TARGET_WIN32 */
     str = "Camera" + ofToString(camid) + " icon";
     ofFileDialogResult result = ofSystemLoadDialog(str);
     if (result.bSuccess) {
         string path = result.getPath();
         changeCameraIconPath(camid, path, true);
     }
+#ifdef TARGET_WIN32
     ofSetFullscreen(fullscreenEnabled);
+#endif /* TARGET_WIN32 */
 }
 
 //--------------------------------------------------------------
@@ -1246,7 +1254,9 @@ void autoSelectCameraIcon(int camid, string pname) {
 //--------------------------------------------------------------
 void changeWallImage() {
     activateCursor();
+#ifdef TARGET_WIN32
     ofSetFullscreen(false);
+#endif /* TARGET_WIN32 */
     ofFileDialogResult result = ofSystemLoadDialog("Set background image");
     if (result.bSuccess) {
         string path = result.getPath();
@@ -1261,7 +1271,9 @@ void changeWallImage() {
             ofSystemAlertDialog("Unsupported file type");
         }
     }
+#ifdef TARGET_WIN32
     ofSetFullscreen(fullscreenEnabled);
+#endif /* TARGET_WIN32 */
 }
 
 //--------------------------------------------------------------
@@ -2258,7 +2270,9 @@ void changeMinLap() {
     string str;
     int lap;
     activateCursor();
+#ifdef TARGET_WIN32
     ofSetFullscreen(false);
+#endif /* TARGET_WIN32 */
     str = ofToString(minLapTime);
     str = ofSystemTextBoxDialog("Min. Lap Time (1~" + ofToString(ARAP_MAX_MNLAP) + "sec):", str);
     lap = (str == "") ? 0 : ofToInt(str);
@@ -2268,14 +2282,18 @@ void changeMinLap() {
         ofSystemAlertDialog("Please enter 1~" + ofToString(ARAP_MAX_MNLAP));
         changeMinLap();
     }
+#ifdef TARGET_WIN32
     ofSetFullscreen(fullscreenEnabled);
+#endif /* TARGET_WIN32 */
 }
 
 //--------------------------------------------------------------
 void changeRaceDuration() {
     string str;
     activateCursor();
+#ifdef TARGET_WIN32
     ofSetFullscreen(false);
+#endif /* TARGET_WIN32 */
     // time (seconds)
     while (true) {
         int sec;
@@ -2316,7 +2334,9 @@ void changeRaceDuration() {
             // -> retry
         }
     }
+#ifdef TARGET_WIN32
     ofSetFullscreen(fullscreenEnabled);
+#endif /* TARGET_WIN32 */
 }
 
 //--------------------------------------------------------------
