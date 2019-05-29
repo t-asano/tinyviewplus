@@ -834,7 +834,10 @@ void keyPressedOverlayResult(int key) {
 
 //--------------------------------------------------------------
 void keyPressedOverlayNone(int key) {
-    if (ofGetKeyPressed(OF_KEY_CONTROL)) {
+    if (ofGetKeyPressed(OF_KEY_ESC)) {
+        fullscreenEnabled = false;
+        ofSetFullscreen(fullscreenEnabled);
+    } else if (ofGetKeyPressed(OF_KEY_CONTROL)) {
         if (key == '1') {
             toggleCameraVisibility(1);
         } else if (key == '2') {
@@ -1177,10 +1180,12 @@ void changeCameraLabel(int camid) {
     if (camid < 1 || camid > cameraNum) {
         return;
     }
+    ofSetFullscreen(false);
     str = camView[camid - 1].labelString;
     str = ofSystemTextBoxDialog("Camera" + ofToString(camid) + " label:", str);
     camView[camid - 1].labelString = str;
     autoSelectCameraIcon(camid, str);
+    ofSetFullscreen(fullscreenEnabled);
 }
 
 //--------------------------------------------------------------
@@ -1189,12 +1194,14 @@ void changeCameraIcon(int camid) {
     if (camid < 1 || camid > cameraNum) {
         return;
     }
+    ofSetFullscreen(false);
     str = "Camera" + ofToString(camid) + " icon";
     ofFileDialogResult result = ofSystemLoadDialog(str);
     if (result.bSuccess) {
         string path = result.getPath();
         changeCameraIconPath(camid, path, true);
     }
+    ofSetFullscreen(fullscreenEnabled);
 }
 
 //--------------------------------------------------------------
@@ -1239,7 +1246,8 @@ void autoSelectCameraIcon(int camid, string pname) {
 //--------------------------------------------------------------
 void changeWallImage() {
     activateCursor();
-    ofFileDialogResult result = ofSystemLoadDialog("Wallpaper");
+    ofSetFullscreen(false);
+    ofFileDialogResult result = ofSystemLoadDialog("Set background image");
     if (result.bSuccess) {
         string path = result.getPath();
         ofFile file(path);
@@ -1253,6 +1261,7 @@ void changeWallImage() {
             ofSystemAlertDialog("Unsupported file type");
         }
     }
+    ofSetFullscreen(fullscreenEnabled);
 }
 
 //--------------------------------------------------------------
@@ -2249,8 +2258,9 @@ void changeMinLap() {
     string str;
     int lap;
     activateCursor();
+    ofSetFullscreen(false);
     str = ofToString(minLapTime);
-    str = ofSystemTextBoxDialog("Minimum Lap Time (1~" + ofToString(ARAP_MAX_MNLAP) + "sec):", str);
+    str = ofSystemTextBoxDialog("Min. Lap Time (1~" + ofToString(ARAP_MAX_MNLAP) + "sec):", str);
     lap = (str == "") ? 0 : ofToInt(str);
     if (lap > 0 && lap <= ARAP_MAX_MNLAP) {
         minLapTime = lap;
@@ -2258,12 +2268,14 @@ void changeMinLap() {
         ofSystemAlertDialog("Please enter 1~" + ofToString(ARAP_MAX_MNLAP));
         changeMinLap();
     }
+    ofSetFullscreen(fullscreenEnabled);
 }
 
 //--------------------------------------------------------------
 void changeRaceDuration() {
     string str;
     activateCursor();
+    ofSetFullscreen(false);
     // time (seconds)
     while (true) {
         int sec;
@@ -2304,6 +2316,7 @@ void changeRaceDuration() {
             // -> retry
         }
     }
+    ofSetFullscreen(fullscreenEnabled);
 }
 
 //--------------------------------------------------------------
