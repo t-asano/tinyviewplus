@@ -2725,7 +2725,7 @@ void drawHelpBody(int line) {
     value = fullscreenEnabled ? "On" : "Off";
     drawStringBlock(&myFontOvlayP, "Set Fullscreen Mode", blk1, line, ALIGN_LEFT, szb, szl);
     drawStringBlock(&myFontOvlayP, value, blk2, line, ALIGN_CENTER, szb, szl);
-    drawStringBlock(&myFontOvlayP, "F", blk3, line, ALIGN_CENTER, szb, szl);
+    drawStringBlock(&myFontOvlayP, "F,Esc", blk3, line, ALIGN_CENTER, szb, szl);
     line++;
     // Set camera view trimming
     ofSetColor(myColorDGray);

@@ -74,7 +74,7 @@ On Windows, if multiple receivers are connected to same USB hub, only one of the
 
 | key | Function | Default value |
 |---|---|---|
-| F | Set fullscreen mode (On/Off) | Off |
+| F,Esc | Set fullscreen mode (On/Off) | Off |
 | T | Set camera view trimming (On/Off) (\*1) | Off |
 | 1~4 | Set camera 1~4 enhanced view (On/Off) | Off |
 | Ctrl + 1~4 | Set camera 1~4 visibility (On/Off) | On |
