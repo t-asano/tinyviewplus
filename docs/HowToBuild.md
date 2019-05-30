@@ -78,6 +78,34 @@
    - [構成プロパティ] -> [C/C++] -> [出力ファイル] と進む
    - 「オブジェクトファイル名」を「$(IntDir)/%(RelativeDir)/」に変更する
 
+4. openFrameworks の ofSystemUtils.cpp を改造する(文字化け対策)
+
+```cpp
+static void narrow(const std::wstring &src, std::string &dest) {
+	setlocale(LC_CTYPE, "");
+	char *mbs = new char[src.length() * MB_CUR_MAX + 1];
+	wcstombs(mbs, src.c_str(), src.length() * MB_CUR_MAX + 1);
+	dest = mbs;
+	delete[] mbs;
+}
+
+std::string convertWideToNarrow( const wchar_t *s, char dfault = '?', const std::locale& loc = std::locale() )
+{
+#if 0
+	std::ostringstream stm;
+	while (*s != L'\0') {
+		stm << std::use_facet< std::ctype<wchar_t> >(loc).narrow(*s++, dfault);
+	}
+	return stm.str();
+#else
+	std::wstring wstr(s);
+	std::string ret;
+	narrow(wstr, ret);
+	return ret;
+#endif
+}
+```
+
 ## ビルドと起動
 
 ### macOSの場合
