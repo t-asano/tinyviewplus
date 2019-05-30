@@ -77,7 +77,8 @@ On Windows, if multiple receivers are connected to same USB hub, only one of the
 | F,Esc | Set fullscreen mode (On/Off) | Off |
 | T | Set camera view trimming (On/Off) (\*1) | Off |
 | 1~4 | Set camera 1~4 enhanced view (On/Off) | Off |
-| Ctrl + 1~4 | Set camera 1~4 visibility (On/Off) | On |
+| command + 1~4 | Set camera 1~4 visibility (On/Off) [macOS] | On |
+| Alt + 1~4 | Set camera 1~4 visibility (On/Off) [Windows] | On |
 | B | Set background image (\*2) | Built-in image |
 | Q | Start/Stop QR Code reader for camera label (\*3) | - |
 
@@ -96,7 +97,8 @@ On Windows, if multiple receivers are connected to same USB hub, only one of the
 | L | Set lap history during race (On/Off) | Off |
 | Space | Start/Stop race | - |
 | 5~8,Z,/ | Add lap at camera 1~4,1,3 (manual measurement) | - |
-| Ctrl + 5~8,Z,/ | Delete previos lap at camera 1~4,1,3 | - |
+| command + 5~8,Z,/ | Delete previos lap at camera 1~4,1,3 [macOS] | - |
+| Alt + 5~8,Z,/ | Delete previos lap at camera 1~4,1,3 [Windows] | - |
 | R | Display race results (\*3) | - |
 
 - (\*1) In loose mode, lap time will be measured even if the drone passes outside the gate.
