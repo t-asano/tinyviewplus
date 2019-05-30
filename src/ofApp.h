@@ -306,6 +306,7 @@ void drawOverlayMessage();
 // QR Code reader
 #ifdef TARGET_WIN32
 string utf8ToAnsi(string);
+string ansiToUtf8(string);
 #endif /* TARGET_WIN32 */
 void toggleQrReader();
 void processQrReader();

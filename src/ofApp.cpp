@@ -1180,10 +1180,11 @@ void changeCameraLabel(int camid) {
     if (camid < 1 || camid > cameraNum) {
         return;
     }
+    str = camView[camid - 1].labelString;
 #ifdef TARGET_WIN32
     ofSetFullscreen(false);
+    str = ansiToUtf8(str);
 #endif /* TARGET_WIN32 */
-    str = camView[camid - 1].labelString;
     str = ofSystemTextBoxDialog("Camera" + ofToString(camid) + " label:", str);
     camView[camid - 1].labelString = str;
     autoSelectCameraIcon(camid, str);
@@ -2959,6 +2960,28 @@ string utf8ToAnsi(string utf8) {
     delete[] ubuf;
     delete[] abuf;
     return ansi;
+}
+
+string ansiToUtf8(string ansi) {
+    int alen, ulen;
+    wchar_t* abuf;
+    char* ubuf;
+    string utf8;
+
+    // ansi -> wchar
+    alen = MultiByteToWideChar(CP_THREAD_ACP, 0, ansi.c_str(), ansi.size() + 1, NULL, 0);
+    abuf = new wchar_t[alen];
+    MultiByteToWideChar(CP_THREAD_ACP, 0, ansi.c_str(), ansi.size() + 1, abuf, alen);
+    // wchar -> utf8
+    ulen = WideCharToMultiByte(CP_UTF8, 0, abuf, -1, NULL, 0, NULL, NULL);
+    ubuf = new char[ulen];
+    WideCharToMultiByte(CP_UTF8, 0, abuf, alen + 1, ubuf, ulen, NULL, NULL);
+    utf8 = ubuf;
+
+    delete[] abuf;
+    delete[] ubuf;
+
+    return utf8;
 }
 #endif /* TARGET_WIN32 */
 
