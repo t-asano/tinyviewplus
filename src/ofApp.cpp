@@ -804,7 +804,7 @@ void keyPressedOverlayHelp(int key) {
                || key == 'F' || key == 'f'
                || key == 'T' || key == 't'
                || key == '1' || key == '2' || key == '3' || key == '4'
-               || ofGetKeyPressed(OF_KEY_CONTROL)
+               || ofGetKeyPressed(TVP_KEY_ALT)
                || key == 'A' || key == 'a'
                || key == 'D' || key == 'd'
                || key == 'M' || key == 'm'
@@ -837,7 +837,7 @@ void keyPressedOverlayNone(int key) {
     if (ofGetKeyPressed(OF_KEY_ESC)) {
         fullscreenEnabled = false;
         ofSetFullscreen(fullscreenEnabled);
-    } else if (ofGetKeyPressed(OF_KEY_CONTROL)) {
+    } else if (ofGetKeyPressed(TVP_KEY_ALT)) {
         if (key == '1') {
             toggleCameraVisibility(1);
         } else if (key == '2') {
@@ -2763,7 +2763,7 @@ void drawHelpBody(int line) {
     }
     drawStringBlock(&myFontOvlayP, "Set Camera 1~4 Visibility", blk1, line, ALIGN_LEFT, szb, szl);
     drawStringBlock(&myFontOvlayP, value, blk2, line, ALIGN_CENTER, szb, szl);
-    drawStringBlock(&myFontOvlayP, "Ctrl + 1~4", blk3, line, ALIGN_CENTER, szb, szl);
+    drawStringBlock(&myFontOvlayP, ofToString(TVP_STR_ALT) + " + 1~4", blk3, line, ALIGN_CENTER, szb, szl);
     line++;
     // Set camera label
     ofSetColor(myColorDGray);
@@ -2888,7 +2888,7 @@ void drawHelpBody(int line) {
     ofSetColor(myColorWhite);
     drawStringBlock(&myFontOvlayP, "Delete Previous Lap at Camera 1~4,1,3", blk1, line, ALIGN_LEFT, szb, szl);
     drawStringBlock(&myFontOvlayP, "-", blk2, line, ALIGN_CENTER, szb, szl);
-    drawStringBlock(&myFontOvlayP, "Ctrl + 5~8,Z,/", blk3, line, ALIGN_CENTER, szb, szl);
+    drawStringBlock(&myFontOvlayP, ofToString(TVP_STR_ALT) + " + 5~8,Z,/", blk3, line, ALIGN_CENTER, szb, szl);
     line++;
     // Display race result
     ofSetColor(myColorDGray);
@@ -3055,8 +3055,8 @@ void checkGamePad(float elpsec) {
         }
         for (btn = 0; btn < cameraNum; btn++) {
             if (gamePad[dev].isPressed(btn) == true) {
-                if (gamePad[dev].isPressed(GPAD_CTRL_BTN) == true
-                    || gamePad[dev].isPushing(GPAD_CTRL_BTN) == true) {
+                if (gamePad[dev].isPressed(GPAD_ALT_BTN) == true
+                    || gamePad[dev].isPushing(GPAD_ALT_BTN) == true) {
                     popLapRecord((btn + 1));
                 } else {
                     pushLapRecord((btn + 1), elpsec);

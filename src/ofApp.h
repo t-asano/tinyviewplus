@@ -18,6 +18,14 @@
 #define SCENE_INIT      0
 #define SCENE_CAMS      1
 #define SCENE_MAIN      2
+#ifdef TARGET_OSX
+#define TVP_KEY_ALT     OF_KEY_COMMAND
+#define TVP_STR_ALT     "command"
+#endif /* TARGET_OSX */
+#ifdef TARGET_WIN32
+#define TVP_KEY_ALT     OF_KEY_ALT
+#define TVP_STR_ALT     "Alt"
+#endif /* TARGET_WIN32 */
 // color
 #define COLOR_YELLOW    255,215,0
 #define COLOR_WHITE     255,255,255
@@ -115,7 +123,7 @@
 #define QR_CYCLE        6
 // gamepad
 #define GPAD_MAX_DEVS   4
-#define GPAD_CTRL_BTN   4
+#define GPAD_ALT_BTN    4
 
 /* ---------- classes ---------- */
 
