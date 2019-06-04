@@ -104,7 +104,7 @@
 #define DFLT_ARAP_RLAPS 10
 #define DFLT_ARAP_RSECS 0
 #define DFLT_ARAP_MNLAP 3
-#define DFLT_ARAP_IGNFS false
+#define DFLT_ARAP_SGATE false
 #define ARAP_MKR_FILE   "system/marker.xml"
 #define ARAP_RESULT_DIR "results/"
 #define ARAP_MNUM_THR   2
@@ -179,9 +179,9 @@ public:
     bool enoughMarkers;
     float prevElapsedSec;
     int totalLaps;
-    string lapHistName[ARAP_MAX_RLAPS];
-    float lapHistLapTime[ARAP_MAX_RLAPS];
-    float lapHistElpTime[ARAP_MAX_RLAPS];
+    string lapHistName[ARAP_MAX_RLAPS + 1];
+    float lapHistLapTime[ARAP_MAX_RLAPS + 1];
+    float lapHistElpTime[ARAP_MAX_RLAPS + 1];
     int flickerCount;
     int flickerValidCount;
     // QR reader
@@ -290,7 +290,7 @@ void processLapCanceller(int);
 void toggleARLap();
 void changeMinLap();
 void changeRaceDuration();
-void toggleIgnoreFirstLap();
+void toggleUseStartGate();
 // overlay - common
 void setOverlayMode(int);
 void loadOverlayFont();

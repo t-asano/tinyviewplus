@@ -44,7 +44,7 @@ int nextSpeechRemainSecs;
 int raceDuraLaps;
 int minLapTime;
 float elapsedTime;
-bool ignoreFirstLap;
+bool useStartGate;
 // overlay
 ofxTrueTypeFontUC myFontOvlayP, myFontOvlayP2x, myFontOvlayM;
 int overlayMode;
@@ -123,7 +123,7 @@ void setupInit() {
     raceDuraSecs = DFLT_ARAP_RSECS;
     nextSpeechRemainSecs = -1;
     raceDuraLaps = DFLT_ARAP_RLAPS;
-    ignoreFirstLap = DFLT_ARAP_IGNFS;
+    useStartGate = DFLT_ARAP_SGATE;
     beepSound.load(SND_BEEP_FILE);
     beep3Sound.load(SND_BEEP3_FILE);
     countSound.load(SND_COUNT_FILE);
@@ -319,8 +319,8 @@ void ofApp::update() {
                     // already finished
                     continue;
                 }
-                if ((ignoreFirstLap == true && camView[i].totalLaps > 0 && lap < minLapTime)
-                    || (ignoreFirstLap == false && lap < minLapTime)
+                if ((useStartGate == true && camView[i].totalLaps > 0 && lap < minLapTime)
+                    || (useStartGate == false && lap < minLapTime)
                     || lap < 0) {
                     // ignore short/negative lap
                     camView[i].foundMarkerNum = 0;
@@ -576,7 +576,7 @@ void drawCameraLapTime(int idx, bool isSub) {
         || camView[i].totalLaps == raceDuraLaps
         || (raceDuraSecs > 0 && (camView[i].prevElapsedSec - WATCH_COUNT_SEC) >= raceDuraSecs)) {
         // race/laps finished
-        sout = "Laps: " + ofToString((ignoreFirstLap == true && laps > 0) ? laps - 1 : laps);
+        sout = "Laps: " + ofToString((useStartGate == true && laps > 0) ? laps - 1 : laps);
         if (isSub) {
             drawStringWithShadow(&myFontLapSub, myColorWhite, sout, camView[i].lapPosX, camView[i].lapPosY);
         } else {
@@ -593,7 +593,7 @@ void drawCameraLapTime(int idx, bool isSub) {
                                      sout, camView[i].lapPosX, camView[i].lapPosY + LAP_HEIGHT + 10);
             }
             sout = "TotalTime: ";
-            if (ignoreFirstLap == true) {
+            if (useStartGate == true) {
                 sout += getWatchString(camView[i].prevElapsedSec - camView[i].lapHistElpTime[0]);
             } else {
                 sout += getWatchString(camView[i].prevElapsedSec - WATCH_COUNT_SEC);
@@ -608,7 +608,7 @@ void drawCameraLapTime(int idx, bool isSub) {
         }
     } else {
         // not finished
-        sout = "Lap" + ofToString(ignoreFirstLap == true ? laps - 1 : laps) + ": ";
+        sout = "Lap" + ofToString(useStartGate == true ? laps - 1 : laps) + ": ";
         sout += getLapStr(camView[i].lastLapTime) + "s";
         if (isSub) {
             drawStringWithShadow(&myFontLapSub, myColorWhite,
@@ -637,7 +637,7 @@ void drawCameraLapHistory(int camidx) {
             break;
         }
         lap = camView[camidx].lapHistLapTime[lapidx];
-        text = ofToString((ignoreFirstLap == true) ? lapidx : lapidx + 1) + ": " + getLapStr(lap) + "s";
+        text = ofToString((useStartGate == true) ? lapidx : lapidx + 1) + ": " + getLapStr(lap) + "s";
         drawStringWithShadow(&myFontLapHist, myColorWhite, text, camView[camidx].lapPosX, posy);
     }
 }
@@ -904,7 +904,7 @@ void keyPressedOverlayNone(int key) {
         } else if (key == 'l' || key == 'L') {
             toggleLapHistory();
         } else if (key == 'g' || key == 'G') {
-            toggleIgnoreFirstLap();
+            toggleUseStartGate();
         } else if (key == '.') {
             ofExit();
         }
@@ -1634,7 +1634,7 @@ void initConfig() {
     minLapTime = DFLT_ARAP_MNLAP;
     raceDuraLaps = DFLT_ARAP_RLAPS;
     raceDuraSecs = DFLT_ARAP_RSECS;
-    ignoreFirstLap = DFLT_ARAP_IGNFS;
+    useStartGate = DFLT_ARAP_SGATE;
     nextSpeechRemainSecs = -1;
     raceStarted = false;
     initRaceVars();
@@ -2052,7 +2052,7 @@ float getBestLap(int camidx) {
         return blap;
     }
     for (int i = 0; i < camView[camidx].totalLaps; i++) {
-        if (i == 0 && ignoreFirstLap == true) {
+        if (i == 0 && useStartGate == true) {
             continue;
         }
         float t = camView[camidx].lapHistLapTime[i];
@@ -2097,8 +2097,8 @@ void pushLapRecord(int cid, float elpsec) {
         // already finished
         return;
     }
-    if ((ignoreFirstLap == true && camView[i].totalLaps > 0 && lap < minLapTime)
-        || (ignoreFirstLap == false && lap < minLapTime)
+    if ((useStartGate == true && camView[i].totalLaps > 0 && lap < minLapTime)
+        || (useStartGate == false && lap < minLapTime)
         || lap < 0) {
         // ignore short/negative lap
         return;
@@ -2143,7 +2143,7 @@ void popLapRecord(int cid) {
     int newlaps = oldlaps - 1;
     cancelSound.play();
     setOverlayMessage(camView[i].labelString + " Lap"
-                      + ofToString(ignoreFirstLap == true ? oldlaps - 1 : oldlaps)
+                      + ofToString(useStartGate == true ? oldlaps - 1 : oldlaps)
                       + " canceled");
     camView[i].lapHistName[oldlaps - 1] = "";
     camView[i].lapHistLapTime[oldlaps - 1] = 0;
@@ -2187,7 +2187,7 @@ void fwriteRaceResult() {
         float blap = getBestLap(i);
         float total;
         // ignore first lap
-        if (ignoreFirstLap == true) {
+        if (useStartGate == true) {
             lps--;
             total = camView[i].prevElapsedSec - camView[i].lapHistElpTime[0];
         } else {
@@ -2214,7 +2214,7 @@ void fwriteRaceResult() {
     maxlap = getMaxLaps();
     // - body
     for (int lap = 1; lap <= maxlap; lap++) {
-        strlapb += ofToString(ignoreFirstLap == true ? (lap - 1) : lap) + sep;
+        strlapb += ofToString(useStartGate == true ? (lap - 1) : lap) + sep;
         for (int i = 0; i < cameraNum; i++) {
             if (lap > camView[i].totalLaps) {
                 // laptime
@@ -2227,7 +2227,7 @@ void fwriteRaceResult() {
                 // laptime
                 strlapb += getLapStr(camView[i].lapHistLapTime[lap - 1]);
                 // totaltime
-                if (ignoreFirstLap == true) {
+                if (useStartGate == true) {
                     elp = camView[i].lapHistElpTime[lap - 1] - camView[i].lapHistElpTime[0];
                 } else {
                     elp = camView[i].lapHistElpTime[lap - 1] - WATCH_COUNT_SEC;
@@ -2341,12 +2341,12 @@ void changeRaceDuration() {
 }
 
 //--------------------------------------------------------------
-void toggleIgnoreFirstLap() {
-    ignoreFirstLap = !ignoreFirstLap;
-    if (ignoreFirstLap == true) {
-        setOverlayMessage("Ignore First Lap: On");
+void toggleUseStartGate() {
+    useStartGate = !useStartGate;
+    if (useStartGate == true) {
+        setOverlayMessage("Start Gate: On");
     } else {
-        setOverlayMessage("Ignore First Lap: Off");
+        setOverlayMessage("Start Gate: Off");
     }
 }
 
@@ -2558,7 +2558,7 @@ void drawRaceResult(int pageidx) {
         drawStringBlock(&myFontOvlayP, str, 1, line, ALIGN_CENTER, szb, szl);
         // laps
         lps = camView[i].totalLaps;
-        if (ignoreFirstLap == true) {
+        if (useStartGate == true) {
             lps--;
         }
         str = (lps < 0) ? "-" : ofToString(lps);
@@ -2568,7 +2568,7 @@ void drawRaceResult(int pageidx) {
         str = (fval == 0) ? "-.-" : getLapStr(fval);
         drawStringBlock(&myFontOvlayM, str, 3, line, ALIGN_CENTER, szb, szl);
         // totaltime
-        if (ignoreFirstLap == true) {
+        if (useStartGate == true) {
             fval = camView[i].prevElapsedSec - camView[i].lapHistElpTime[0];
         } else {
             fval = camView[i].prevElapsedSec - WATCH_COUNT_SEC;
@@ -2600,7 +2600,7 @@ void drawRaceResult(int pageidx) {
         // lap#
         line += 1;
         drawStringBlock(&myFontOvlayM,
-                        ofToString(ignoreFirstLap == true ? lapidx : lapidx + 1),
+                        ofToString(useStartGate == true ? lapidx : lapidx + 1),
                         xoff, line, ALIGN_CENTER, szb, szl);
         // laptime
         for (int i = 0; i < cameraNum; i++) {
@@ -2852,8 +2852,8 @@ void drawHelpBody(int line) {
     ofSetColor(myColorDGray);
     drawULineBlock(blk1, blk4, line + 1, szb, szl);
     ofSetColor(myColorWhite);
-    value = ignoreFirstLap ? "On" : "Off";
-    drawStringBlock(&myFontOvlayP, "Set for Ignoring First Lap", blk1, line, ALIGN_LEFT, szb, szl);
+    value = useStartGate ? "On" : "Off";
+    drawStringBlock(&myFontOvlayP, "Set Start Gate", blk1, line, ALIGN_LEFT, szb, szl);
     drawStringBlock(&myFontOvlayP, value, blk2, line, ALIGN_CENTER, szb, szl);
     drawStringBlock(&myFontOvlayP, "G", blk3, line, ALIGN_CENTER, szb, szl);
     line++;

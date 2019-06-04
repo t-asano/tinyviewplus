@@ -93,7 +93,7 @@ On Windows, if multiple receivers are connected to same USB hub, only one of the
 | A | Set AR lap timer mode (Normal/Loose/Off) (\*1) | Normal |
 | D | Set race duration time (0\~36,000s) and laps (1\~10,000) | 0s (No limit), 10 laps |
 | M | Set minimum lap time (1~100s) | 3s |
-| G | Set for ignoring first lap (On/Off) (\*2) | Off |
+| G | Set start gate (On/Off) (\*2) | Off |
 | L | Set lap history during race (On/Off) | Off |
 | Space | Start/Stop race | - |
 | 5~8,Z,/ | Add lap at camera 1~4,1,3 (manual measurement) | - |
@@ -102,7 +102,7 @@ On Windows, if multiple receivers are connected to same USB hub, only one of the
 | R | Display race results (\*3) | - |
 
 - (\*1) In loose mode, lap time will be measured even if the drone passes outside the gate.
-- (\*2) The first lap will be excluded from race result(TotalTime, BestLap, Laps). Setting for Miminum lap time will be ignored at first lap.
+- (\*2) Time measurement starts after passing the first gate.
 - (\*3) Race results will be saved under predefined folder when race finish.
 	- macOS binary: Tiny View Plus.app/Contents/ Resources/data/pilots
 	- others: data/pilots
