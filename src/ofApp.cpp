@@ -2853,7 +2853,7 @@ void drawHelpBody(int line) {
     drawULineBlock(blk1, blk4, line + 1, szb, szl);
     ofSetColor(myColorWhite);
     value = useStartGate ? "On" : "Off";
-    drawStringBlock(&myFontOvlayP, "Set Start Gate", blk1, line, ALIGN_LEFT, szb, szl);
+    drawStringBlock(&myFontOvlayP, "Set Staggered Start", blk1, line, ALIGN_LEFT, szb, szl);
     drawStringBlock(&myFontOvlayP, value, blk2, line, ALIGN_CENTER, szb, szl);
     drawStringBlock(&myFontOvlayP, "G", blk3, line, ALIGN_CENTER, szb, szl);
     line++;
