@@ -344,7 +344,6 @@ void ofApp::update() {
                     camView[i].foundValidMarkerNum = 0;
                     camView[i].enoughMarkers = false;
                     finishSound.play();
-                    // speakLap((i + 1), lap, total);
                     continue;
                 }
                 if (total == ((raceDuraLaps + (useStartGate == true ? 1 : 0)) - 1)) {
@@ -611,11 +610,11 @@ void drawCameraLapTime(int idx, bool isSub) {
     } else {
         // not finished
         if (laps == 1 && useStartGate == true) {
-            sout = "Start";
+            sout = "Started";
         } else {
             sout = "Lap" + ofToString(useStartGate == true ? laps - 1 : laps);
+            sout += ": " + getLapStr(camView[i].lastLapTime) + "s";
         }
-        sout += ": " + getLapStr(camView[i].lastLapTime) + "s";
         if (isSub) {
             drawStringWithShadow(&myFontLapSub, myColorWhite,
                                  sout, camView[i].lapPosX, camView[i].lapPosY);
@@ -637,6 +636,7 @@ void drawCameraLapHistory(int camidx) {
     float lap;
     int lapidx = camView[camidx].totalLaps - 2;
     int posy = camView[camidx].posY + LAP_MARGIN_Y + (LAP_HEIGHT / 2);
+
     for (; lapidx >= 0; lapidx--) {
         posy += LAPHIST_HEIGHT + (LAPHIST_HEIGHT / 2);
         if (posy + (LAPHIST_HEIGHT / 2) >= camView[camidx].posY + camView[camidx].height) {
@@ -645,7 +645,7 @@ void drawCameraLapHistory(int camidx) {
         lap = camView[camidx].lapHistLapTime[lapidx];
         if (useStartGate == true) {
             if (lapidx == 0) {
-                text = "S";
+                return;
             } else {
                 text = ofToString(lapidx);
             }
@@ -1844,16 +1844,25 @@ void speakLap(int camid, float sec, int num) {
         return;
     }
     string ssec, sout;
-    ssec = getLapStr(sec);
     sout = camView[camid - 1].labelString + ", ";
     if (speechLangJpn == true) {
         sout = regex_replace(sout, regex("(Pilot)(\\d)"), "パイロット $2");
     } else {
         sout = regex_replace(sout, regex("(Pilot)(\\d)"), "$1 $2");
     }
+    if (useStartGate == true && num == 1) {
+        if (speechLangJpn == true) {
+            sout += "スタート";
+        } else {
+            sout += "started";
+        }
+        speakAny(speechLangJpn ? "jp" : "en", sout);
+        return;
+    }
+    ssec = getLapStr(sec);
     if (num > 0) {
         sout += (speechLangJpn == true) ? "ラップ" : "lap";
-        sout += " " + ofToString(num) + ", ";
+        sout += " " + ofToString(num - (useStartGate == true ? 1 : 0)) + ", ";
     }
     if (speechLangJpn == true) {
         sout += ofToString(int(sec)) + "秒";
