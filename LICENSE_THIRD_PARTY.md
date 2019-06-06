@@ -8,9 +8,9 @@
 
 [https://github.com/kr15h/ofxTrueTypeFontUC](https://github.com/kr15h/ofxTrueTypeFontUC)
 
-## M+ FONTS
+## Gen Shin Gothic
 
-[http://mplus-fonts.osdn.jp/about-en.html#license](http://mplus-fonts.osdn.jp/about-en.html#license)
+[http://jikasei.me/font/genshin](http://jikasei.me/font/genshin)
 
 ## ofxAruco
 

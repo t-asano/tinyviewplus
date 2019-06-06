@@ -45,8 +45,8 @@
 #define CAMERA_WIDTH    640
 #define CAMERA_HEIGHT   480
 #define CAMERA_RATIO    1.3333
-#define FONT_P_FILE     "system/mplus-1p-bold.ttf"
-#define FONT_M_FILE     "system/mplus-1m-bold.ttf"
+#define FONT_P_FILE     "system/GenShinGothic-P-Bold.ttf"
+#define FONT_M_FILE     "system/GenShinGothic-Monospace-Bold.ttf"
 #define ICON_FILE       "system/pilot_icon.png"
 #define ICON_DIR        "pilots/"
 #define ICON_WIDTH      50
