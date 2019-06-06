@@ -2376,9 +2376,9 @@ void changeRaceDuration() {
 void toggleUseStartGate() {
     useStartGate = !useStartGate;
     if (useStartGate == true) {
-        setOverlayMessage("Start Gate: On");
+        setOverlayMessage("Staggered Start: On");
     } else {
-        setOverlayMessage("Start Gate: Off");
+        setOverlayMessage("Staggered Start: Off");
     }
 }
 
