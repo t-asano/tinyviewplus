@@ -31,7 +31,7 @@
 #define COLOR_WHITE     255,255,255
 #define COLOR_LGRAY     127,127,127
 #define COLOR_DGRAY     15
-#define COLOR_BG_DARK   0,0,0,239
+#define COLOR_BG_DARK   0,0,0,223
 #define COLOR_BG_LIGHT  0,0,0,31
 #define COLOR_ALERT     255,0,0
 // view

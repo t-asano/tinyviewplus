@@ -739,7 +739,7 @@ void drawInfo() {
 
 //--------------------------------------------------------------
 void drawStringWithShadow(ofxTrueTypeFontUC *font, ofColor color, string str, int x, int y) {
-    ofSetColor(myColorBGDark);
+    ofSetColor(0);
     font->drawString(str, x + 1, y + 1);
     ofSetColor(color);
     font->drawString(str, x, y);
