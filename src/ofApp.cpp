@@ -11,9 +11,11 @@
 // system
 int camCheckCount;
 int tvpScene;
+ofxXmlSettings xmlSettings;
 // view
 ofVideoGrabber grabber[CAMERA_MAXNUM];
-ofColor myColorYellow, myColorWhite, myColorLGray, myColorDGray, myColorBGDark, myColorBGLight, myColorAlert;
+ofColor myColorYellow, myColorWhite, myColorLGray, myColorDGray, myColorAlert;
+ofColor myColorBGDark, myColorBGLight;
 ofxTrueTypeFontUC myFontNumber, myFontLabel, myFontLap, myFontLapHist;
 ofxTrueTypeFontUC myFontNumberSub, myFontLabelSub, myFontLapSub;
 ofxTrueTypeFontUC myFontInfo1m, myFontInfo1p, myFontInfo2m;
@@ -139,6 +141,49 @@ void setupInit() {
 }
 
 //--------------------------------------------------------------
+void loadSettingsFile() {
+    xmlSettings.loadFile(SETTINGS_FILE);
+
+    // SYSTEM
+    // speech language
+    speechLangJpn = xmlSettings.getValue(SNM_SYS_SPCLANG, speechLangJpn);
+
+    // RACE
+    // AR lap timer mode
+    arLapMode = xmlSettings.getValue(SNM_RACE_ARMODE, arLapMode);
+    // race duration (time, laps)
+    raceDuraSecs = xmlSettings.getValue(SNM_RACE_DRSECS, raceDuraSecs);
+    raceDuraLaps = xmlSettings.getValue(SNM_RACE_DRLAPS, raceDuraLaps);
+    // minimum lap time
+    minLapTime = xmlSettings.getValue(SNM_RACE_MINLAP, minLapTime);
+    // staggered start
+    useStartGate = xmlSettings.getValue(SNM_RACE_STAGGR, useStartGate);
+    // lap history view during race
+    cameraLapHistEnabled = xmlSettings.getValue(SNM_RACE_DISPLH, cameraLapHistEnabled);
+}
+
+void saveSettingsFile() {
+    // SYSTEM
+    // speech language
+    xmlSettings.setValue(SNM_SYS_SPCLANG, speechLangJpn);
+
+    // RACE
+    // AR lap timer mode
+    xmlSettings.setValue(SNM_RACE_ARMODE, arLapMode);
+    // race duration (time, laps)
+    xmlSettings.setValue(SNM_RACE_DRSECS, raceDuraSecs);
+    xmlSettings.setValue(SNM_RACE_DRLAPS, raceDuraLaps);
+    // minimum lap time
+    xmlSettings.setValue(SNM_RACE_MINLAP, minLapTime);
+    // staggered start
+    xmlSettings.setValue(SNM_RACE_STAGGR, useStartGate);
+    // lap history view during race
+    xmlSettings.setValue(SNM_RACE_DISPLH, cameraLapHistEnabled);
+
+    xmlSettings.saveFile(SETTINGS_FILE);
+}
+
+//--------------------------------------------------------------
 void setupCamCheck() {
     tvpScene = SCENE_CAMS;
     cameraNum = 0;
@@ -223,6 +268,8 @@ void setupMain() {
 //--------------------------------------------------------------
 void ofApp::setup() {
     setupInit();
+    loadSettingsFile();
+    saveSettingsFile(); // for file recovery
 }
 
 //--------------------------------------------------------------
@@ -1653,6 +1700,8 @@ void initConfig() {
     nextSpeechRemainSecs = -1;
     raceStarted = false;
     initRaceVars();
+    // finish
+    saveSettingsFile();
     setOverlayMessage("Settings initialized");
 }
 
@@ -1782,6 +1831,7 @@ void toggleSpeechLang() {
     } else {
         setOverlayMessage("Speech Language: English");
     }
+    saveSettingsFile();
 }
 
 //--------------------------------------------------------------
@@ -2296,6 +2346,7 @@ void toggleARLap() {
             setOverlayMessage("AR Lap Timer Mode: Normal");
             break;
     }
+    saveSettingsFile();
 }
 
 //--------------------------------------------------------------
@@ -2318,6 +2369,7 @@ void changeMinLap() {
 #ifdef TARGET_WIN32
     ofSetFullscreen(fullscreenEnabled);
 #endif /* TARGET_WIN32 */
+    saveSettingsFile();
 }
 
 //--------------------------------------------------------------
@@ -2370,6 +2422,7 @@ void changeRaceDuration() {
 #ifdef TARGET_WIN32
     ofSetFullscreen(fullscreenEnabled);
 #endif /* TARGET_WIN32 */
+    saveSettingsFile();
 }
 
 //--------------------------------------------------------------
@@ -2380,6 +2433,7 @@ void toggleUseStartGate() {
     } else {
         setOverlayMessage("Staggered Start: Off");
     }
+    saveSettingsFile();
 }
 
 //--------------------------------------------------------------
@@ -2880,7 +2934,7 @@ void drawHelpBody(int line) {
     drawStringBlock(&myFontOvlayP, value, blk2, line, ALIGN_CENTER, szb, szl);
     drawStringBlock(&myFontOvlayP, "M", blk3, line, ALIGN_CENTER, szb, szl);
     line++;
-    // Set for ignoring first lap
+    // Set staggered start
     ofSetColor(myColorDGray);
     drawULineBlock(blk1, blk4, line + 1, szb, szl);
     ofSetColor(myColorWhite);
@@ -2889,12 +2943,12 @@ void drawHelpBody(int line) {
     drawStringBlock(&myFontOvlayP, value, blk2, line, ALIGN_CENTER, szb, szl);
     drawStringBlock(&myFontOvlayP, "G", blk3, line, ALIGN_CENTER, szb, szl);
     line++;
-    // Set lap history view during race
+    // Set lap history view
     ofSetColor(myColorDGray);
     drawULineBlock(blk1, blk4, line + 1, szb, szl);
     ofSetColor(myColorWhite);
     value = cameraLapHistEnabled ? "On" : "Off";
-    drawStringBlock(&myFontOvlayP, "Set Lap History View at Race", blk1, line, ALIGN_LEFT, szb, szl);
+    drawStringBlock(&myFontOvlayP, "Set Lap History View", blk1, line, ALIGN_LEFT, szb, szl);
     drawStringBlock(&myFontOvlayP, value, blk2, line, ALIGN_CENTER, szb, szl);
     drawStringBlock(&myFontOvlayP, "L", blk3, line, ALIGN_CENTER, szb, szl);
     line++;
@@ -3101,6 +3155,12 @@ void checkGamePad(float elpsec) {
 //--------------------------------------------------------------
 void toggleLapHistory() {
     cameraLapHistEnabled = !cameraLapHistEnabled;
+    if (cameraLapHistEnabled == true) {
+        setOverlayMessage("Lap History View: On");
+    } else {
+        setOverlayMessage("Lap History View: Off");
+    }
+    saveSettingsFile();
 }
 
 //--------------------------------------------------------------

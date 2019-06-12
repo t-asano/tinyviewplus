@@ -8,6 +8,7 @@
 #include "highlyreliablemarkers.h"
 #include "ofxZxing.h"
 #include "ofxJoystick.h"
+#include "ofxXmlSettings.h"
 
 /* ---------- definitions ---------- */
 
@@ -26,6 +27,14 @@
 #define TVP_KEY_ALT     OF_KEY_ALT
 #define TVP_STR_ALT     "Alt"
 #endif /* TARGET_WIN32 */
+#define SETTINGS_FILE   "settings.xml"
+#define SNM_SYS_SPCLANG "system:speechJpn"
+#define SNM_RACE_ARMODE "race:arMode"
+#define SNM_RACE_DRSECS "race:duraSecs"
+#define SNM_RACE_DRLAPS "race:duraLaps"
+#define SNM_RACE_MINLAP "race:minLapTime"
+#define SNM_RACE_STAGGR "race:staggStart"
+#define SNM_RACE_DISPLH "race:dispLapHist"
 // color
 #define COLOR_YELLOW    255,215,0
 #define COLOR_WHITE     255,255,255
@@ -211,6 +220,8 @@ public:
 
 // -- splash --
 void setupInit();
+void loadSettingsFile();
+void saveSettingsFile();
 void updateInit();
 void drawInit();
 // -- camera setup --
