@@ -106,3 +106,4 @@ icon.rc
 *.sln
 *vcxproj*
 addons/
+bin/data/settings.xml

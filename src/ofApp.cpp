@@ -20,6 +20,7 @@ ofxTrueTypeFontUC myFontNumber, myFontLabel, myFontLap, myFontLapHist;
 ofxTrueTypeFontUC myFontNumberSub, myFontLabelSub, myFontLapSub;
 ofxTrueTypeFontUC myFontInfo1m, myFontInfo1p, myFontInfo2m;
 ofImage wallImage, logoLargeImage, logoSmallImage;
+ofImage bttnFscrImage, bttnQuitImage, bttnSettImage, bttnWndwImage;
 float wallRatio;
 int wallDrawWidth;
 int wallDrawHeight;
@@ -105,6 +106,11 @@ void setupInit() {
     setWallParams();
     // logo
     logoSmallImage.load(LOGO_SMALL_FILE);
+    // button
+    bttnFscrImage.load(BTTN_FSCR_FILE);
+    bttnQuitImage.load(BTTN_QUIT_FILE);
+    bttnSettImage.load(BTTN_SETT_FILE);
+    bttnWndwImage.load(BTTN_WNDW_FILE);
     // view common
     setupColors();
     hideCursorTimer = HIDECUR_TIME;
@@ -446,10 +452,11 @@ void ofApp::update() {
             ovlayMsgTimer--;
         }
     }
+    if (hideCursorTimer >= 0) {
+        hideCursorTimer--; // stop at -1
+    }
     if (hideCursorTimer <= 0) {
         ofHideCursor();
-    } else {
-        hideCursorTimer--;
     }
 }
 
@@ -484,8 +491,8 @@ void drawCamCheck() {
     ofSetColor(myColorYellow);
     font->drawString(str, (ofGetWidth() - font->stringWidth(str)) / 2, y - margin);
     // camera
-    ofNoFill();
-    ofSetColor(myColorLGray);
+    ofFill();
+    ofSetColor(myColorDGray);
     ofDrawRectangle(-2, y - 2, ofGetWidth() + 4, h + 4);
     if (cameraNum == 0) {
         isalt = true;
@@ -793,6 +800,25 @@ void drawStringWithShadow(ofxTrueTypeFontUC *font, ofColor color, string str, in
 }
 
 //--------------------------------------------------------------
+void drawSystemButtons() {
+    if (hideCursorTimer < 0) {
+        return;
+    }
+    int x = ofGetWidth() - 1;
+    int y = 10;
+    x -= 30;
+    bttnQuitImage.draw(x, y);
+    x -= 30;
+    if (fullscreenEnabled == true) {
+        bttnWndwImage.draw(x, y);
+    } else {
+        bttnFscrImage.draw(x, y);
+    }
+    x -= 30;
+    bttnSettImage.draw(x, y);
+}
+
+//--------------------------------------------------------------
 void ofApp::draw() {
     if (tvpScene == SCENE_INIT) {
         drawInit();
@@ -837,6 +863,8 @@ void ofApp::draw() {
             drawRaceResult(raceResultPage);
             break;
         case OVLMODE_NONE:
+            drawSystemButtons();
+            break;
         default:
             break;
     }
@@ -846,14 +874,14 @@ void ofApp::draw() {
     if (DEBUG_ENABLED == true) {
         // fps
         ofSetColor(myColorYellow);
-        ofDrawBitmapString("FPS: " + ofToString(ofGetFrameRate()), 10, 60);
+        ofDrawBitmapString("FPS: " + ofToString(ofGetFrameRate()), 10, 20);
         // window
         ofDrawBitmapString("Screen size: "
                            + ofToString(ofGetScreenWidth())
-                           + ", " + ofToString(ofGetScreenHeight()), 10, 70);
+                           + ", " + ofToString(ofGetScreenHeight()), 10, 30);
         ofDrawBitmapString("Window size: "
                            + ofToString(ofGetWidth())
-                           + ", " + ofToString(ofGetHeight()), 10, 80);
+                           + ", " + ofToString(ofGetHeight()), 10, 40);
     }
 }
 
@@ -967,8 +995,6 @@ void keyPressedOverlayNone(int key) {
             toggleLapHistory();
         } else if (key == 'g' || key == 'G') {
             toggleUseStartGate();
-        } else if (key == '.') {
-            ofExit();
         }
     }
 }
@@ -1033,6 +1059,17 @@ void ofApp::mousePressed(int x, int y, int button){
 
 //--------------------------------------------------------------
 void mouseReleasedOverlayNone(int x, int y, int button) {
+    // button
+    if (hideCursorTimer > 0 && y >= 10 && y <=29) {
+        int xend = ofGetWidth() - 1;
+        if (x >= (xend - 30) && x <= (xend -  10)) {
+            ofExit();
+        } else if (x >= (xend - 60) && x <= (xend -  40)) {
+            toggleFullscreen();
+        } else if (x >= (xend - 90) && x <= (xend -  70)) {
+            setOverlayMode(OVLMODE_HELP);
+        }
+    }
     // pilot
     for (int i = 0; i < cameraNum; i++) {
         if (camView[i].visible == false || camView[i].moveSteps > 0) {
@@ -2786,14 +2823,6 @@ void drawHelpBody(int line) {
     drawStringBlock(&myFontOvlayP, "-", blk2, line, ALIGN_CENTER, szb, szl);
     drawStringBlock(&myFontOvlayP, "I", blk3, line, ALIGN_CENTER, szb, szl);
     line++;
-    // Exit application
-    ofSetColor(myColorDGray);
-    drawULineBlock(blk1, blk4, line + 1, szb, szl);
-    ofSetColor(myColorWhite);
-    drawStringBlock(&myFontOvlayP, "Exit Application", blk1, line, ALIGN_LEFT, szb, szl);
-    drawStringBlock(&myFontOvlayP, "-", blk2, line, ALIGN_CENTER, szb, szl);
-    drawStringBlock(&myFontOvlayP, ".(period)", blk3, line, ALIGN_CENTER, szb, szl);
-    line++;
 
     // VIEW
     line++;
@@ -3166,7 +3195,7 @@ void toggleLapHistory() {
 //--------------------------------------------------------------
 void activateCursor() {
     if (hideCursorTimer <= 0) {
-        hideCursorTimer = HIDECUR_TIME;
         ofShowCursor();
     }
+    hideCursorTimer = HIDECUR_TIME;
 }

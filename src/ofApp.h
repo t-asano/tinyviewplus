@@ -15,7 +15,7 @@
 // system
 #define APP_VER         "v0.9.23"
 #define DEBUG_ENABLED   false
-#define HELP_LINES      34
+#define HELP_LINES      33  // must be <= OVLTXT_LINES
 #define SCENE_INIT      0
 #define SCENE_CAMS      1
 #define SCENE_MAIN      2
@@ -35,6 +35,11 @@
 #define SNM_RACE_MINLAP "race:minLapTime"
 #define SNM_RACE_STAGGR "race:staggStart"
 #define SNM_RACE_DISPLH "race:dispLapHist"
+#define BTTN_FSCR_FILE  "system/button_fullscreen.png"
+#define BTTN_QUIT_FILE  "system/button_quit.png"
+#define BTTN_SETT_FILE  "system/button_settings.png"
+#define BTTN_WNDW_FILE  "system/button_window.png"
+
 // color
 #define COLOR_YELLOW    255,215,0
 #define COLOR_WHITE     255,255,255
@@ -81,7 +86,7 @@
 #define LAP_MARGIN_Y    80
 #define LAPHIST_HEIGHT  15
 #define DFLT_CAM_TRIM   false
-#define DFLT_FSCR_ENBLD true
+#define DFLT_FSCR_ENBLD false
 #define DFLT_CAM_LAPHST false
 #define ALIGN_LEFT      0
 #define ALIGN_CENTER    1
@@ -93,7 +98,7 @@
 #define OVLMODE_MSG     2
 #define OVLMODE_RCRSLT  3
 #define OVLTXT_BLKS     12
-#define OVLTXT_LINES    HELP_LINES
+#define OVLTXT_LINES    34
 #define OVLTXT_LAPS     25
 #define OVLTXT_MARG     10
 #define OLVMSG_TIME     FRAME_RATE
@@ -278,6 +283,7 @@ string getWatchString(float);
 void drawWatch();
 void drawInfo();
 void drawStringWithShadow(ofxTrueTypeFontUC*, ofColor, string, int, int);
+void drawSystemButtons();
 // input
 void keyPressedOverlayHelp(int);
 void keyPressedOverlayHelp(int);
