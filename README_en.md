@@ -68,7 +68,6 @@ On Windows, if multiple receivers are connected to same USB hub, only one of the
 | N | Set speech language (Japanese/English) | Same as system locale |
 | H | Display help (aka "Settings/Commands") | - |
 | I | Initialize settings | - |
-| .(period) | Exit application | - |
 
 #### Display
 
