@@ -121,6 +121,10 @@ Windowsの場合、USBハブに複数の受信機を接続した場合に、そ�
 |---|---|
 | カメラ1~4のアイコンをクリック | アイコンの変更(※1) |
 | カメラ1~4のラベルをクリック | ラベルの変更(※2) |
+| ![settings](docs/img/button_settings.png) ボタンをクリック | ヘルプ(設定/コマンド)の表示 |
+| ![fullscreen](docs/img/button_fullscreen.png) ボタンをクリック | フルスクリーン表示のオン |
+| ![window](docs/img/button_window.png) ボタンをクリック | フルスクリーン表示のオフ |
+| ![quit](docs/img/button_quit.png) ボタンをクリック | アプリの終了 |
 
 - (※1)カメラのアイコンを変更すると、ラベルが自動的に変更されます。
 	- アイコンのファイル名(拡張子を除く)が採用されます。

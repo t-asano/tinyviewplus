@@ -66,7 +66,7 @@ On Windows, if multiple receivers are connected to same USB hub, only one of the
 | key | Function | Default value |
 |---|---|---|
 | N | Set speech language (Japanese/English) | Same as system locale |
-| H | Display help (aka "Settings/Commands") | - |
+| H | Display "Settings/Commands" | - |
 | I | Initialize settings | - |
 
 #### Display
@@ -120,6 +120,10 @@ Some functions can be operated with mouse.
 | --- | --- |
 | Click camera 1~4 icon | Change icon (\*1) |
 | Click camera 1~4 label | Change label (\*2) |
+| Click ![settings](docs/img/button_settings.png) button | Display "Settings/Commands" |
+| Click ![fullscreen](docs/img/button_fullscreen.png) button | Set fullscreen mode to On |
+| Click ![window](docs/img/button_window.png) button | Set fullscreen mode to Off |
+| Click ![quit](docs/img/button_quit.png) button | Quit application |
 
 - (\*1) Camera label will be automatically changed according to changing camera icon.
 	- The file name of the icon (excluding the extension) will be adopted.
