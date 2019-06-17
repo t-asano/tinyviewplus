@@ -48,6 +48,7 @@ int raceDuraLaps;
 int minLapTime;
 float elapsedTime;
 bool useStartGate;
+int raceResultTimer;
 // overlay
 ofxTrueTypeFontUC myFontOvlayP, myFontOvlayP2x, myFontOvlayM;
 int overlayMode;
@@ -140,6 +141,7 @@ void setupInit() {
     cancelSound.load(SND_CANCEL_FILE);
     raceStarted = false;
     elapsedTime = 0;
+    raceResultTimer = -1;
     // QR reader
     qrEnabled = false;
     // speech
@@ -427,7 +429,7 @@ void ofApp::update() {
             }
         }
         if (count == cameraNum) {
-            toggleRace();
+            stopRace(false);
         } else if (raceDuraSecs > 0) {
             // by time
             count = 0;
@@ -437,7 +439,7 @@ void ofApp::update() {
                 }
             }
             if (count == cameraNum) {
-                toggleRace();
+                stopRace(false);
             }
         }
     }
@@ -452,11 +454,19 @@ void ofApp::update() {
             ovlayMsgTimer--;
         }
     }
+    // hide cursor timer
     if (hideCursorTimer >= 0) {
         hideCursorTimer--; // stop at -1
+        if (hideCursorTimer == 0) {
+            ofHideCursor();
+        }
     }
-    if (hideCursorTimer <= 0) {
-        ofHideCursor();
+    // race result timer
+    if (raceResultTimer >= 0) {
+        raceResultTimer--; // stop at -1
+        if (raceResultTimer == 0) {
+            processRaceResultDisplay();
+        }
     }
 }
 
@@ -806,14 +816,18 @@ void drawSystemButtons() {
     }
     int x = ofGetWidth() - 1;
     int y = 10;
+    ofSetColor(255);
+    // quit
     x -= 30;
     bttnQuitImage.draw(x, y);
+    // fullscreen/window
     x -= 30;
     if (fullscreenEnabled == true) {
         bttnWndwImage.draw(x, y);
     } else {
         bttnFscrImage.draw(x, y);
     }
+    // settings/help
     x -= 30;
     bttnSettImage.draw(x, y);
 }
@@ -890,7 +904,6 @@ void keyPressedOverlayHelp(int key) {
     if (key == 'h' || key == 'H' || ofGetKeyPressed(OF_KEY_ESC)) {
         setOverlayMode(OVLMODE_NONE);
     } else if (key == 'N' || key == 'n'
-               || key == 'H' || key == 'h'
                || key == 'F' || key == 'f'
                || key == 'T' || key == 't'
                || key == '1' || key == '2' || key == '3' || key == '4'
@@ -898,7 +911,10 @@ void keyPressedOverlayHelp(int key) {
                || key == 'A' || key == 'a'
                || key == 'D' || key == 'd'
                || key == 'M' || key == 'm'
-               || key == 'L' || key == 'l') {
+               || key == 'G' || key == 'g'
+               || key == 'L' || key == 'l'
+               || key == 'C' || key == 'c') {
+        // stay at help screen
         keyPressedOverlayNone(key);
     } else {
         setOverlayMode(OVLMODE_NONE);
@@ -981,6 +997,10 @@ void keyPressedOverlayNone(int key) {
                 qrEnabled = false;
                 processRaceResultDisplay();
             }
+        } else if (key == 'c' || key == 'C') {
+            if (raceStarted == false) {
+                initRaceVars();
+            }
         } else if (key == 'a' || key == 'A') {
             toggleARLap();
         } else if (key == 'm' || key == 'M') {
@@ -1019,6 +1039,7 @@ void ofApp::keyPressed(int key) {
         keyPressedCamCheck();
         return;
     }
+    raceResultTimer = -1;
     switch (overlayMode) {
         case OVLMODE_HELP:
             keyPressedOverlayHelp(key);
@@ -1094,6 +1115,7 @@ void ofApp::mouseReleased(int x, int y, int button) {
         return;
     }
     activateCursor();
+    raceResultTimer = -1;
     switch (overlayMode) {
         case OVLMODE_HELP:
             setOverlayMode(OVLMODE_NONE);
@@ -2081,6 +2103,7 @@ void initRaceVars() {
             camView[i].lapHistElpTime[h] = 0;
         }
     }
+    elapsedTime = 0;
 }
 
 //--------------------------------------------------------------
@@ -2101,12 +2124,12 @@ void startRace() {
 }
 
 //--------------------------------------------------------------
-void stopRace(bool exit) {
+void stopRace(bool appexit) {
     if (raceStarted == false) {
         return;
     }
     // start -> stop
-    if (exit == false) {
+    if (appexit == false) {
         raceStarted = false;
         countSound.stop();
         finishSound.play();
@@ -2115,7 +2138,7 @@ void stopRace(bool exit) {
         } else {
             speakAny("en", "race finished.");
         }
-        processRaceResultDisplay();
+        raceResultTimer = ARAP_RSLT_DELAY;
     }
     fwriteRaceResult();
 }
@@ -3012,6 +3035,14 @@ void drawHelpBody(int line) {
     drawStringBlock(&myFontOvlayP, "Display Race Result", blk1, line, ALIGN_LEFT, szb, szl);
     drawStringBlock(&myFontOvlayP, "-", blk2, line, ALIGN_CENTER, szb, szl);
     drawStringBlock(&myFontOvlayP, "R", blk3, line, ALIGN_CENTER, szb, szl);
+    line++;
+    // Clear race result
+    ofSetColor(myColorDGray);
+    drawULineBlock(blk1, blk4, line + 1, szb, szl);
+    ofSetColor(myColorWhite);
+    drawStringBlock(&myFontOvlayP, "Clear Race Result", blk1, line, ALIGN_LEFT, szb, szl);
+    drawStringBlock(&myFontOvlayP, "-", blk2, line, ALIGN_CENTER, szb, szl);
+    drawStringBlock(&myFontOvlayP, "C", blk3, line, ALIGN_CENTER, szb, szl);
     line++;
 }
 

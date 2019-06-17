@@ -15,7 +15,7 @@
 // system
 #define APP_VER         "v0.9.23"
 #define DEBUG_ENABLED   false
-#define HELP_LINES      33  // must be <= OVLTXT_LINES
+#define HELP_LINES      34  // must be <= OVLTXT_LINES
 #define SCENE_INIT      0
 #define SCENE_CAMS      1
 #define SCENE_MAIN      2
@@ -102,7 +102,7 @@
 #define OVLTXT_LAPS     25
 #define OVLTXT_MARG     10
 #define OLVMSG_TIME     FRAME_RATE
-#define INFO_HEIGHT    15
+#define INFO_HEIGHT     15
 // sound
 #define SND_BEEP_FILE   "system/beep.wav"
 #define SND_BEEP3_FILE  "system/beep3.wav"
@@ -128,6 +128,7 @@
 #define ARAP_RSLT_SCRN  0
 #define ARAP_RSLT_FILE  1
 #define WATCH_COUNT_SEC 5
+#define ARAP_RSLT_DELAY (FRAME_RATE * 3)
 // osc
 #define OSC_LISTEN_PORT 4000
 // speech
