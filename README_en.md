@@ -98,7 +98,8 @@ On Windows, if multiple receivers are connected to same USB hub, only one of the
 | 5~8,Z,/ | Add lap at camera 1~4,1,3 (manual measurement) | - |
 | command + 5~8,Z,/ | Delete previos lap at camera 1~4,1,3 [macOS] | - |
 | Alt + 5~8,Z,/ | Delete previos lap at camera 1~4,1,3 [Windows] | - |
-| R | Display race results (\*3) | - |
+| R | Display race result (\*3) | - |
+| C | Clear race result | - |
 
 - (\*1) In loose mode, lap time will be measured even if the drone passes outside the gate.
 - (\*2) Time measurement starts after passing the first gate.

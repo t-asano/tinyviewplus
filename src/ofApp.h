@@ -97,7 +97,7 @@
 #define OVLMODE_HELP    1
 #define OVLMODE_MSG     2
 #define OVLMODE_RCRSLT  3
-#define OVLTXT_BLKS     12
+#define OVLTXT_BLKS     13
 #define OVLTXT_LINES    34
 #define OVLTXT_LAPS     25
 #define OVLTXT_MARG     10
@@ -199,6 +199,7 @@ public:
     float lapHistElpTime[ARAP_MAX_RLAPS + 1];
     int flickerCount;
     int flickerValidCount;
+    int racePosition;
     // QR reader
     bool qrScanned;
 };
@@ -304,7 +305,7 @@ int getMaxLaps();
 string getLapStr(float);
 void pushLapRecord(int, float);
 void popLapRecord(int);
-void processLapCanceller(int);
+void updateRacePositions();
 void toggleARLap();
 void changeMinLap();
 void changeRaceDuration();
