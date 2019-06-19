@@ -47,7 +47,8 @@
     - ofxPoco
     - ofxZxing
     - ofxJoystick
-    
+    - ofxXmlSettings
+
 3. 作成したプロジェクトに、Tiny View Plusのファイル一式をマージする
     ```
     $ cd apps/myApps
