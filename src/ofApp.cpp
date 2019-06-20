@@ -49,6 +49,7 @@ int minLapTime;
 float elapsedTime;
 bool useStartGate;
 int raceResultTimer;
+bool frameTick;
 // overlay
 ofxTrueTypeFontUC myFontOvlayP, myFontOvlayP2x, myFontOvlayM;
 int overlayMode;
@@ -247,6 +248,12 @@ void setupMain() {
     setViewParams();
     for (int i = 0; i < cameraNum; i++) {
         camView[i].moveSteps = 1;
+        if (grabber[i].getWidth() != CAMERA_WIDTH
+            || grabber[i].getHeight() != CAMERA_HEIGHT) {
+            camView[i].needResize = true;
+        } else {
+            camView[i].needResize = false;
+        }
     }
     // AR laptimer
     for (int i = 0; i < cameraNum; i++) {
@@ -340,8 +347,13 @@ void ofApp::update() {
         }
         // AR lap timer
         float elp = elapsedTime;
-        if (grabber[i].isFrameNew() && arLapMode != ARAP_MODE_OFF) {
-            camView[i].aruco.detectMarkers(grabber[i].getPixels());
+        frameTick = !frameTick;
+        if (frameTick == true && arLapMode != ARAP_MODE_OFF) {
+            ofPixels pxl = grabber[i].getPixels();
+            if (camView[i].needResize == true) {
+                pxl.resize(CAMERA_WIDTH, CAMERA_HEIGHT);
+            }
+            camView[i].aruco.detectMarkers(pxl);
             // all markers
             int anum = camView[i].aruco.getNumMarkers();
             if (anum == 0 && camView[i].foundMarkerNum > 0) {
@@ -918,27 +930,23 @@ void ofApp::draw() {
     // more info
     drawInfo();
     // debug
-    if (DEBUG_ENABLED == true) {
-        // fps
+    if (DEBUG_DRAWSTAT == true) {
+        int x = 10;
+        int y = 0;
+        int h = 15;
+        // screen fps
         ofSetColor(myColorYellow);
-        ofDrawBitmapString("FPS: " + ofToString(ofGetFrameRate()), 10, 20);
-        // window
-        ofDrawBitmapString("Screen size: "
-                           + ofToString(ofGetScreenWidth())
-                           + ", " + ofToString(ofGetScreenHeight()), 10, 30);
-        ofDrawBitmapString("Window size: "
-                           + ofToString(ofGetWidth())
-                           + ", " + ofToString(ofGetHeight()), 10, 40);
+        ofDrawBitmapString("Screen FPS: " + ofToString(ofGetFrameRate()), x, y += h);
         // AR laptimer
-        // xxx under development
-        ofDrawBitmapString("AR marker detection:", 10, 50);
+        ofDrawBitmapString("AR Mkrs,Rcts,FPS:", x, y += h);
         for (int i = 0; i < cameraNum; i++) {
-            int c, m;
-            c = camView[i].aruco.getNumCandidates();
+            int m, r;
             m = camView[i].aruco.getNumMarkers();
+            r = camView[i].aruco.getNumRectangles();
             ofDrawBitmapString("  Cam" + ofToString(i + 1) + ": "
-                + ofToString(m) + " / " + ofToString(c + m),
-                10, 60 + (i * 10));
+                               + ofToString(m) + ", " + ofToString(r) + ", "
+                               + ofToString(camView[i].aruco.getFps()),
+                               x, y += h);
         }
     }
 }
@@ -3275,7 +3283,11 @@ void processQrReader() {
         bool scanned = false;
         if (camView[qrCamIndex].qrScanned == false) {
             ofxZxing::Result zxres;
-            zxres = ofxZxing::decode(grabber[qrCamIndex].getPixels(), true);
+            ofPixels pxl = grabber[qrCamIndex].getPixels();
+            if (camView[qrCamIndex].needResize == true) {
+                pxl.resize(CAMERA_WIDTH, CAMERA_HEIGHT);
+            }
+            zxres = ofxZxing::decode(pxl, true);
             if (zxres.getFound()) {
                 scanned = true;
                 camView[qrCamIndex].qrScanned = true;

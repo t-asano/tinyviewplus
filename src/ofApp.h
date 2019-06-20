@@ -15,6 +15,7 @@
 // system
 #define APP_VER         "v0.9.24"
 #define DEBUG_ENABLED   false
+#define DEBUG_DRAWSTAT  false
 #define HELP_LINES      34  // must be <= OVLTXT_LINES
 #define SCENE_INIT      0
 #define SCENE_CAMS      1
@@ -156,6 +157,7 @@ public:
     int posXTarget;
     int posYTarget;
     float imageScale;
+    bool needResize;
     // base
     ofColor baseColor;
     int basePosX;
