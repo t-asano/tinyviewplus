@@ -502,8 +502,8 @@ void drawCamCheck() {
     ofSetColor(myColorYellow);
     font->drawString(str, (ofGetWidth() - font->stringWidth(str)) / 2, y - margin);
     // camera
-    ofFill();
     ofSetColor(myColorDGray);
+    ofFill();
     ofDrawRectangle(-2, y - 2, ofGetWidth() + 4, h + 4);
     if (cameraNum == 0) {
         isalt = true;
@@ -542,8 +542,15 @@ void drawCamCheck() {
 //--------------------------------------------------------------
 void drawCameraImage(int camidx) {
     int i = camidx;
-    ofSetColor(myColorWhite);
-    grabber[i].draw(camView[i].posX, camView[i].posY, camView[i].width, camView[i].height);
+    if (DEBUG_ENABLED == true && grabber[i].isInitialized() == false) {
+        ofSetColor(0,19,127);
+        ofFill();
+        ofDrawRectangle(camView[i].posX, camView[i].posY, camView[i].width, camView[i].height);
+    }
+    else {
+        ofSetColor(myColorWhite);
+        grabber[i].draw(camView[i].posX, camView[i].posY, camView[i].width, camView[i].height);
+    }
 }
 
 //--------------------------------------------------------------
@@ -607,6 +614,7 @@ void drawCameraPilot(int camidx, bool isSub) {
     int i = camidx;
     // base
     ofSetColor(camView[i].baseColor);
+    ofFill();
     ofDrawRectangle(camView[i].basePosX, camView[i].basePosY, camView[i].baseWidth, camView[i].baseHeight);
     // number
     ofSetColor(myColorWhite);
@@ -921,6 +929,17 @@ void ofApp::draw() {
         ofDrawBitmapString("Window size: "
                            + ofToString(ofGetWidth())
                            + ", " + ofToString(ofGetHeight()), 10, 40);
+        // AR laptimer
+        // xxx under development
+        ofDrawBitmapString("AR marker detection:", 10, 50);
+        for (int i = 0; i < cameraNum; i++) {
+            int c, m;
+            c = camView[i].aruco.getNumCandidates();
+            m = camView[i].aruco.getNumMarkers();
+            ofDrawBitmapString("  Cam" + ofToString(i + 1) + ": "
+                + ofToString(m) + " / " + ofToString(c + m),
+                10, 60 + (i * 10));
+        }
     }
 }
 
@@ -1049,7 +1068,9 @@ void keyPressedOverlayNone(int key) {
 void keyPressedCamCheck() {
     if (cameraNum == 0) {
         ofSystemAlertDialog("Could not find receiver");
-        if (DEBUG_ENABLED == false) {
+        if (DEBUG_ENABLED == true) {
+            cameraNum = CAMERA_MAXNUM;
+        } else {
             ofExit();
         }
     }
@@ -1884,8 +1905,12 @@ void recvOscCameraString(int camid, string method, string argstr) {
         }
     }
     else if (method == "label") {
-        camView[camid - 1].labelString = argstr;
-        autoSelectCameraIcon(camid, argstr);
+        string str = argstr;
+#ifdef TARGET_WIN32
+        str = utf8ToAnsi(str);
+#endif /* TARGET_WIN32 */
+        camView[camid - 1].labelString = str;
+        autoSelectCameraIcon(camid, str);
     }
 }
 
@@ -2657,6 +2682,7 @@ void drawLineBlock(int xblock1, int xblock2, int yline, int blocks, int lines) {
     y = (bh * yline) + (bh * 0.5) + margin - 1 + yo;
     h = 2;
 
+    ofFill();
     ofDrawRectangle(x, y, w, h);
 }
 
@@ -2675,6 +2701,7 @@ void drawULineBlock(int xblock1, int xblock2, int yline, int blocks, int lines) 
     y = (bh * yline) + margin - 1 + yo;
     h = 2;
 
+    ofFill();
     ofDrawRectangle(x, y, w, h);
 }
 
@@ -2752,6 +2779,7 @@ void drawRaceResult(int pageidx) {
 
     // background
     ofSetColor(myColorBGDark);
+    ofFill();
     ofDrawRectangle(0, 0, ofGetWidth(), ofGetHeight());
 
     // title
@@ -2877,6 +2905,7 @@ void drawHelp() {
     int line;
     // background
     ofSetColor(myColorBGDark);
+    ofFill();
     ofDrawRectangle(0, 0, ofGetWidth(), ofGetHeight());
     // title(3 lines)
     line = 1;
@@ -2955,7 +2984,7 @@ void drawHelpBody(int line) {
     value = fullscreenEnabled ? "On" : "Off";
     drawStringBlock(&myFontOvlayP, "Set Fullscreen Mode", blk1, line, ALIGN_LEFT, szb, szl);
     drawStringBlock(&myFontOvlayP, value, blk2, line, ALIGN_CENTER, szb, szl);
-    drawStringBlock(&myFontOvlayP, "F,Esc", blk3, line, ALIGN_CENTER, szb, szl);
+    drawStringBlock(&myFontOvlayP, "F, Esc", blk3, line, ALIGN_CENTER, szb, szl);
     line++;
     // Set camera view trimming
     ofSetColor(myColorDGray);
@@ -3163,6 +3192,7 @@ void drawOverlayMessageCore(ofxTrueTypeFontUC *font, string msg) {
     sy = (ofGetHeight() / 2) + (fh / 2);
     // background
     ofSetColor(myColorBGDark);
+    ofFill();
     ofDrawRectangle(sx - margin, sy - (fh + margin), sw + (margin * 2), fh + (margin * 2));
     // message
     ofSetColor(myColorWhite);
