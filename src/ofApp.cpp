@@ -2499,6 +2499,8 @@ void fwriteRaceResult() {
     resultsFile.open(ARAP_RESULT_DIR + timestamp + ".txt" , ofFile::WriteOnly);
     resultsFile << (strsumm + strlaph + strlapb);
     resultsFile.close();
+    // copy to clipboard
+    ofSetClipboardString(strsumm + strlaph + strlapb);
 }
 
 //--------------------------------------------------------------
