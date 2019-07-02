@@ -66,6 +66,7 @@ On Windows, if multiple receivers are connected to same USB hub, only one of the
 | key | Function | Default value |
 |---|---|---|
 | N | Set speech language (Japanese/English) | Same as system locale |
+| S | Set system statistics (On/Off) | Off |
 | H | Display "Settings/Commands" | - |
 | I | Initialize settings | - |
 
