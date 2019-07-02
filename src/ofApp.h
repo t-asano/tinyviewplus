@@ -15,8 +15,7 @@
 // system
 #define APP_VER         "v0.9.24"
 #define DEBUG_ENABLED   false
-#define DEBUG_DRAWSTAT  false
-#define HELP_LINES      34  // must be <= OVLTXT_LINES
+#define HELP_LINES      33  // must be <= OVLTXT_LINES
 #define SCENE_INIT      0
 #define SCENE_CAMS      1
 #define SCENE_MAIN      2
@@ -28,8 +27,10 @@
 #define TVP_KEY_ALT     OF_KEY_ALT
 #define TVP_STR_ALT     "Alt"
 #endif /* TARGET_WIN32 */
+#define DFLT_SYS_STAT   false
 #define SETTINGS_FILE   "settings.xml"
 #define SNM_SYS_SPCLANG "system:speechJpn"
+#define SNM_SYS_STAT    "system:sysStat"
 #define SNM_RACE_ARMODE "race:arMode"
 #define SNM_RACE_DRSECS "race:duraSecs"
 #define SNM_RACE_DRLAPS "race:duraLaps"
@@ -244,6 +245,7 @@ void reloadCameras();
 void bindCameras();
 void initConfig();
 string getUserLocaleName();
+void toggleSysStat();
 // view
 void toggleCameraSolo(int);
 void enableCameraSolo(int);

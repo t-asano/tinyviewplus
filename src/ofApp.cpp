@@ -12,6 +12,7 @@
 int camCheckCount;
 int tvpScene;
 ofxXmlSettings xmlSettings;
+bool sysStatEnabled;
 // view
 ofVideoGrabber grabber[CAMERA_MAXNUM];
 ofColor myColorYellow, myColorWhite, myColorLGray, myColorDGray, myColorAlert;
@@ -78,6 +79,7 @@ void setupInit() {
     handleWindow = FindWindowA("ConsoleWindowClass", NULL);
     ShowWindow(handleWindow, 0);
 #endif /* TARGET_WIN32 */
+    sysStatEnabled = DFLT_SYS_STAT;
     // scene
     tvpScene = SCENE_INIT;
     ofResetElapsedTimeCounter();
@@ -156,6 +158,8 @@ void loadSettingsFile() {
     // SYSTEM
     // speech language
     speechLangJpn = xmlSettings.getValue(SNM_SYS_SPCLANG, speechLangJpn);
+    // system statistics
+    sysStatEnabled = xmlSettings.getValue(SNM_SYS_STAT, sysStatEnabled);
 
     // RACE
     // AR lap timer mode
@@ -175,6 +179,8 @@ void saveSettingsFile() {
     // SYSTEM
     // speech language
     xmlSettings.setValue(SNM_SYS_SPCLANG, speechLangJpn);
+    // system statistics
+    xmlSettings.setValue(SNM_SYS_STAT, sysStatEnabled);
 
     // RACE
     // AR lap timer mode
@@ -930,7 +936,7 @@ void ofApp::draw() {
     // more info
     drawInfo();
     // debug
-    if (DEBUG_DRAWSTAT == true) {
+    if (sysStatEnabled == true) {
         int x = 10;
         int y = 0;
         int h = 15;
@@ -938,13 +944,13 @@ void ofApp::draw() {
         ofSetColor(myColorYellow);
         ofDrawBitmapString("Screen FPS: " + ofToString(ofGetFrameRate()), x, y += h);
         // AR laptimer
-        ofDrawBitmapString("AR Mkrs,Rcts,FPS:", x, y += h);
+        ofDrawBitmapString("AR Markers/Rects/FPS:", x, y += h);
         for (int i = 0; i < cameraNum; i++) {
             int m, r;
             m = camView[i].aruco.getNumMarkers();
             r = camView[i].aruco.getNumRectangles();
             ofDrawBitmapString("  Cam" + ofToString(i + 1) + ": "
-                               + ofToString(m) + ", " + ofToString(r) + ", "
+                               + ofToString(m) + "/" + ofToString(r) + "/"
                                + ofToString(camView[i].aruco.getFps()),
                                x, y += h);
         }
@@ -965,7 +971,8 @@ void keyPressedOverlayHelp(int key) {
                || key == 'M' || key == 'm'
                || key == 'G' || key == 'g'
                || key == 'L' || key == 'l'
-               || key == 'C' || key == 'c') {
+               || key == 'C' || key == 'c'
+               || key == 'S' || key == 's') {
         // stay at help screen
         keyPressedOverlayNone(key);
     } else {
@@ -1068,6 +1075,8 @@ void keyPressedOverlayNone(int key) {
             toggleLapHistory();
         } else if (key == 'g' || key == 'G') {
             toggleUseStartGate();
+        } else if (key == 's' || key == 'S') {
+            toggleSysStat();
         }
     }
 }
@@ -1779,6 +1788,9 @@ void updateViewParams() {
 //--------------------------------------------------------------
 void initConfig() {
     int i;
+    // system
+    autoSelectSpeechLang();
+    sysStatEnabled = DFLT_SYS_STAT;
     // wallpaper
     wallImage.clear();
     wallImage.load(WALL_FILE);
@@ -1802,8 +1814,6 @@ void initConfig() {
     cameraTrimEnabled = DFLT_CAM_TRIM;
     fullscreenEnabled = DFLT_FSCR_ENBLD;
     cameraLapHistEnabled = DFLT_CAM_LAPHST;
-    // speech
-    autoSelectSpeechLang();
     // AR lap timer
     setOverlayMode(OVLMODE_NONE);
     arLapMode = DFLT_ARAP_MODE;
@@ -1835,6 +1845,12 @@ string getUserLocaleName() {
     setlocale(LC_ALL, org.c_str());
 #endif /* TARGET_WIN32 */
     return name;
+}
+
+//--------------------------------------------------------------
+void toggleSysStat() {
+    sysStatEnabled = !sysStatEnabled;
+    saveSettingsFile();
 }
 
 //--------------------------------------------------------------
@@ -2960,6 +2976,15 @@ void drawHelpBody(int line) {
     drawStringBlock(&myFontOvlayP, value, blk2, line, ALIGN_CENTER, szb, szl);
     drawStringBlock(&myFontOvlayP, "N", blk3, line, ALIGN_CENTER, szb, szl);
     line++;
+    // Set system statistics
+    ofSetColor(myColorDGray);
+    drawULineBlock(blk1, blk4, line + 1, szb, szl);
+    ofSetColor(myColorWhite);
+    value = sysStatEnabled ? "On" : "Off";
+    drawStringBlock(&myFontOvlayP, "Set System Statistics", blk1, line, ALIGN_LEFT, szb, szl);
+    drawStringBlock(&myFontOvlayP, value, blk2, line, ALIGN_CENTER, szb, szl);
+    drawStringBlock(&myFontOvlayP, "S", blk3, line, ALIGN_CENTER, szb, szl);
+    line++;
     // Display help
     ofSetColor(myColorDGray);
     drawULineBlock(blk1, blk4, line + 1, szb, szl);
@@ -3032,33 +3057,6 @@ void drawHelpBody(int line) {
     drawStringBlock(&myFontOvlayP, "Set Camera 1~4 Visibility", blk1, line, ALIGN_LEFT, szb, szl);
     drawStringBlock(&myFontOvlayP, value, blk2, line, ALIGN_CENTER, szb, szl);
     drawStringBlock(&myFontOvlayP, ofToString(TVP_STR_ALT) + " + 1~4", blk3, line, ALIGN_CENTER, szb, szl);
-    line++;
-    // Set camera label
-    ofSetColor(myColorDGray);
-    drawULineBlock(blk1, blk4, line + 1, szb, szl);
-    ofSetColor(myColorWhite);
-    value = "";
-    for (int i = 0; i < CAMERA_MAXNUM; i++) {
-        if (i > 0) {
-            value += ", ";
-        }
-        if (i < cameraNum) {
-            value += camView[i].labelString;
-        } else {
-            value += "-";
-        }
-    }
-    drawStringBlock(&myFontOvlayP, "Set Camera Label", blk1, line, ALIGN_LEFT, szb, szl);
-    drawStringBlock(&myFontOvlayP, value, blk2, line, ALIGN_CENTER, szb, szl);
-    drawStringBlock(&myFontOvlayP, "Click Label", blk3, line, ALIGN_CENTER, szb, szl);
-    line++;
-    // Set camera icon
-    ofSetColor(myColorDGray);
-    drawULineBlock(blk1, blk4, line + 1, szb, szl);
-    ofSetColor(myColorWhite);
-    drawStringBlock(&myFontOvlayP, "Set Camera Icon", blk1, line, ALIGN_LEFT, szb, szl);
-    drawStringBlock(&myFontOvlayP, "-", blk2, line, ALIGN_CENTER, szb, szl);
-    drawStringBlock(&myFontOvlayP, "Click Icon", blk3, line, ALIGN_CENTER, szb, szl);
     line++;
     // Set background image
     ofSetColor(myColorDGray);
