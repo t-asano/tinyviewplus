@@ -347,13 +347,13 @@ void ofApp::update() {
         processQrReader();
     }
     // lap
+    frameTick = !frameTick;
     for (int i = 0; i < cameraNum; i++) {
         if (raceStarted == false || elapsedTime < WATCH_COUNT_SEC) {
             continue;
         }
         // AR lap timer
         float elp = elapsedTime;
-        frameTick = !frameTick;
         if (frameTick == true && arLapMode != ARAP_MODE_OFF) {
             ofPixels pxl = grabber[i].getPixels();
             if (camView[i].needResize == true) {
