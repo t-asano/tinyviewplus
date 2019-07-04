@@ -50,7 +50,6 @@ int minLapTime;
 float elapsedTime;
 bool useStartGate;
 int raceResultTimer;
-bool frameTick;
 // overlay
 ofxTrueTypeFontUC myFontOvlayP, myFontOvlayP2x, myFontOvlayM;
 int overlayMode;
@@ -353,8 +352,7 @@ void ofApp::update() {
         }
         // AR lap timer
         float elp = elapsedTime;
-        frameTick = !frameTick;
-        if (frameTick == true && arLapMode != ARAP_MODE_OFF) {
+        if (arLapMode != ARAP_MODE_OFF && (int)camView[i].aruco.getFps() <= ARAP_FRAME_RATE) {
             ofPixels pxl = grabber[i].getPixels();
             if (camView[i].needResize == true) {
                 pxl.resize(CAMERA_WIDTH, CAMERA_HEIGHT);
