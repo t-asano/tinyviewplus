@@ -2049,14 +2049,12 @@ void speakLap(int camid, float sec, int num) {
         sout += " " + ofToString(num - (useStartGate == true ? 1 : 0)) + ", ";
     }
     if (speechLangJpn == true) {
-        sout += ofToString(int(sec)) + "秒";
+        sout += ssec.substr(0, ssec.length() - 3) + "秒";
         sout += ssec.substr(ssec.length() - 2, 1) + " ";
         sout += ssec.substr(ssec.length() - 1, 1);
     }
     else {
-        sout += ofToString(int(sec)) + ".";
-        sout += ssec.substr(ssec.length() - 2, 1);
-        sout += ssec.substr(ssec.length() - 1, 1) + " seconds";
+        sout += ssec + " seconds";
     }
     speakAny(speechLangJpn ? "jp" : "en", sout);
 }
