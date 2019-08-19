@@ -13,7 +13,7 @@
 /* ---------- definitions ---------- */
 
 // system
-#define APP_VER         "v0.9.26"
+#define APP_VER         "v0.9.27"
 #define DEBUG_ENABLED   false
 #define HELP_LINES      33  // must be <= OVLTXT_LINES
 #define SCENE_INIT      0
