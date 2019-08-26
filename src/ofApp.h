@@ -89,7 +89,7 @@
 #define LAPHIST_HEIGHT  15
 #define DFLT_CAM_TRIM   false
 #define DFLT_FSCR_ENBLD false
-#define DFLT_CAM_LAPHST false
+#define DFLT_CAM_LAPHST true // xxx for speed gun
 #define ALIGN_LEFT      0
 #define ALIGN_CENTER    1
 #define ALIGN_RIGHT     2
@@ -141,6 +141,22 @@
 // gamepad
 #define GPAD_MAX_DEVS   4
 #define GPAD_ALT_BTN    4
+// speed gun
+// speed(km/h) = 3.6 * distance(m) / duration(s)
+#define SPGUN_MODE_OFF  0
+#define SPGUN_MODE_3M   1
+#define SPGUN_MODE_5M   2
+#define SPGUN_MODE_10M  3
+#define SPGUN_MODE_15M  4
+#define SPGUN_MODE_20M  5
+#define SPGUN_DVAL_OFF  0
+#define SPGUN_DVAL_3M   10.8
+#define SPGUN_DVAL_5M   18
+#define SPGUN_DVAL_10M  36
+#define SPGUN_DVAL_15M  54
+#define SPGUN_DVAL_20M  72
+#define DFLT_SPGUN_MODE SPGUN_MODE_5M
+#define DFLT_SPGUN_DVAL SPGUN_DVAL_5M
 
 /* ---------- classes ---------- */
 
@@ -200,6 +216,7 @@ public:
     string lapHistName[ARAP_MAX_RLAPS + 1];
     float lapHistLapTime[ARAP_MAX_RLAPS + 1];
     float lapHistElpTime[ARAP_MAX_RLAPS + 1];
+    float lapHistKmh[ARAP_MAX_RLAPS + 1]; // speed gun
     int flickerCount;
     int flickerValidCount;
     int racePosition;
@@ -346,3 +363,5 @@ void checkGamePad(float);
 // others
 void toggleLapHistory();
 void activateCursor();
+// speed gun
+void toggleSpeedGunMode();

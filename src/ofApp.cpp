@@ -63,6 +63,9 @@ int qrUpdCount;
 int qrCamIndex;
 // gamepad
 ofxJoystick gamePad[GPAD_MAX_DEVS];
+// speed gun
+int speedGunMode;
+float speedGunDval;
 
 //--------------------------------------------------------------
 void setupInit() {
@@ -149,6 +152,9 @@ void setupInit() {
     qrEnabled = false;
     // speech
     autoSelectSpeechLang();
+    // speed gun
+    speedGunMode = DFLT_SPGUN_MODE;
+    speedGunDval = DFLT_SPGUN_DVAL;
 }
 
 //--------------------------------------------------------------
@@ -400,6 +406,21 @@ void ofApp::update() {
                     camView[i].foundMarkerNum = 0;
                     camView[i].foundValidMarkerNum = 0;
                     camView[i].enoughMarkers = false;
+                    // speed gun
+                    int tlps = camView[i].totalLaps;
+                    if (speedGunMode != SPGUN_MODE_OFF && tlps > 0 && camView[i].lapHistKmh[tlps - 1] != 0) {
+                        float sec = elp - camView[i].prevElapsedSec;
+                        float kmh = speedGunDval / sec;
+                        camView[i].lapHistKmh[tlps - 1] = kmh;
+                        beepSound.play();
+                        if (speechLangJpn == true) {
+                            speakAny("jp", "時速" + getLapStr(kmh) + "キロ");
+                        } else {
+                            speakAny("en", getLapStr(kmh) + "km/h");
+                        }
+                        setOverlayMessage("speed: " + ofToString(kmh) + " km/h"
+                                          + ", time: " + ofToString(sec) + " s");
+                    }
                     continue;
                 }
                 // record
@@ -425,7 +446,9 @@ void ofApp::update() {
                 } else {
                     beepSound.play();
                 }
-                speakLap((i + 1), lap, total);
+                if (speedGunMode == SPGUN_MODE_OFF) {
+                    speakLap((i + 1), lap, total);
+                }
             }
             camView[i].foundMarkerNum = anum;
             camView[i].foundValidMarkerNum = vnum;
@@ -727,8 +750,15 @@ void drawCameraLapTime(int idx, bool isSub) {
         if (laps == 1 && useStartGate == true) {
             sout = "Started";
         } else {
-            sout = "Lap" + ofToString(useStartGate == true ? laps - 1 : laps);
-            sout += ": " + getLapStr(camView[i].lastLapTime) + "s";
+            if (speedGunMode == SPGUN_MODE_OFF) {
+                // lap
+                sout = "Lap" + ofToString(useStartGate == true ? laps - 1 : laps);
+                sout += ": " + getLapStr(camView[i].lastLapTime) + "s";
+            } else {
+                // speed
+                sout = "Trial " + ofToString(useStartGate == true ? laps - 1 : laps);
+                sout += ": " + getLapStr(camView[i].lapHistKmh[laps - 1]) + " km/h";
+            }
         }
         if (isSub) {
             drawStringWithShadow(&myFontLapSub, myColorWhite,
@@ -748,7 +778,7 @@ void drawCameraLapTime(int idx, bool isSub) {
 //--------------------------------------------------------------
 void drawCameraLapHistory(int camidx) {
     string text;
-    float lap;
+    float lap, kmh;
     int lapidx = camView[camidx].totalLaps - 2;
     int posy = camView[camidx].posY + LAP_MARGIN_Y + (LAP_HEIGHT / 2);
 
@@ -757,7 +787,6 @@ void drawCameraLapHistory(int camidx) {
         if (posy + (LAPHIST_HEIGHT / 2) >= camView[camidx].posY + camView[camidx].height) {
             break;
         }
-        lap = camView[camidx].lapHistLapTime[lapidx];
         if (useStartGate == true) {
             if (lapidx == 0) {
                 return;
@@ -767,7 +796,15 @@ void drawCameraLapHistory(int camidx) {
         } else {
             text = ofToString(lapidx + 1);
         }
-        text += ": " + getLapStr(lap) + "s";
+        if (speedGunMode == SPGUN_MODE_OFF) {
+            // lap
+            lap = camView[camidx].lapHistLapTime[lapidx];
+            text += ": " + getLapStr(lap) + "s";
+        } else {
+            // speed
+            kmh = camView[camidx].lapHistKmh[lapidx];
+            text += ": " + getLapStr(kmh) + " km/h";
+        }
         drawStringWithShadow(&myFontLapHist, myColorWhite, text, camView[camidx].lapPosX, posy);
     }
 }
@@ -1077,6 +1114,8 @@ void keyPressedOverlayNone(int key) {
             toggleUseStartGate();
         } else if (key == 's' || key == 'S') {
             toggleSysStat();
+        } else if (key == 'p' || key == 'P') {
+            toggleSpeedGunMode();
         }
     }
 }
@@ -2174,6 +2213,7 @@ void initRaceVars() {
             camView[i].lapHistName[h] = "";
             camView[i].lapHistLapTime[h] = 0;
             camView[i].lapHistElpTime[h] = 0;
+            camView[i].lapHistKmh[h] = 0; // speed gun
         }
         camView[i].racePosition = 0;
     }
@@ -2830,7 +2870,6 @@ void drawRaceResult(int pageidx) {
     // _body
     ofSetColor(myColorWhite);
     for (int i = 0; i < cameraNum; i++) {
-        string str;
         float fval;
         int lps, pos;
         // _newline
@@ -2870,7 +2909,12 @@ void drawRaceResult(int pageidx) {
     // _header
     int xoff = blk + 2;
     line = 3;
-    drawStringBlock(&myFontOvlayP, "Lap", xoff, line, ALIGN_CENTER, szb, szl);
+    if (speedGunMode == SPGUN_MODE_OFF) {
+        str = "Lap";
+    } else {
+        str = "Trial";
+    }
+    drawStringBlock(&myFontOvlayP, str, xoff, line, ALIGN_CENTER, szb, szl);
     for (int i = 0; i < cameraNum; i++) {
         string pilot = (camView[i].labelString == "") ? ("Pilot" + ofToString(i + 1)) : camView[i].labelString;
         drawStringBlock(&myFontOvlayP, pilot, xoff + i + 1, line, ALIGN_CENTER, szb, szl);
@@ -2891,13 +2935,16 @@ void drawRaceResult(int pageidx) {
         drawStringBlock(&myFontOvlayM,
                         ofToString(useStartGate == true ? lapidx : lapidx + 1),
                         xoff, line, ALIGN_CENTER, szb, szl);
-        // laptime
+        // laptime/speed
         for (int i = 0; i < cameraNum; i++) {
-            string str;
             if ((lapidx + 1) > camView[i].totalLaps) {
                 str = "-.-";
             } else {
-                str = getLapStr(camView[i].lapHistLapTime[lapidx]);
+                if (speedGunMode == SPGUN_MODE_OFF) {
+                    str = getLapStr(camView[i].lapHistLapTime[lapidx]);
+                } else {
+                    str = getLapStr(camView[i].lapHistKmh[lapidx]) + " km/h";
+                }
             }
             drawStringBlock(&myFontOvlayM, str, xoff + i + 1, line, ALIGN_CENTER, szb, szl);
         }
@@ -3345,6 +3392,9 @@ void checkGamePad(float elpsec) {
 
 //--------------------------------------------------------------
 void toggleLapHistory() {
+    if (speedGunMode != SPGUN_MODE_OFF) {
+        return; // xxx for speed gun
+    }
     cameraLapHistEnabled = !cameraLapHistEnabled;
     if (cameraLapHistEnabled == true) {
         setOverlayMessage("Lap History View: On");
@@ -3360,4 +3410,46 @@ void activateCursor() {
         ofShowCursor();
     }
     hideCursorTimer = HIDECUR_TIME;
+}
+
+//--------------------------------------------------------------
+void toggleSpeedGunMode() {
+    string str = "Speed Gun Mode: ";
+    stopRace(false);
+    switch (speedGunMode) {
+        case SPGUN_MODE_OFF:
+            speedGunMode = SPGUN_MODE_3M;
+            speedGunDval = SPGUN_DVAL_3M;
+            str += "3m";
+            break;
+        case SPGUN_MODE_3M:
+            speedGunMode = SPGUN_MODE_5M;
+            speedGunDval = SPGUN_DVAL_5M;
+            str += "5m";
+            break;
+        case SPGUN_MODE_5M:
+            speedGunMode = SPGUN_MODE_10M;
+            speedGunDval = SPGUN_DVAL_10M;
+            str += "10m";
+            break;
+        case SPGUN_MODE_10M:
+            speedGunMode = SPGUN_MODE_15M;
+            speedGunDval = SPGUN_DVAL_15M;
+            str += "15m";
+            break;
+        case SPGUN_MODE_15M:
+            speedGunMode = SPGUN_MODE_20M;
+            speedGunDval = SPGUN_DVAL_20M;
+            str += "20m";
+            break;
+        case SPGUN_MODE_20M:
+            speedGunMode = SPGUN_MODE_OFF;
+            speedGunDval = SPGUN_DVAL_OFF;
+            str += "Off";
+            break;
+    }
+    if (speedGunMode != SPGUN_MODE_OFF) {
+        cameraLapHistEnabled = true;
+    }
+    setOverlayMessage(str);
 }
