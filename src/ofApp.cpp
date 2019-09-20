@@ -3451,5 +3451,6 @@ void toggleSpeedGunMode() {
     if (speedGunMode != SPGUN_MODE_OFF) {
         cameraLapHistEnabled = true;
     }
+    initRaceVars();
     setOverlayMessage(str);
 }
