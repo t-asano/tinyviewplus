@@ -101,7 +101,7 @@ On Windows, if multiple receivers are connected to same USB hub, only one of the
 | Alt + 5~8,Z,/ | Delete previos lap at camera 1~4,1,3 [Windows] | - |
 | R | Display race result (\*3) | - |
 | C | Clear race result | - |
-| P | Speed Gun Mode (Off/3m/5m/10m/15m/20m)(\*4) | 5m |
+| P | Speed Gun Mode (Off/3m/5m/10m/15m/20m)(\*4) | Off |
 
 - (\*1) In loose mode, lap time will be measured even if the drone passes outside the gate.
 - (\*2) Time measurement starts after passing the first gate.

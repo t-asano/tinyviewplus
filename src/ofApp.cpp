@@ -3393,7 +3393,7 @@ void checkGamePad(float elpsec) {
 //--------------------------------------------------------------
 void toggleLapHistory() {
     if (speedGunMode != SPGUN_MODE_OFF) {
-        return; // xxx for speed gun
+        return;
     }
     cameraLapHistEnabled = !cameraLapHistEnabled;
     if (cameraLapHistEnabled == true) {
