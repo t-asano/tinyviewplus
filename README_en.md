@@ -189,7 +189,7 @@ When automatic and manual measurement are used together, the one with earlier ti
 
 However, if the interval between the two is equal to or greater than the minimum lap time setting, it will be considered as individual laps, both will be adopted and will be recorded.
 
-### Speed Gun
+### Speed Gun (experimental)
 
 The average speed is calculated from the time required to pass through the two gates. Please install a second gate near the first gate.
 
