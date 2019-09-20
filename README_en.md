@@ -101,12 +101,14 @@ On Windows, if multiple receivers are connected to same USB hub, only one of the
 | Alt + 5~8,Z,/ | Delete previos lap at camera 1~4,1,3 [Windows] | - |
 | R | Display race result (\*3) | - |
 | C | Clear race result | - |
+| P | Speed Gun Mode (Off/3m/5m/10m/15m/20m)(\*4) | Off |
 
 - (\*1) In loose mode, lap time will be measured even if the drone passes outside the gate.
 - (\*2) Time measurement starts after passing the first gate.
 - (\*3) Race results will be saved under predefined folder when race finish.
 	- macOS binary: Tiny View Plus.app/Contents/ Resources/data/pilots
 	- others: data/pilots
+- (\*4) Distance between two gates.
 
 #### Attention
 
@@ -186,6 +188,27 @@ Depending on the environment, recognition processing of markers might be heavy. 
 When automatic and manual measurement are used together, the one with earlier timing will be adopted and recorded. The one with later timing will be rejected and not be recorded.
 
 However, if the interval between the two is equal to or greater than the minimum lap time setting, it will be considered as individual laps, both will be adopted and will be recorded.
+
+### Speed Gun (experimental)
+
+The average speed is calculated from the time required to pass through the two gates. Please install a second gate near the first gate.
+
+The distance between the gates can be set with P key. Selectable distance and suitable speed range are as follows.
+
+| Distance between the gates | suitable speed range |
+| :------------: | :------------: |
+|      3 m       | under 35 km/h |
+|      5 m       | under 45 km/h |
+|      10 m      | under 70 km/h |
+|      15 m      | under 85 km/h |
+|      20 m      | undr 100 km/h |
+
+There are following limitations.
+
+- Speed gun feature only works during the race.
+- The second gate must be passed in less than the "minimum lap time".
+- Lap time display/speech does not work.
+- Speed gun mode cannot be changed during the race.
 
 ## OSC API
 
