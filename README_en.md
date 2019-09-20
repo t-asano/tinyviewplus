@@ -193,7 +193,7 @@ However, if the interval between the two is equal to or greater than the minimum
 
 The average speed is calculated from the time required to pass through the two gates. Please install a second gate near the first gate.
 
-The distance between the gates can be set with Q key. Selectable distance and suitable speed range are as follows.
+The distance between the gates can be set with P key. Selectable distance and suitable speed range are as follows.
 
 | Distance between the gates | suitable speed range |
 | :------------: | :------------: |
