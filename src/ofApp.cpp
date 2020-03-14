@@ -44,13 +44,14 @@ ofFile resultsFile;
 int arLapMode;
 bool raceStarted;
 int raceDuraSecs;
-int nextSpeechRemainSecs;
+int nextNotifyRemainSecs;
 int raceDuraLaps;
 int minLapTime;
 float elapsedTime;
 bool useStartGate;
 int raceResultTimer;
 bool frameTick;
+bool lapAfterTmoEnabled;
 // overlay
 ofxTrueTypeFontUC myFontOvlayP, myFontOvlayP2x, myFontOvlayM;
 int overlayMode;
@@ -133,7 +134,8 @@ void setupInit() {
     arLapMode = DFLT_ARAP_MODE;
     minLapTime = DFLT_ARAP_MNLAP;
     raceDuraSecs = DFLT_ARAP_RSECS;
-    nextSpeechRemainSecs = -1;
+    nextNotifyRemainSecs = -1;
+    lapAfterTmoEnabled = DFLT_ARAP_LAPTO;
     raceDuraLaps = DFLT_ARAP_RLAPS;
     useStartGate = DFLT_ARAP_SGATE;
     beepSound.load(SND_BEEP_FILE);
@@ -167,6 +169,7 @@ void loadSettingsFile() {
     // race duration (time, laps)
     raceDuraSecs = xmlSettings.getValue(SNM_RACE_DRSECS, raceDuraSecs);
     raceDuraLaps = xmlSettings.getValue(SNM_RACE_DRLAPS, raceDuraLaps);
+    lapAfterTmoEnabled = xmlSettings.getValue(SNM_RACE_LAPTMO, lapAfterTmoEnabled);
     // minimum lap time
     minLapTime = xmlSettings.getValue(SNM_RACE_MINLAP, minLapTime);
     // staggered start
@@ -188,6 +191,7 @@ void saveSettingsFile() {
     // race duration (time, laps)
     xmlSettings.setValue(SNM_RACE_DRSECS, raceDuraSecs);
     xmlSettings.setValue(SNM_RACE_DRLAPS, raceDuraLaps);
+    xmlSettings.setValue(SNM_RACE_LAPTMO, lapAfterTmoEnabled);
     // minimum lap time
     xmlSettings.setValue(SNM_RACE_MINLAP, minLapTime);
     // staggered start
@@ -331,11 +335,28 @@ void ofApp::update() {
         if (raceDuraSecs > 0) {
             float relp = elapsedTime - WATCH_COUNT_SEC;
             // speak remaining time
-            if (nextSpeechRemainSecs >= 0 && raceDuraSecs - relp <= nextSpeechRemainSecs) {
-                notifySound.play();
-                speakRemainTime(nextSpeechRemainSecs);
-                setNextSpeechRemainSecs(nextSpeechRemainSecs);
+            if (nextNotifyRemainSecs >= 0 && raceDuraSecs - relp <= nextNotifyRemainSecs) {
+                if (nextNotifyRemainSecs > 0 || lapAfterTmoEnabled == true) {
+                    notifySound.play();
+                    speakRemainTime(nextNotifyRemainSecs);
+                }
+                setNextNotifyRemainSecs(nextNotifyRemainSecs);
             }
+            // finish race by time
+            // (do not wait for lap after time limit)
+             if (relp >= raceDuraSecs) {
+                 for (int i = 0; i < cameraNum; i++) {
+                     grabber[i].update();
+                     camView[i].foundMarkerNum = 0;
+                     camView[i].foundValidMarkerNum = 0;
+                     camView[i].enoughMarkers = false;
+                     camView[i].prevElapsedSec = raceDuraSecs + WATCH_COUNT_SEC;
+                 }
+                 stopRace(false);
+                 recvOsc();
+                 updateViewParams();
+                 return;
+             }
         }
     }
     // camera
@@ -440,6 +461,7 @@ void ofApp::update() {
     // finish race
     if (raceStarted == true) {
         int i, count;
+        bool finish = false;
         // by laps
         count = 0;
         for (i = 0; i < cameraNum; i++) {
@@ -448,9 +470,10 @@ void ofApp::update() {
             }
         }
         if (count == cameraNum) {
-            stopRace(false);
-        } else if (raceDuraSecs > 0) {
-            // by time
+            finish = true;
+        }
+        // by time (wait for lap after time limit)
+        if (finish == false && raceDuraSecs > 0 && lapAfterTmoEnabled == true) {
             count = 0;
             for (i = 0; i < cameraNum; i++) {
                 if ((camView[i].prevElapsedSec - WATCH_COUNT_SEC) >= raceDuraSecs) {
@@ -458,8 +481,12 @@ void ofApp::update() {
                 }
             }
             if (count == cameraNum) {
-                stopRace(false);
+                finish = true;
             }
+        }
+        // finish!
+        if (finish == true) {
+            stopRace(false);
         }
     }
     // osc
@@ -968,6 +995,7 @@ void keyPressedOverlayHelp(int key) {
                || ofGetKeyPressed(TVP_KEY_ALT)
                || key == 'A' || key == 'a'
                || key == 'D' || key == 'd'
+               || key == 'W' || key == 'w'
                || key == 'M' || key == 'm'
                || key == 'G' || key == 'g'
                || key == 'L' || key == 'l'
@@ -1067,6 +1095,8 @@ void keyPressedOverlayNone(int key) {
             changeMinLap();
         } else if (key == 'd' || key == 'D') {
             changeRaceDuration();
+        } else if (key == 'w' || key == 'W') {
+            toggleLapAfterTimeout();
         } else if (key == 'f' || key == 'F') {
             toggleFullscreen();
         } else if (key == 't' || key == 'T') {
@@ -1821,7 +1851,7 @@ void initConfig() {
     raceDuraLaps = DFLT_ARAP_RLAPS;
     raceDuraSecs = DFLT_ARAP_RSECS;
     useStartGate = DFLT_ARAP_SGATE;
-    nextSpeechRemainSecs = -1;
+    nextNotifyRemainSecs = -1;
     raceStarted = false;
     initRaceVars();
     // finish
@@ -2060,7 +2090,7 @@ void speakLap(int camid, float sec, int num) {
 }
 
 //--------------------------------------------------------------
-void setNextSpeechRemainSecs(int curr) {
+void setNextNotifyRemainSecs(int curr) {
     int next;
     // ...180,120,60,30,0
     if (curr > 60) {
@@ -2076,7 +2106,7 @@ void setNextSpeechRemainSecs(int curr) {
     } else {
         next = -1;
     }
-    nextSpeechRemainSecs = next;
+    nextNotifyRemainSecs = next;
 }
 
 //--------------------------------------------------------------
@@ -2189,7 +2219,7 @@ void startRace() {
     finishSound.stop();
     initRaceVars();
     if (raceDuraSecs > 0) {
-        setNextSpeechRemainSecs(raceDuraSecs);
+        setNextNotifyRemainSecs(raceDuraSecs);
     }
     raceStarted = true;
     qrEnabled = false;
@@ -2575,7 +2605,7 @@ void changeRaceDuration() {
         if (sec <= 0) {
             // no limit
             raceDuraSecs = 0;
-            nextSpeechRemainSecs = -1;
+            nextNotifyRemainSecs = -1;
             break;
         } else if (sec <= ARAP_MAX_RSECS) {
             raceDuraSecs = sec;
@@ -2585,7 +2615,7 @@ void changeRaceDuration() {
             } else {
                 remain = raceDuraSecs;
             }
-            setNextSpeechRemainSecs(remain);
+            setNextNotifyRemainSecs(remain);
             break;
         } else {
             ofSystemAlertDialog("Please enter 0~" + ofToString(ARAP_MAX_RSECS) + " (0/empty means no limit)");
@@ -2622,6 +2652,20 @@ void toggleUseStartGate() {
     }
     saveSettingsFile();
     updateRacePositions();
+}
+
+//--------------------------------------------------------------
+void toggleLapAfterTimeout() {
+    if (raceStarted == true) {
+        return;
+    }
+    lapAfterTmoEnabled = !lapAfterTmoEnabled;
+    if (lapAfterTmoEnabled == true) {
+        setOverlayMessage("Wait for Lap after Time Limit: On");
+    } else {
+        setOverlayMessage("Wait for Lap after Time Limit: Off");
+    }
+    saveSettingsFile();
 }
 
 //--------------------------------------------------------------
@@ -3097,17 +3141,26 @@ void drawHelpBody(int line) {
     ofSetColor(myColorDGray);
     drawULineBlock(blk1, blk4, line + 1, szb, szl);
     ofSetColor(myColorWhite);
-    value = (raceDuraSecs <= 0) ? "No Limit" : (ofToString(raceDuraSecs) + "s");
+    value = (raceDuraSecs <= 0) ? "No Limit" : (ofToString(raceDuraSecs) + " secs");
     value += ", " + ofToString(raceDuraLaps) + " laps";
     drawStringBlock(&myFontOvlayP, "Set Race Duration (Time, Laps)", blk1, line, ALIGN_LEFT, szb, szl);
     drawStringBlock(&myFontOvlayP, value, blk2, line, ALIGN_CENTER, szb, szl);
     drawStringBlock(&myFontOvlayP, "D", blk3, line, ALIGN_CENTER, szb, szl);
     line++;
+    // Set wait for lap after time limit
+    ofSetColor(myColorDGray);
+    drawULineBlock(blk1, blk4, line + 1, szb, szl);
+    ofSetColor(myColorWhite);
+    value = lapAfterTmoEnabled ? "On" : "Off";
+    drawStringBlock(&myFontOvlayP, "Set Wait for Lap after Time Limit", blk1, line, ALIGN_LEFT, szb, szl);
+    drawStringBlock(&myFontOvlayP, value, blk2, line, ALIGN_CENTER, szb, szl);
+    drawStringBlock(&myFontOvlayP, "W", blk3, line, ALIGN_CENTER, szb, szl);
+    line++;
     // Set minimum lap time
     ofSetColor(myColorDGray);
     drawULineBlock(blk1, blk4, line + 1, szb, szl);
     ofSetColor(myColorWhite);
-    value = ofToString(minLapTime) + "s";
+    value = ofToString(minLapTime) + " secs";
     drawStringBlock(&myFontOvlayP, "Set Minimum Lap Time", blk1, line, ALIGN_LEFT, szb, szl);
     drawStringBlock(&myFontOvlayP, value, blk2, line, ALIGN_CENTER, szb, szl);
     drawStringBlock(&myFontOvlayP, "M", blk3, line, ALIGN_CENTER, szb, szl);

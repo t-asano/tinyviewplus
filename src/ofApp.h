@@ -15,7 +15,7 @@
 // system
 #define APP_VER         "v0.9.27"
 #define DEBUG_ENABLED   false
-#define HELP_LINES      33  // must be <= OVLTXT_LINES
+#define HELP_LINES      34  // must be <= OVLTXT_LINES
 #define SCENE_INIT      0
 #define SCENE_CAMS      1
 #define SCENE_MAIN      2
@@ -28,6 +28,8 @@
 #define TVP_STR_ALT     "Alt"
 #endif /* TARGET_WIN32 */
 #define DFLT_SYS_STAT   false
+
+// settings
 #define SETTINGS_FILE   "settings.xml"
 #define SNM_SYS_SPCLANG "system:speechJpn"
 #define SNM_SYS_STAT    "system:sysStat"
@@ -37,6 +39,7 @@
 #define SNM_RACE_MINLAP "race:minLapTime"
 #define SNM_RACE_STAGGR "race:staggStart"
 #define SNM_RACE_DISPLH "race:dispLapHist"
+#define SNM_RACE_LAPTMO "race:lapAfterTmo"
 #define BTTN_FSCR_FILE  "system/button_fullscreen.png"
 #define BTTN_QUIT_FILE  "system/button_quit.png"
 #define BTTN_SETT_FILE  "system/button_settings.png"
@@ -121,6 +124,7 @@
 #define DFLT_ARAP_RSECS 0
 #define DFLT_ARAP_MNLAP 3
 #define DFLT_ARAP_SGATE false
+#define DFLT_ARAP_LAPTO false
 #define ARAP_MKR_FILE   "system/marker.xml"
 #define ARAP_RESULT_DIR "results/"
 #define ARAP_MNUM_THR   2
@@ -275,7 +279,7 @@ void recvOscSpeech(string, string);
 void toggleSpeechLang();
 void autoSelectSpeechLang();
 void speakLap(int, float, int);
-void setNextSpeechRemainSecs(int);
+void setNextNotifyRemainSecs(int);
 void speakRemainTime(int);
 void speakAny(string, string);
 // draw
@@ -314,6 +318,7 @@ void toggleARLap();
 void changeMinLap();
 void changeRaceDuration();
 void toggleUseStartGate();
+void toggleLapAfterTimeout();
 // overlay - common
 void setOverlayMode(int);
 void loadOverlayFont();
