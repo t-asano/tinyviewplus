@@ -1,196 +1,199 @@
 # Tiny View Plus
 
-The English version is [here](./README_en.md).
+日本語版ドキュメントは[こちら](./README_ja.md)。
 
-Tiny View Plusは、FPV映像を手軽に表示するためのアプリです。UVC対応の受信機を、MacBook等のコンピューターに接続して使用します。受信機は4台まで(※)接続できます。
+Tiny View Plus is an application to display FPV video easily with USB receivers. Up to 4 receivers(\*) can be connected.
 
 ![tinyviewplus](docs/img/overview.jpg)
 
-**(※)Windowsの場合、USBハブに複数の受信機を接続すると正しく動作しないことがあります。PC本体のUSBポートに1つにつき、受信機1台のみを接続してください。PC内部でハブが接続されている場合もあり、その場合には正しく動作しません。**
+**(\*)On Windows, it is impossible to connect multiple receivers to the USB hub. Please connect only one receiver to each USB port built in PC.**
 
-## 動作環境
+## Environment
 
 <table>
 <tr>
-<td>OS</td><td>macOS (Mojave推奨)<br/>Windows (10 64bit推奨)</td>
+<td>OS</td><td>macOS (Mojave is recommended)<br/>Windows (10 64bit is recommended)</td>
 </tr>
 <tr>
-<td>受信機</td><td>Eachine ROTG02<br/>Eachine ROTG01</td>
+<td>FPV Receiver</td><td>Eachine ROTG02<br/>Eachine ROTG01</td>
 </tr>
 </table>
 
-冒頭の写真の例では、USBハブ(C-A)とUSBケーブル(A-microB)を別途用意しています。この場合、ROTG付属のUSBケーブル(OTG用microB-microB)は使用しません。
+To build from source code, [openFrameworks](http://openframeworks.cc/ja/) v0.10.1 is required.
 
-## インストール
+## Install
 
-バイナリの作成にあたっては細心の注意を払っていますが、アプリを実行することで起こる不具合については、一切責任を負いません。
+Attention: We are not responsible for any problems caused by running the application.
 
-ソースコードからビルドする場合は、[こちらのドキュメント](docs/HowToBuild.md)を参照してください。
+If you want to build from source code, please refer to [this document](docs/HowToBuild_en.md).
 
-### macOSの場合
+### macOS
 
-1. [リリースページ](https://github.com/t-asano/tinyviewplus/releases)よりzipファイルをダウンロード
-2. zipファイルを「アプリケーション」フォルダの下に配置
-    - それ以外の場所に配置すると、ファイルの書き込みを伴う機能が正しく動作しません。
+1. Download a zip file from [Release page](https://github.com/t-asano/tinyviewplus/releases).
+2. Extract it and place its contents in the "Application" folder.
+    - If you place it anywhere else, functions that writing to file will not work correctly.
     ![install_mac.png](docs/img/install_mac.png)
 
-### Windowsの場合
+### Windows
 
-1. [リリースページ](https://github.com/t-asano/tinyviewplus/releases)よりzipファイルをダウンロード
-2. zipファイルを展開して適当な場所に配置
-3. [Microsoft Visual C++ 2015 再頒布可能パッケージ(vc_redist.x64.exe)
-](https://www.microsoft.com/ja-jp/download/details.aspx?id=53587)をインストール  
-(起動時にVCOMP140.DLLのエラーが出る場合のみ)
+1. Download a zip file from [Release page](https://github.com/t-asano/tinyviewplus/releases).
+2. Extract it and place its contents in the proper place.
+3. Install [Microsoft Visual C++ 2015 Redistributable(vc_redist.x64.exe)
+](https://www.microsoft.com/ja-jp/download/details.aspx?id=53587)  
+(Only if VCOMP140.DLL error occurs at startup.)
 
-## 使い方
+## Usage
 
-### 起動
+### Launch
 
-1. コンピューターに受信機(4台まで)を接続
-2. アプリ本体をダブルクリックして起動
+1. Connect receivers(Up to 4) to computer.
+2. Launch application.
 
-### 受信機の検出
+### Detection of receivers
 
-受信機がうまく検出されない場合は、以下をお試し下さい。
+If receivers are not successfully detected, please try following operation.
 
-1. 受信機を全て外す
-2. USBハブ使用の場合はそれを接続し直す、または撤去する
-3. 受信機を一台ずつ数秒間隔で接続
+1. Remove all receivers.
+2. If using a USB hub, reconnect it or remove it.
+3. Connect receivers one by one at intervals of several seconds.
 
-macOSの場合、USBハブを使用していて映像がコマ落ちするようなら、USBハブ1台あたりの受信機の数を2台以下を目安に減らしてください。
+On macOS, if you are using a USB hub and the picture drops, please reduce the number of receivers per USB hub.
 
-Windowsの場合、USBハブに複数の受信機を接続した場合に、そのうち1台しか動作しないことがあります。この場合、USBハブを経由せずに接続すれば改善するかもしれません。
+On Windows, if multiple receivers are connected to same USB hub, only one of them may operate.
 
-### キーボードによる操作
+### Keyboard operations
 
-#### システム
+#### System
 
-| キー | 機能 | 初期値 |
+| key | Function | Default value |
 |---|---|---|
-| N | 音声読み上げ言語の設定(日本語/英語) | システム設定に従う |
-| S | システム統計の設定(オン/オフ) | オフ |
-| H | ヘルプ(設定/コマンド)の表示 | - |
-| I | 設定の初期化 | - |
+| N | Set speech language (Japanese/English) | Same as system locale |
+| S | Set system statistics (On/Off) | Off |
+| H | Display "Settings/Commands" | - |
+| I | Initialize settings | - |
 
-#### 表示
+#### Display
 
-| キー | 機能 | 初期値 |
+| key | Function | Default value |
 |---|---|---|
-| F,Esc | フルスクリーン表示の設定(オン/オフ) | オフ |
-| T | カメラのトリミングの設定(オン/オフ)(※1) | オフ |
-| 1~4 | カメラ1~4の拡大表示の設定(オン/オフ) | オフ |
-| command + 1~4 | カメラ1~4の表示の設定(オン/オフ) [macOS] | オン |
-| Alt + 1~4 | カメラ1~4の表示の設定(オン/オフ) [Windows] | オン |
-| B | 背景画像の設定(※2) | アプリ内蔵の画像 |
-| Q | QRコードリーダーの開始/停止(※3) | - |
+| F,Esc | Set fullscreen mode (On/Off) | Off |
+| T | Set camera view trimming (On/Off) (\*1) | Off |
+| 1~4 | Set camera 1~4 enhanced view (On/Off) | Off |
+| command + 1~4 | Set camera 1~4 visibility (On/Off) [macOS] | On |
+| Alt + 1~4 | Set camera 1~4 visibility (On/Off) [Windows] | On |
+| B | Set background image (\*2) | Built-in image |
+| Q | Start/Stop QR Code reader for camera label (\*3) | - |
 
-- (※1)カメラが1台または3台の場合に、映像の一部をトリミングして大きく表示します。
-- (※2)背景画像は、縦横比を維持したまま画面に合わせて拡大縮小され、左上が優先表示されます。
-- (※3)QRコードから読み取った文字列を、カメラのラベルに設定します。
+- (\*1) When 1 or 3 cameras are connected, the image will be cropped and displayed as large as possible.
+- (\*2) Sets the characters scanned from the QR Code to the camera label.
+- (\*3) The background image is scaled according to the screen, and the upper left is displayed in priority.
 
-#### レース
+#### Race
 
-| キー | 機能 | 初期値 |
+| key | Function | Default value |
 |---|---|---|
-| A | ARラップタイマーのモードの設定(ノーマル/ルーズ/オフ)(※1) | オン |
-| D | レースの制限時間(0\~36,000秒)、周回数(1\~10,000)の設定 | 0秒(制限なし)、10周 |
-| W | 制限時間経過後のラップ計測待ちの設定(オン/オフ)| オフ |
-| M | 最小ラップタイムの設定(1~100秒) | 3秒 |
-| G | 時差スタートの設定(オン/オフ)(※2) | オフ |
-| L | レース中のラップ履歴表示の設定(オン/オフ) | オフ |
-| Space | レースの開始/終了 | - |
-| 5~8,Z,/ | カメラ1~4,1,3のラップの追加(手動計測) | - |
-| command + 5~8,Z,/ | カメラ1~4,1,3の直前ラップの削除 [macOS] | - |
-| Alt + 5~8,Z,/ | カメラ1~4,1,3の直前ラップの削除 [Windows] | - |
-| R | レースの結果の表示(※3) | - |
-| C | レースの結果の消去 | - |
+| A | Set AR lap timer mode (Normal/Loose/Off) (\*1) | Normal |
+| D | Set race duration time (0\~36,000s) and laps (1\~10,000) | 0s (No limit), 10 laps |
+| W | Set wait for lap after time limit (On/Off) | Off |
+| M | Set minimum lap time (1~100s) | 3s |
+| G | Set staggered start (On/Off) (\*2) | Off |
+| L | Set lap history during race (On/Off) | Off |
+| Space | Start/Stop race | - |
+| 5~8,Z,/ | Add lap at camera 1~4,1,3 (manual measurement) | - |
+| command + 5~8,Z,/ | Delete previos lap at camera 1~4,1,3 [macOS] | - |
+| Alt + 5~8,Z,/ | Delete previos lap at camera 1~4,1,3 [Windows] | - |
+| R | Display race result (\*3) | - |
+| C | Clear race result | - |
 
-- (※1)ルーズモードでは、ゲートの外側を通過しても計測対象となります。
-- (※2)最初のゲートを通過した後にタイム計測を開始します。
-- (※3)レースの結果は、レース終了時に既定フォルダ内へも出力されます。
-	- macOSバイナリ版: Tiny View Plus.app/Contents/Resources/data/results
-	- それ以外: data/results
+- (\*1) In loose mode, lap time will be measured even if the drone passes outside the gate.
+- (\*2) Time measurement starts after passing the first gate.
+- (\*3) Race results will be saved under predefined folder when race finish.
+	- macOS binary: Tiny View Plus.app/Contents/ Resources/data/pilots
+	- others: data/pilots
 
-#### ご注意
+#### Attention
 
-- アプリを終了すると、システムとレースの設定は保持され、表示の設定は初期化されます
-- カメラの音声は出力されません。
+- When you exit the application, system/race settings will be saved.
+- When you exit the application, display settings will be initialized.
+- Camera audio is not supported.
 
-### マウスによる操作
+### Mouse operations
 
-一部の機能は、マウスで操作できます。
+Some functions can be operated with mouse.
 
-| 操作 | 機能 |
-|---|---|
-| カメラ1~4のアイコンをクリック | アイコンの変更(※1) |
-| カメラ1~4のラベルをクリック | ラベルの変更(※2) |
-| ![settings](docs/img/button_settings.png) ボタンをクリック | ヘルプ(設定/コマンド)の表示 |
-| ![fullscreen](docs/img/button_fullscreen.png) ボタンをクリック | フルスクリーン表示のオン |
-| ![window](docs/img/button_window.png) ボタンをクリック | フルスクリーン表示のオフ |
-| ![quit](docs/img/button_quit.png) ボタンをクリック | アプリの終了 |
+| Operation | Function |
+| --- | --- |
+| Click camera 1~4 icon | Change icon (\*1) |
+| Click camera 1~4 label | Change label (\*2) |
+| Click ![settings](docs/img/button_settings.png) button | Display "Settings/Commands" |
+| Click ![fullscreen](docs/img/button_fullscreen.png) button | Set fullscreen mode to On |
+| Click ![window](docs/img/button_window.png) button | Set fullscreen mode to Off |
+| Click ![quit](docs/img/button_quit.png) button | Quit application |
 
-- (※1)カメラのアイコンを変更すると、ラベルが自動的に変更されます。
-	- アイコンのファイル名(拡張子を除く)が採用されます。
-- (※2)カメラのラベルを変更すると、アイコンが自動的に変更されます。
-	- 既定フォルダ内に、ラベル文字列.png または ラベル文字列.jpg という画像ファイルが見つかると、この優先順でアイコン画像として採用されます。
-		- macOSバイナリ版: Tiny View Plus.app/Contents/Resources/data/pilots
-		- それ以外: data/pilots
-	- 画像ファイルが見つからない場合は、デフォルトアイコンが採用されます。
-	- 縦横比は強制的に1:1となります。
+- (\*1) Camera label will be automatically changed according to changing camera icon.
+	- The file name of the icon (excluding the extension) will be adopted.
+- (\*2) Camera icon will be automatically changed according to changing camera label.
+	- If {label string}.png or {label string}.jpg was found under predefined folder, it will be adopted as an icon image in this priority order.
+		- macOS binary: Tiny View Plus.app/Contents/ Resources/data/pilots
+		- others: data/pilots
+	- If no image file is found, the default icon will be adopted.
+	- The aspect ratio is forced to 1:1.
 
-### ゲームパッドによる操作
+### Gamepad operations
 
-一部の機能は、ゲームパッドでも操作もできます。ゲームパッドは、最大4台まで同時に利用できます。
+Some functions can also be operated with gamepad. Up to 4 gamepads can be used simultaneously.
 
-| ボタン | 機能 |
-|---|---|
-| ボタン1~4 | カメラ1~4のラップの追加(手動計測) |
-| ボタン5 + ボタン1~4 | カメラ1~4の直前ラップの削除 |
+| Button | Function |
+| --- | --- |
+| 1~4 | Add lap at camera 1~4 (manual measurement) |
+| 5 + 1~4 | Delete previos lap at camera 1~4 |
 
-### QRコードによるラベル設定
+### QR Code for label setting
 
-QRコードを使用して、カメラのラベルを設定できます。
+You can set the camera label by the QR Code.
 
 ![qr_screen.png](docs/img/qr_screen.png)
 
-QRコードを作成するには、Google Charts APIが利用できます。以下は、QRコードを作成するためのURLの例です。
+You can use Google Charts API to create QR Code. An example of URL is as follows.
 
 [https://chart.apis.google.com/chart?cht=qr&chs=500x500&chl=TinyViewPlus](https://chart.apis.google.com/chart?cht=qr&chs=500x500&chl=TinyViewPlus)
 
-QRコードをOSDに組み込んでおくと便利です。以下は、Betaflight用のロゴ画像の例です。
+It is convenient to embed the QR Code in the OSD. An example of an image for the Betaflight is as follows.
 
 ![qr_betaflight.png](docs/img/qr_betaflight.png)
 
-※QRコードは(株)デンソーウェーブの登録商標です。
+\* "QR Code" is a registered trademark of DENSO WAVE INCORPORATED.
 
-### ARマーカーによるラップ計測
+### AR lap timer
 
-ARマーカーを利用して、ラップタイムを計測できます。
+You can measure the lap time by using AR marker.
 
 ![argate_single.png](docs/img/argate_single.png)
 ![argate_multi.png](docs/img/argate_multi.png)
 
-マーカーを4から8個程度、ゲートの周囲に配置してください。またその際に、マーカーの上側がゲートの中央を向くようにしてください。以下の4種類のマーカーに対応していますが、上の図のように1種類のみを配置する形でも構いません。
+Please place 4 to 8 markers around the gate. Also make sure that the top of the marker faces the center of the gate. Following four types of markers are supported. It does not matter if only one type is placed as shown above.
 
 - [marker_00_main_a.png](docs/img/marker_00_main_a.png)
 - [marker_01_main_b.png](docs/img/marker_01_main_b.png)
 - [marker_02_main_c.png](docs/img/marker_02_main_c.png)
 - [marker_03_main_d.png](docs/img/marker_03_main_d.png)
 
-マーカーのサイズは1辺150mmを目安として、通過スピードに応じて調整してください。ハイスピードレースにおいては、より大きなマーカーが適しています。マーカーの認識がうまくいかない場合は、マーカーを大きくしたり、複数の種類を織り交ぜたり、より明るい場所に設置すると、改善するかもしれません。
+The size of the marker should be 150mm per side. Larger marker will be suitable for high speed race. If marker recognition is not successful, please try increasing the size of the marker, using multiple types, or placing them in a brighter place.
 
-ラップタイムの計測は、レース中にのみ行われます。同時に2個以上の正しい向きのマーカーを検出した後、画面からマーカーが消えたタイミングでラップタイムが確定します。ただし、最後に映っていたマーカーの向きが正しくない(ゲートの外側を通った等の)場合は、計測の対象外となります。
+Lap time will be measured only during the race. After detecting two or more correctly oriented markers simultaneously, when the marker disappears from the screen, lap time will be confirmed. However, if the direction of the last displayed marker is incorrect, the measurement will be canceled.
 
-環境によっては、マーカーの認識処理が重く、動作に支障があるかもしれません。その場合は、機能を無効化してください。
+Depending on the environment, recognition processing of markers might be heavy. In that case, please disable the function.
 
-### 自動計測と手動計測の併用
+### Combination of automatic and manual measurement
 
-自動計測と手動計測を併用した場合、タイミングが早い方が採用され、記録に残ります。タイミングが遅い方は却下され、記録に残りません。ただし、両者の間隔が最小ラップタイム設定値以上であれば、別々のラップとみなされ、両者ともに採用され、記録に残ります。
+When automatic and manual measurement are used together, the one with earlier timing will be adopted and recorded. The one with later timing will be rejected and not be recorded.
 
-## OSCによる制御
+However, if the interval between the two is equal to or greater than the minimum lap time setting, it will be considered as individual laps, both will be adopted and will be recorded.
 
-OSCプロトコルにより外部からの制御が可能です。詳しくは[こちら](docs/OSCAPI.md)をご覧ください。
+## OSC API
 
-## ライセンス
+Tiny View Plus can be controlled by OSC protocol. Detailed information is [here](docs/OSCAPI_en.md).
+
+## License
 
 Tiny View Plus is distributed under the MIT License. This gives everyone the freedoms to use Tiny View Plus in any context: commercial or non-commercial, public or private, open or closed source. Please see [LICENSE.md](LICENSE.md) and [LICENSE\_THIRD\_PARTY.md](LICENSE_THIRD_PARTY.md) for details.
