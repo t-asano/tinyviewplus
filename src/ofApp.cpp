@@ -794,7 +794,7 @@ void drawCameraLapHistory(int camidx) {
     string text;
     float lap;
     int lapidx = camView[camidx].totalLaps - 2;
-    int posy = camView[camidx].posY + LAP_MARGIN_Y + (LAP_HEIGHT / 2);
+    int posy = camView[camidx].lapPosY + (LAP_HEIGHT / 2);
 
     for (; lapidx >= 0; lapidx--) {
         posy += LAPHIST_HEIGHT + (LAPHIST_HEIGHT / 2);
