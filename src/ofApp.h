@@ -51,6 +51,7 @@
 #define COLOR_LGRAY     127,127,127
 #define COLOR_DGRAY     15
 #define COLOR_BG_DARK   0,0,0,223
+#define COLOR_BG_MIDDLE 0,0,0,127
 #define COLOR_BG_LIGHT  0,0,0,31
 #define COLOR_ALERT     255,0,0
 // view
@@ -107,7 +108,7 @@
 #define OVLTXT_LAPS     25
 #define OVLTXT_MARG     10
 #define OLVMSG_TIME     FRAME_RATE
-#define INFO_HEIGHT     15
+#define INFO_HEIGHT     10
 // sound
 #define SND_BEEP_FILE   "system/beep.wav"
 #define SND_BEEP3_FILE  "system/beep3.wav"

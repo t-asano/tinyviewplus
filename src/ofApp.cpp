@@ -16,10 +16,10 @@ bool sysStatEnabled;
 // view
 ofVideoGrabber grabber[CAMERA_MAXNUM];
 ofColor myColorYellow, myColorWhite, myColorLGray, myColorDGray, myColorAlert;
-ofColor myColorBGDark, myColorBGLight;
+ofColor myColorBGDark, myColorBGMiddle, myColorBGLight;
 ofxTrueTypeFontUC myFontNumber, myFontLabel, myFontLap, myFontLapHist;
 ofxTrueTypeFontUC myFontNumberSub, myFontLabelSub, myFontLapSub;
-ofxTrueTypeFontUC myFontInfo1m, myFontInfo1p, myFontInfo2m;
+ofxTrueTypeFontUC myFontInfo1m, myFontInfo1p, myFontInfo3m;
 ofImage wallImage, logoLargeImage, logoSmallImage;
 ofImage bttnFscrImage, bttnQuitImage, bttnSettImage, bttnWndwImage;
 float wallRatio;
@@ -98,7 +98,7 @@ void setupInit() {
     myFontLapSub.load(FONT_P_FILE, LAP_HEIGHT / 2);
     myFontInfo1m.load(FONT_M_FILE, INFO_HEIGHT);
     myFontInfo1p.load(FONT_P_FILE, INFO_HEIGHT);
-    myFontInfo2m.load(FONT_M_FILE, INFO_HEIGHT * 2);
+    myFontInfo3m.load(FONT_M_FILE, INFO_HEIGHT * 3);
     loadOverlayFont();
     cameraTrimEnabled = DFLT_CAM_TRIM;
     fullscreenEnabled = DFLT_FSCR_ENBLD;
@@ -655,38 +655,55 @@ void drawCameraARMarker(int idx, bool isSub) {
 }
 
 //--------------------------------------------------------------
-void drawCameraPilot(int camidx, bool isSub) {
-    int i = camidx;
-    // base
-    ofSetColor(camView[i].baseColor);
-    ofFill();
-    ofDrawRectangle(camView[i].basePosX, camView[i].basePosY, camView[i].baseWidth, camView[i].baseHeight);
+void drawCameraPilot(int cidx, bool issub) {
+    ofxTrueTypeFontUC *fontnum, *fontlp;
+    int icnw, icnh, marg, bgw;
+
+    if (issub == true) {
+        fontnum = &myFontNumberSub;
+        fontlp = &myFontLabelSub;
+        icnw = ICON_WIDTH / 2;
+        icnh = ICON_HEIGHT / 2;
+        marg = 7;
+    } else {
+        fontnum = &myFontNumber;
+        fontlp = &myFontLabel;
+        icnw = ICON_WIDTH;
+        icnh = ICON_HEIGHT;
+        marg = 15;
+    }
+
+    // badge
+    ofSetColor(camView[cidx].baseColor);
+    ofDrawRectangle(camView[cidx].basePosX, camView[cidx].basePosY,
+                    camView[cidx].baseWidth, camView[cidx].baseHeight);
     // number
     ofSetColor(myColorWhite);
-    if (isSub) {
-        myFontNumberSub.drawString(ofToString(i + 1), camView[i].numberPosX, camView[i].numberPosY);
-    } else {
-        myFontNumber.drawString(ofToString(i + 1), camView[i].numberPosX, camView[i].numberPosY);
+    fontnum->drawString(ofToString(cidx + 1), camView[cidx].numberPosX, camView[cidx].numberPosY);
+
+    // background
+    bgw = icnw;
+    if (camView[cidx].labelString != "") {
+        bgw = bgw + fontlp->stringWidth(camView[cidx].labelString) + marg;
     }
+    ofFill();
+    ofSetColor(myColorBGMiddle);
+    ofDrawRectangle(camView[cidx].iconPosX, camView[cidx].iconPosY, bgw, icnh);
     // icon
     ofSetColor(myColorWhite);
-    if (isSub) {
-        camView[i].iconImage.draw(camView[i].iconPosX, camView[i].iconPosY, ICON_WIDTH / 2, ICON_HEIGHT / 2);
-    } else {
-        camView[i].iconImage.draw(camView[i].iconPosX, camView[i].iconPosY, ICON_WIDTH, ICON_HEIGHT);
-    }
+    camView[cidx].iconImage.draw(camView[cidx].iconPosX, camView[cidx].iconPosY, icnw, icnh);
     // label
-    ofxTrueTypeFontUC *font = isSub ? &myFontLabelSub : &myFontLabel;
-    if (camView[i].labelString != "") {
-        drawStringWithShadow(font, myColorYellow,
-                             camView[i].labelString, camView[i].labelPosX, camView[i].labelPosY);
+    if (camView[cidx].labelString != "") {
+        ofSetColor(myColorYellow);
+        fontlp->drawString(camView[cidx].labelString, camView[cidx].labelPosX, camView[cidx].labelPosY);
     }
+
     // position
-    if (camView[i].moveSteps > 0 || camView[i].racePosition == 0) {
+    if (camView[cidx].moveSteps > 0 || camView[cidx].racePosition == 0) {
         return;
     }
     string str = "";
-    int pos = camView[i].racePosition;
+    int pos = camView[cidx].racePosition;
     int x;
     switch (pos) {
         case 1:
@@ -702,9 +719,9 @@ void drawCameraPilot(int camidx, bool isSub) {
             str = "4th";
             break;
     }
-    x = min(ofGetWidth(), camView[i].posX + camView[i].width) - (1 + font->stringWidth(str));
-    x = x - (isSub ? 10 : 20);
-    drawStringWithShadow(font, myColorWhite, str, x, camView[i].labelPosY);
+    x = min(ofGetWidth(), camView[cidx].posX + camView[cidx].width) - (1 + fontlp->stringWidth(str));
+    x = x - (issub ? 10 : 20);
+    drawStringWithShadow(fontlp, myColorWhite, str, x, camView[cidx].labelPosY);
 }
 
 //--------------------------------------------------------------
@@ -852,9 +869,9 @@ void drawWatch() {
             str = str + " / " + getWatchString(raceDuraSecs);
         }
     }
-    int x = (ofGetWidth() / 2) - (myFontInfo2m.stringWidth(str) / 2);
+    int x = (ofGetWidth() / 2) - (myFontInfo3m.stringWidth(str) / 2);
     x = (int)(x / 10) * 10;
-    drawStringWithShadow(&myFontInfo2m, myColorWhite, str, x, ofGetHeight() - 10);
+    drawStringWithShadow(&myFontInfo3m, myColorWhite, str, x, ofGetHeight() - 10);
 }
 
 //--------------------------------------------------------------
@@ -869,9 +886,10 @@ void drawInfo() {
         ofSetColor(myColorWhite);
         logoSmallImage.draw(0, 0);
     }
-    tcolor = &myColorLGray;
+    tcolor = &myColorWhite;
     // appinfo
-    drawStringWithShadow(&myFontInfo1m, *tcolor, APP_VER, 10, y);
+    str = "Tiny View Plus " + ofToString(APP_VER);
+    drawStringWithShadow(&myFontInfo1p, *tcolor, str, 10, y);
     // date/time
     str = ofGetTimestampString("%F %T");
     x = ofGetWidth() - (myFontInfo1m.stringWidth(str) + 10);
@@ -881,8 +899,17 @@ void drawInfo() {
 
 //--------------------------------------------------------------
 void drawStringWithShadow(ofxTrueTypeFontUC *font, ofColor color, string str, int x, int y) {
-    ofSetColor(0);
-    font->drawString(str, x + 1, y + 1);
+    // shadow
+    ofRectangle rect;
+    int margin = 4;
+    rect = font->getStringBoundingBox(str, x, y);
+    rect.width = rect.width + (rect.x - x) + (margin * 2);
+    rect.height = rect.height + (margin * 2);
+    rect.x = x - margin;
+    rect.y = rect.y - margin;
+    ofSetColor(myColorBGMiddle);
+    ofDrawRectangle(rect);
+    // string
     ofSetColor(color);
     font->drawString(str, x, y);
 }
@@ -1366,6 +1393,7 @@ void setupColors() {
     myColorLGray = ofColor(COLOR_LGRAY);
     myColorDGray = ofColor(COLOR_DGRAY);
     myColorBGDark = ofColor(COLOR_BG_DARK);
+    myColorBGMiddle = ofColor(COLOR_BG_MIDDLE);
     myColorBGLight = ofColor(COLOR_BG_LIGHT);
     myColorAlert = ofColor(COLOR_ALERT);
     // pilot
