@@ -15,7 +15,7 @@
 // system
 #define APP_VER         "v0.9.28"
 #define DEBUG_ENABLED   false
-#define HELP_LINES      34  // must be <= OVLTXT_LINES
+#define HELP_LINES      35  // must be <= OVLTXT_LINES
 #define SCENE_INIT      0
 #define SCENE_CAMS      1
 #define SCENE_MAIN      2
@@ -33,6 +33,10 @@
 #define SETTINGS_FILE   "settings.xml"
 #define SNM_SYS_SPCLANG "system:speechJpn"
 #define SNM_SYS_STAT    "system:sysStat"
+#define SNM_VIEW_FLLSCR "view:fullscreen"
+#define SNM_VIEW_BGIMG  "view:bgImage"
+#define SNM_VIEW_CAMTRM "view:camTrim"
+#define SNM_VIEW_CAMFRM "view:camFrame"
 #define SNM_RACE_ARMODE "race:arMode"
 #define SNM_RACE_DRSECS "race:duraSecs"
 #define SNM_RACE_DRLAPS "race:duraLaps"
@@ -60,14 +64,14 @@
 #define VERTICAL_SYNC   true
 #define LOGO_LARGE_FILE "system/logo_large.png"
 #define LOGO_SMALL_FILE "system/logo_small.png"
-#define WALL_FILE       "system/background.png"
+#define DFLT_WALL_FILE  "system/background.png"
+#define DFLT_ICON_FILE  "system/pilot_icon.png"
 #define CAMERA_MAXNUM   4
 #define CAMERA_WIDTH    640
 #define CAMERA_HEIGHT   480
 #define CAMERA_RATIO    1.3333
 #define FONT_P_FILE     "system/GenShinGothic-P-Bold.ttf"
 #define FONT_M_FILE     "system/GenShinGothic-Monospace-Bold.ttf"
-#define ICON_FILE       "system/pilot_icon.png"
 #define ICON_DIR        "pilots/"
 #define ICON_WIDTH      50
 #define ICON_HEIGHT     50
@@ -91,9 +95,12 @@
 #define LAP_MARGIN_X    20
 #define LAP_MARGIN_Y    80
 #define LAPHIST_HEIGHT  15
-#define DFLT_CAM_TRIM   false
+#define LAPHIST_MARGIN  8
+#define FRAME_LINEWIDTH 8
 #define DFLT_FSCR_ENBLD false
+#define DFLT_CAM_TRIM   false
 #define DFLT_CAM_LAPHST false
+#define DFLT_CAM_FRAMED false
 #define ALIGN_LEFT      0
 #define ALIGN_CENTER    1
 #define ALIGN_RIGHT     2
@@ -104,7 +111,7 @@
 #define OVLMODE_MSG     2
 #define OVLMODE_RCRSLT  3
 #define OVLTXT_BLKS     13
-#define OVLTXT_LINES    34
+#define OVLTXT_LINES    35
 #define OVLTXT_LAPS     25
 #define OVLTXT_MARG     10
 #define OLVMSG_TIME     FRAME_RATE
@@ -235,6 +242,7 @@ public:
 
 // -- splash --
 void setupInit();
+void loadWallImage(string);
 void loadSettingsFile();
 void saveSettingsFile();
 void updateInit();
@@ -259,7 +267,8 @@ void toggleCameraVisibility(int);
 int getCameraIdxNthVisibleAll(int);
 int getCameraIdxNthVisibleSub(int);
 void toggleFullscreen();
-void toggleSoloTrim();
+void toggleCameraTrim();
+void toggleCameraFrame();
 void setupColors();
 void changeCameraLabel(int);
 void changeCameraLabelAll();
@@ -285,6 +294,7 @@ void speakRemainTime(int);
 void speakAny(string, string);
 // draw
 void drawCameraImage(int);
+void drawCameraFrame(int);
 void drawCameraARMarker(int, bool);
 void drawCameraPilot(int, bool);
 void drawCameraLapTime(int, bool);

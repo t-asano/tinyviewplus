@@ -2,20 +2,20 @@
 
 日本語版ドキュメントは[こちら](./README_ja.md)。
 
-Tiny View Plus is an application to display FPV video easily with USB receivers. Up to 4 receivers(\*) can be connected.
+Tiny View Plus is a FPV multi-view and lap timing system. It works on PC with UVC compatible FPV receivers. Up to 4 receivers(\*) can be connected.
 
 ![tinyviewplus](docs/img/overview.jpg)
 
-**(\*)On Windows, it is impossible to connect multiple receivers to the USB hub. Please connect only one receiver to each USB port built in PC.**
+**(\*)On Windows, it is impossible to connect multiple receivers to a USB hub. Please connect only one receiver to each USB port built in PC.**
 
 ## Environment
 
 <table>
 <tr>
-<td>OS</td><td>macOS (Mojave is recommended)<br/>Windows (10 64bit is recommended)</td>
+<td>OS</td><td>macOS (Catalina is recommended)<br/>Windows (10 64bit is recommended)</td>
 </tr>
 <tr>
-<td>FPV Receiver</td><td>Eachine ROTG02<br/>Eachine ROTG01</td>
+<td>FPV Receiver</td><td>Eachine ROTG02<br/>Eachine ROTG01 Pro<br/>Eachine ROTG01</td>
 </tr>
 </table>
 
@@ -77,16 +77,17 @@ On Windows, if multiple receivers are connected to same USB hub, only one of the
 | key | Function | Default value |
 |---|---|---|
 | F,Esc | Set fullscreen mode (On/Off) | Off |
+| B | Set background image (\*2) | Built-in image |
 | T | Set camera view trimming (On/Off) (\*1) | Off |
+| E | Set camera frame visibility (On/Off) | Off |
 | 1~4 | Set camera 1~4 enhanced view (On/Off) | Off |
 | command + 1~4 | Set camera 1~4 visibility (On/Off) [macOS] | On |
 | Alt + 1~4 | Set camera 1~4 visibility (On/Off) [Windows] | On |
-| B | Set background image (\*2) | Built-in image |
 | Q | Start/Stop QR Code reader for camera label (\*3) | - |
 
 - (\*1) When 1 or 3 cameras are connected, the image will be cropped and displayed as large as possible.
 - (\*2) Sets the characters scanned from the QR Code to the camera label.
-- (\*3) The background image is scaled according to the screen, and the upper left is displayed in priority.
+- (\*3) The background image will be scaled according to the screen. Upper left corner will be displayed in priority.
 
 #### Race
 
@@ -97,7 +98,7 @@ On Windows, if multiple receivers are connected to same USB hub, only one of the
 | W | Set wait for lap after time limit (On/Off) | Off |
 | M | Set minimum lap time (1~100s) | 3s |
 | G | Set staggered start (On/Off) (\*2) | Off |
-| L | Set lap history during race (On/Off) | Off |
+| L | Set lap history view (On/Off) | Off |
 | Space | Start/Stop race | - |
 | 5~8,Z,/ | Add lap at camera 1~4,1,3 (manual measurement) | - |
 | command + 5~8,Z,/ | Delete previos lap at camera 1~4,1,3 [macOS] | - |
@@ -133,7 +134,7 @@ Some functions can be operated with mouse.
 - (\*1) Camera label will be automatically changed according to changing camera icon.
 	- The file name of the icon (excluding the extension) will be adopted.
 - (\*2) Camera icon will be automatically changed according to changing camera label.
-	- If {label string}.png or {label string}.jpg was found under predefined folder, it will be adopted as an icon image in this priority order.
+	- If {label string}.jpg/png/bmp was found under predefined folder, it will be adopted as an icon image in this priority order.
 		- macOS binary: Tiny View Plus.app/Contents/ Resources/data/pilots
 		- others: data/pilots
 	- If no image file is found, the default icon will be adopted.
