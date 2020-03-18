@@ -30,8 +30,11 @@ Tiny View Plusはラップ計測に対応したFPVマルチビューアーです
 ### macOSの場合
 
 1. [リリースページ](https://github.com/t-asano/tinyviewplus/releases)よりzipファイルをダウンロード
-2. zipファイルを「アプリケーション」フォルダの下に配置
-    - それ以外の場所に配置すると、ファイルの書き込みを伴う機能が正しく動作しません。
+2. macOSの「ターミナル」でzipファイルに付いている拡張属性を削除
+    - $ xattr -cr ~/Downloads/tinyviewplus_*_macos64bit.zip
+    - macOS Catalinaで起動するためには必須
+3. zipファイルに含まれるアプリ本体を「アプリケーション」フォルダの下に配置
+    - それ以外の場所に配置すると、ファイルの書き込みを伴う機能が正しく動作しません。  
     ![install_mac.png](docs/img/install_mac.png)
 
 ### Windowsの場合
