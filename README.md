@@ -32,7 +32,7 @@ If you want to build from source code, please refer to [this document](docs/HowT
 1. Download a zip file from [Release page](https://github.com/t-asano/tinyviewplus/releases).
 
 2. Remove extended file attribute from zip file on the "Terminal" app.
-    - $ xattr -cr ~/Downloads/tinyviewplus_*_macos64bit.zip
+    - $ xattr -c ~/Downloads/tinyviewplus_*_macos64bit.zip
     - It is absolutely reuired on macOS Catalina.
 3. Extract zip file and place app file in the "Application" folder.  
     - If you place it anywhere else, functions that writing to file will not work correctly.
