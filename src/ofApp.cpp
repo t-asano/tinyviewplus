@@ -312,10 +312,9 @@ void setupMain() {
     if (speechLangJpn == true) {
 #ifdef TARGET_OSX
         speakAny("jp", "タイニービュープラスへ、ようこそ。");
-#endif /* TARGET_OSX */
-#ifdef TARGET_WIN32
+#else /* TARGET_OSX */
         speakAny("jp", "タイニービュープラスへようこそ。");
-#endif /* TARGET_WIN32 */
+#endif /* TARGET_WIN32 TARGET_LINUX */
     } else {
         speakAny("en", "Welcome to Tiny View Plus.");
     }
@@ -1987,6 +1986,13 @@ string getUserLocaleName() {
     name = ofToString(setlocale(LC_ALL, ""));
     setlocale(LC_ALL, org.c_str());
 #endif /* TARGET_WIN32 */
+#ifdef TARGET_LINUX
+    FILE *pipe = popen("locale|grep LANG=", "r");
+    char buf[11];
+    fgets(buf, sizeof(buf), pipe);
+    name = ofToString(buf);
+    pclose(pipe);
+#endif /* TARGET_LINUX */
     return name;
 }
 
@@ -2290,6 +2296,14 @@ void speakAny(string lang, string text) {
         }
     }
 #endif /* TARGET_WIN32 */
+#ifdef TARGET_LINUX
+    int pid = fork();
+    if (pid == 0) {
+        // Use speech-dispatcher
+        execlp("spd-say", "-w", "-r", "15", "-t", "female1", "-l", lang.c_str(), text.c_str(), NULL);
+        OF_EXIT_APP(-1);
+    }
+#endif /* TARGET_LINUX */
 }
 
 //--------------------------------------------------------------
