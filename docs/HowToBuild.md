@@ -107,6 +107,24 @@ std::string convertWideToNarrow( const wchar_t *s, char dfault = '?', const std:
 }
 ```
 
+### Linuxの場合(実験的)
+
+カメラが二重に検出されてしまうバグがあるので、openFrameworksの修正が必要。  
+https://github.com/t-asano/tinyviewplus/pull/22
+
+> For the correct definition of cameras, is required error correction in
+openFrameworks. Locate file "../libs/openFrameworks/video/
+ofGstVideoGrabber.cpp". Find the line:
+>
+> guint cap = v2cap.capabilities;
+>
+> Replace it with:
+>
+> guint cap = v2cap.device_caps;
+>
+> Rebuild openFrameworks. See here for more info:
+[openframeworks/openFrameworks#6556](https://github.com/openframeworks/openFrameworks/issues/6556)
+
 ## ビルドと起動
 
 ### macOSの場合
