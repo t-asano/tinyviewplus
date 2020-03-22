@@ -119,7 +119,7 @@ On Windows, if multiple receivers are connected to same USB hub, only one of the
 #### Attention
 
 - When you exit the application, system/race settings will be saved.
-- When you exit the application, display settings will be initialized.
+- When you exit the application, some display settings will be saved.
 - Camera audio is not supported.
 
 ### Mouse operations
