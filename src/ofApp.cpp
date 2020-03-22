@@ -381,19 +381,19 @@ void ofApp::update() {
             }
             // finish race by time
             // (do not wait for lap after time limit)
-             if (relp >= raceDuraSecs) {
-                 for (int i = 0; i < cameraNum; i++) {
-                     grabber[i].update();
-                     camView[i].foundMarkerNum = 0;
-                     camView[i].foundValidMarkerNum = 0;
-                     camView[i].enoughMarkers = false;
-                     camView[i].prevElapsedSec = raceDuraSecs + WATCH_COUNT_SEC;
-                 }
-                 stopRace(false);
-                 recvOsc();
-                 updateViewParams();
-                 return;
-             }
+            if (lapAfterTmoEnabled == false && relp >= raceDuraSecs) {
+                for (int i = 0; i < cameraNum; i++) {
+                    grabber[i].update();
+                    camView[i].foundMarkerNum = 0;
+                    camView[i].foundValidMarkerNum = 0;
+                    camView[i].enoughMarkers = false;
+
+                }
+                stopRace(false);
+                recvOsc();
+                updateViewParams();
+                return;
+            }
         }
     }
     // camera
