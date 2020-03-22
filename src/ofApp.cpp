@@ -780,7 +780,7 @@ void drawCameraPilot(int cidx, bool issub) {
             break;
     }
     x = min(ofGetWidth(), camView[cidx].posX + camView[cidx].width) - (1 + fontlp->stringWidth(str));
-    x = x - (issub ? 10 : 20) - offset;
+    x = x - (issub ? 5 : 10) - offset;
     drawStringWithShadow(fontlp, myColorWhite, str, x, camView[cidx].labelPosY + offset);
 }
 
