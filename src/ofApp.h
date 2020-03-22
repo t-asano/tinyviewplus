@@ -22,11 +22,10 @@
 #ifdef TARGET_OSX
 #define TVP_KEY_ALT     OF_KEY_COMMAND
 #define TVP_STR_ALT     "command"
-#endif /* TARGET_OSX */
-#ifdef TARGET_WIN32
+#else /* TARGET_OSX */
 #define TVP_KEY_ALT     OF_KEY_ALT
 #define TVP_STR_ALT     "Alt"
-#endif /* TARGET_WIN32 */
+#endif /* TARGET_WIN32 TARGET_LINUX */
 #define DFLT_SYS_STAT   false
 
 // settings
