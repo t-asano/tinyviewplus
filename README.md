@@ -42,9 +42,9 @@ If you want to build from source code, please refer to [this document](docs/HowT
 
 1. Download a zip file from [Release page](https://github.com/t-asano/tinyviewplus/releases).
 2. Extract it and place its contents in the proper place.
-3. Install [Microsoft Visual C++ 2015 Redistributable(vc_redist.x64.exe)
+3. Install [Microsoft Visual C++ Redistributable for Visual Studio 2015, 2017 and 2019(vc_redist.x64.exe)
 ](https://www.microsoft.com/ja-jp/download/details.aspx?id=53587)  
-(Only if VCOMP140.DLL error occurs at startup.)
+(https://support.microsoft.com/en-us/help/2977003/the-latest-supported-visual-c-downloads)
 
 ## Usage
 

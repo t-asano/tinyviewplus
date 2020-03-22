@@ -41,9 +41,8 @@ Tiny View Plusはラップ計測に対応したFPVマルチビューアーです
 
 1. [リリースページ](https://github.com/t-asano/tinyviewplus/releases)よりzipファイルをダウンロード
 2. zipファイルを展開して適当な場所に配置
-3. [Microsoft Visual C++ 2015 再頒布可能パッケージ(vc_redist.x64.exe)
-](https://www.microsoft.com/ja-jp/download/details.aspx?id=53587)をインストール  
-(起動時にVCOMP140.DLLのエラーが出る場合のみ)
+3. [Visual Studio 2015、2017、および 2019 用 Microsoft Visual C++ 再頒布可能パッケージ(vc_redist.x64.exe)
+](https://support.microsoft.com/ja-jp/help/2977003/the-latest-supported-visual-c-downloads)をインストール
 
 ## 使い方
 
