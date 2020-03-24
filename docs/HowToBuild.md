@@ -8,10 +8,10 @@
    - [App Store](https://itunes.apple.com/ca/app/xcode/id497799835?mt=12)からXcodeをインストールする
    - Xcodeのcommand line toolsをインストールする
      - $ xcode-select --install
-2. openFrameworks 0.10.1をインストールする
-   - [zipファイル](https://openframeworks.cc/versions/v0.10.1/of_v0.10.1_osx_release.zip)をダウンロードする
+2. openFrameworks 0.11.0をインストールする
+   - [openFrameworks for osx (zipファイル)](https://openframeworks.cc/download/)をダウンロードする
    - 拡張属性を取り除く
-     - $  xattr -cr of_v0.10.1_osx_release.zip
+     - $ xattr -cr of\_\*\_osx_release.zip
    - 適当な場所に展開する
 
 ### Windowsの場合
@@ -20,7 +20,7 @@
     - [こちらのドキュメント](https://openframeworks.cc/setup/vs/)を参考とする
       - Visual Studio Community 2017を前提に書かれているが、2019でも問題無い
       - 「openFrameworks plugin for Visual Studio」は実施しない
-2. openFrameworks 0.10.1をインストールする
+2. openFrameworks 0.11.0をインストールする
     - 適当な場所に[openFrameworks for visual studio](https://openframeworks.cc/download/)を展開する
 3. Git for Windowsをインストールする
     - [こちらのドキュメント](https://qiita.com/elu_jaune/items/280b4773a3a66c7956fe)を参考にインストールする
@@ -149,6 +149,8 @@ ofGstVideoGrabber.cpp". Find the line:
    $ git pull
    ```
 
-2. アドオンの増減に追従する(必要な場合のみ)
+2. アドオンを追加する(必要な場合のみ)
    - Gitコマンドで新規のアドオンを取得する
-   - プロジェクトジェネレーターでアドオンを取捨選択する
+   - プロジェクトジェネレーターでアドオンを追加する
+
+以上
