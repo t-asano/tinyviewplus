@@ -11,7 +11,7 @@
 // system
 int camCheckCount;
 int tvpScene;
-ofxXmlSettings xmlSettings;
+ofxXmlSettings xmlSettings, xmlCamProfFpv;
 bool sysStatEnabled;
 // view
 ofVideoGrabber grabber[CAMERA_MAXNUM];
@@ -27,6 +27,7 @@ string wallPath;
 float wallRatio;
 int wallDrawWidth;
 int wallDrawHeight;
+tvpCamProf camProfFpvExtra;
 tvpCamView camView[CAMERA_MAXNUM];
 int cameraNum;
 int cameraNumVisible;
@@ -153,6 +154,8 @@ void setupInit() {
     qrEnabled = false;
     // speech
     autoSelectSpeechLang();
+    // extra camera
+    camProfFpvExtra.enabled = false;
 }
 
 //--------------------------------------------------------------
@@ -239,6 +242,39 @@ void saveSettingsFile() {
 }
 
 //--------------------------------------------------------------
+void loadCameraProfileFile() {
+    if (xmlCamProfFpv.loadFile(CAM_FPV_FILE) == false) {
+        return;
+    }
+    tvpCamProf *p = &camProfFpvExtra;
+    ofxXmlSettings *s = &xmlCamProfFpv;
+    // load
+    p->enabled = true;
+    p->name = s->getValue(CFNM_NAME, "tvp-no-named-camera");
+    p->grabW = s->getValue(CFNM_GRAB_W, CAMERA_WIDTH);
+    p->grabH = s->getValue(CFNM_GRAB_H, CAMERA_HEIGHT);
+    p->cropX = s->getValue(CFNM_CROP_X, 0);
+    p->cropY = s->getValue(CFNM_CROP_Y, 0);
+    p->cropW = s->getValue(CFNM_CROP_W, CAMERA_WIDTH);
+    p->cropH = s->getValue(CFNM_CROP_H, CAMERA_HEIGHT);
+    // crop?
+    if (p->cropX == 0 && p->cropY == 0 && p->cropW == p->grabW && p->cropH == p->grabH) {
+        p->needCrop = false;
+    }
+    else {
+        p->needCrop = true;
+    }
+    // resize?
+    if ((p->needCrop == true && p->cropW == CAMERA_WIDTH && p->cropH == CAMERA_HEIGHT)
+        || (p->needCrop == false && p->grabW == CAMERA_WIDTH && p->grabH && CAMERA_HEIGHT)) {
+        p->needResize = false;
+    }
+    else {
+        p->needResize = true;
+    }
+}
+
+//--------------------------------------------------------------
 void setupCamCheck() {
     tvpScene = SCENE_CAMS;
     cameraNum = 0;
@@ -248,30 +284,62 @@ void setupCamCheck() {
 
 //--------------------------------------------------------------
 void reloadCameras() {
-    ofVideoGrabber tmpgrb;
     // clear
     for (int i = 0; i < cameraNum; i++) {
         grabber[i].close();
     }
     // load
-    cameraNum = 0;
+    ofVideoGrabber tmpgrb;
     vector<ofVideoDevice> devices = tmpgrb.listDevices();
+    tvpCamProf* prof = &camProfFpvExtra;
+    int cidx = 0;
+    cameraNum = 0;
     ofLog() << "Scanning camera... " << devices.size() << " devices";
     for (size_t i = 0; i < devices.size(); i++) {
-        if (regex_search(devices[i].deviceName, regex("USB2.0 PC CAMERA")) == false
-            && regex_search(devices[i].deviceName, regex("GV-USB2")) == false) {
+        int w, h, aw, ah;
+        bool extra = false;
+        if (prof->enabled == true && regex_search(devices[i].deviceName, regex(prof->name)) == true) {
+            extra = true;
+        }
+        if (regex_search(devices[i].deviceName, regex("USB2.0 PC CAMERA")) == false && extra == false) {
             continue;
         }
         if (devices[i].bAvailable == false) {
             continue;
         }
-        grabber[cameraNum].setDeviceID(devices[i].id);
-        if (grabber[cameraNum].initGrabber(CAMERA_WIDTH, CAMERA_HEIGHT) == false) {
+        grabber[cidx].setDeviceID(devices[i].id);
+        if (extra == true) { // experimental
+            w = prof->grabW;
+            h = prof->grabH;
+        }
+        else {
+            w = CAMERA_WIDTH;
+            h = CAMERA_HEIGHT;
+        }
+        if (grabber[cidx].initGrabber(w, h) == false) {
             continue;
         }
-        ofLog() << devices[i].id << ": " << devices[i].deviceName;
+        if (extra == true) { // experimental
+            camView[cidx].needCrop = prof->needCrop;
+            camView[cidx].needResize = prof->needResize;
+        }
+        else {
+            camView[cidx].needCrop = false;
+            camView[cidx].needResize = false;
+        }
+        aw = grabber[cidx].getWidth();
+        ah = grabber[cidx].getHeight();
+        ofLog() << "[" << devices[i].id << "] " << devices[i].deviceName;
+        ofLog() << "  preferred resolution: " << w << " x " << h;
+        ofLog() << "  actual resolution: " << aw << " x " << ah;
+        if (extra == true) {
+            ofLog() << "  crop: "
+                << prof->cropX << ", " << prof->cropY << ", "
+                << prof->cropW << ", " << prof->cropH;
+        }
+        cidx++;
         cameraNum++;
-        if (cameraNum == 4) {
+        if (cameraNum == CAMERA_MAXNUM) {
             break;
         }
     }
@@ -294,12 +362,6 @@ void setupMain() {
     setViewParams();
     for (int i = 0; i < cameraNum; i++) {
         camView[i].moveSteps = 1;
-        if (grabber[i].getWidth() != CAMERA_WIDTH
-            || grabber[i].getHeight() != CAMERA_HEIGHT) {
-            camView[i].needResize = true;
-        } else {
-            camView[i].needResize = false;
-        }
     }
     // AR laptimer
     for (int i = 0; i < cameraNum; i++) {
@@ -329,6 +391,7 @@ void setupMain() {
 void ofApp::setup() {
     setupInit();
     loadSettingsFile();
+    loadCameraProfileFile();
     loadWallImage(wallPath);
     saveSettingsFile();
 }
@@ -382,11 +445,10 @@ void ofApp::update() {
             // (do not wait for lap after time limit)
             if (lapAfterTmoEnabled == false && relp >= raceDuraSecs) {
                 for (int i = 0; i < cameraNum; i++) {
-                    grabber[i].update();
+                    grabberUpdateResize(i);
                     camView[i].foundMarkerNum = 0;
                     camView[i].foundValidMarkerNum = 0;
                     camView[i].enoughMarkers = false;
-
                 }
                 stopRace(false);
                 recvOsc();
@@ -397,7 +459,7 @@ void ofApp::update() {
     }
     // camera
     for (int i = 0; i < cameraNum; i++) {
-        grabber[i].update();
+        grabberUpdateResize(i);
     }
     // QR reader
     if (qrEnabled == true) {
@@ -412,11 +474,12 @@ void ofApp::update() {
         // AR lap timer
         float elp = elapsedTime;
         if (frameTick == true && arLapMode != ARAP_MODE_OFF) {
-            ofPixels pxl = grabber[i].getPixels();
-            if (camView[i].needResize == true) {
-                pxl.resize(CAMERA_WIDTH, CAMERA_HEIGHT);
+            if (camView[i].needCrop == true || camView[i].needResize == true) {
+                camView[i].aruco.detectMarkers(camView[i].resizedPixels);
             }
-            camView[i].aruco.detectMarkers(pxl);
+            else {
+                camView[i].aruco.detectMarkers(grabber[i].getPixels());
+            }
             // all markers
             int anum = camView[i].aruco.getNumMarkers();
             if (anum == 0 && camView[i].foundMarkerNum > 0) {
@@ -629,8 +692,20 @@ void drawCameraImage(int camidx) {
         ofDrawRectangle(camView[i].posX, camView[i].posY, camView[i].width, camView[i].height);
     }
     else {
+        int x, y, w, h;
+        x = camView[i].posX;
+        y = camView[i].posY;
+        w = camView[i].width;
+        h = camView[i].height;
         ofSetColor(myColorWhite);
-        grabber[i].draw(camView[i].posX, camView[i].posY, camView[i].width, camView[i].height);
+        if (camView[i].needCrop == true || camView[i].needResize == true) {
+            if (camView[i].resizedImage.isAllocated() == true) {
+                camView[i].resizedImage.draw(x, y, w, h);
+            }
+        }
+        else {
+            grabber[i].draw(x, y, w, h);
+        }
     }
 }
 
@@ -1379,6 +1454,25 @@ void ofApp::exit() {
     for (int i = 0; i < cameraNum; i++) {
         camView[i].aruco.setThreaded(false);
     }
+}
+
+//--------------------------------------------------------------
+void grabberUpdateResize(int cidx) {
+    tvpCamView *cv = &camView[cidx];
+    tvpCamProf *cp = &camProfFpvExtra;
+    grabber[cidx].update();
+    if (grabber[cidx].isFrameNew() == false
+        || (cv->needCrop == false && cv->needResize == false)) {
+        return;
+    }
+    cv->resizedPixels = grabber[cidx].getPixels();
+    if (cv->needCrop == true) {
+        cv->resizedPixels.crop(cp->cropX, cp->cropY, cp->cropW, cp->cropH);
+    }
+    if (cv->needResize == true) {
+        cv->resizedPixels.resize(CAMERA_WIDTH, CAMERA_HEIGHT);
+    }
+    cv->resizedImage.setFromPixels(cv->resizedPixels);
 }
 
 //--------------------------------------------------------------
@@ -3495,11 +3589,12 @@ void processQrReader() {
         bool scanned = false;
         if (camView[qrCamIndex].qrScanned == false) {
             ofxZxing::Result zxres;
-            ofPixels pxl = grabber[qrCamIndex].getPixels();
-            if (camView[qrCamIndex].needResize == true) {
-                pxl.resize(CAMERA_WIDTH, CAMERA_HEIGHT);
+            if (camView[qrCamIndex].needCrop == true || camView[qrCamIndex].needResize == true) {
+                zxres = ofxZxing::decode(camView[qrCamIndex].resizedPixels, true);
             }
-            zxres = ofxZxing::decode(pxl, true);
+            else {
+                zxres = ofxZxing::decode(grabber[qrCamIndex].getPixels(), true);
+            }
             if (zxres.getFound()) {
                 scanned = true;
                 camView[qrCamIndex].qrScanned = true;

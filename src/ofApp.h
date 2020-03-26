@@ -48,6 +48,16 @@
 #define BTTN_SETT_FILE  "system/button_settings.png"
 #define BTTN_WNDW_FILE  "system/button_window.png"
 
+// camera profile
+#define CAM_FPV_FILE    "camfpv.xml"
+#define CFNM_NAME       "camera:name"
+#define CFNM_GRAB_W     "camera:grab:width"
+#define CFNM_GRAB_H     "camera:grab:height"
+#define CFNM_CROP_X     "camera:crop:x"
+#define CFNM_CROP_Y     "camera:crop:y"
+#define CFNM_CROP_W     "camera:crop:width"
+#define CFNM_CROP_H     "camera:crop:height"
+
 // color
 #define COLOR_YELLOW    255,215,0
 #define COLOR_WHITE     255,255,255
@@ -169,7 +179,10 @@ public:
     int posXTarget;
     int posYTarget;
     float imageScale;
+    bool needCrop;
     bool needResize;
+    ofPixels resizedPixels;
+    ofImage resizedImage;
     // base
     ofColor baseColor;
     int basePosX;
@@ -218,6 +231,21 @@ public:
     bool qrScanned;
 };
 
+
+class tvpCamProf {
+public:
+    bool enabled;
+    bool needCrop;
+    bool needResize;
+    string name;
+    int grabW;
+    int grabH;
+    int cropX;
+    int cropY;
+    int cropW;
+    int cropH;
+};
+
 class ofApp : public ofBaseApp {
 public:
     void setup();
@@ -244,6 +272,7 @@ void setupInit();
 void loadWallImage(string);
 void loadSettingsFile();
 void saveSettingsFile();
+void loadCameraProfileFile();
 void updateInit();
 void drawInit();
 // -- camera setup --
@@ -254,11 +283,11 @@ void keyPressedCamCheck();
 void reloadCameras();
 // -- main --
 // common
-void bindCameras();
 void initConfig();
 string getUserLocaleName();
 void toggleSysStat();
 // view
+void grabberUpdateResize(int);
 void toggleCameraSolo(int);
 void enableCameraSolo(int);
 void resetCameraSolo();
@@ -270,7 +299,6 @@ void toggleCameraTrim();
 void toggleCameraFrame();
 void setupColors();
 void changeCameraLabel(int);
-void changeCameraLabelAll();
 void changeCameraIcon(int);
 void changeCameraIconPath(int, string, bool);
 void autoSelectCameraIcon(int, string);
