@@ -1,0 +1,17 @@
+<camera>
+    <name>GV-USB2</name>
+    <description>iPad(4:3 in squeezed 16:9)</description>
+    <grab>
+        <width>704</width>
+        <height>480</height>
+    </grab>
+    <crop>
+        <x>82</x>
+        <y>0</y>
+        <width>540</width>
+        <height>480</height>
+    </crop>
+    <draw>
+        <aspectRatio>4:3</aspectRatio>
+    </draw>
+</camera>

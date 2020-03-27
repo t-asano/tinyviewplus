@@ -1,14 +1,17 @@
 <camera>
     <name>GV-USB2</name>
-    <description>squeezed 16:9</description>
+    <description>iPhone(16:9 in squeezed 16:9)</description>
     <grab>
         <width>704</width>
         <height>480</height>
     </grab>
     <crop>
-        <x>82</x>
+        <x>0</x>
         <y>0</y>
-        <width>540</width>
+        <width>704</width>
         <height>480</height>
     </crop>
+    <draw>
+        <aspectRatio>16:9</aspectRatio>
+    </draw>
 </camera>

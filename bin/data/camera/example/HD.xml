@@ -1,0 +1,17 @@
+<camera>
+    <name>HD Device Name</name>
+    <description>16:9</description>
+    <grab>
+        <width>1280</width>
+        <height>720</height>
+    </grab>
+    <crop>
+        <x>0</x>
+        <y>0</y>
+        <width>1280</width>
+        <height>720</height>
+    </crop>
+    <draw>
+        <aspectRatio>16:9</aspectRatio>
+    </draw>
+</camera>

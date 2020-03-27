@@ -257,21 +257,22 @@ void loadCameraProfileFile() {
     p->cropY = s->getValue(CFNM_CROP_Y, 0);
     p->cropW = s->getValue(CFNM_CROP_W, CAMERA_WIDTH);
     p->cropH = s->getValue(CFNM_CROP_H, CAMERA_HEIGHT);
+    p->drawAspr = s->getValue(CFNM_DRAW_ASPR, "4:3");
     // crop?
     if (p->cropX == 0 && p->cropY == 0 && p->cropW == p->grabW && p->cropH == p->grabH) {
         p->needCrop = false;
-    }
-    else {
+    } else {
         p->needCrop = true;
     }
     // resize?
     if ((p->needCrop == true && p->cropW == CAMERA_WIDTH && p->cropH == CAMERA_HEIGHT)
         || (p->needCrop == false && p->grabW == CAMERA_WIDTH && p->grabH && CAMERA_HEIGHT)) {
         p->needResize = false;
-    }
-    else {
+    } else {
         p->needResize = true;
     }
+    // wide?
+    p->isWide = (p->drawAspr == "16:9");
 }
 
 //--------------------------------------------------------------
@@ -308,7 +309,7 @@ void reloadCameras() {
             continue;
         }
         grabber[cidx].setDeviceID(devices[i].id);
-        if (extra == true) { // experimental
+        if (extra == true) {
             w = prof->grabW;
             h = prof->grabH;
         }
@@ -319,13 +320,15 @@ void reloadCameras() {
         if (grabber[cidx].initGrabber(w, h) == false) {
             continue;
         }
-        if (extra == true) { // experimental
+        if (extra == true) {
             camView[cidx].needCrop = prof->needCrop;
             camView[cidx].needResize = prof->needResize;
+            camView[cidx].isWide = prof->isWide;
         }
         else {
             camView[cidx].needCrop = false;
             camView[cidx].needResize = false;
+            camView[cidx].isWide = false;
         }
         aw = grabber[cidx].getWidth();
         ah = grabber[cidx].getHeight();
@@ -686,26 +689,38 @@ void drawCamCheck() {
 //--------------------------------------------------------------
 void drawCameraImage(int camidx) {
     int i = camidx;
+    int x, y, w, h;
+    x = camView[i].posX;
+    w = camView[i].width;
+    if (camView[i].isWide == true) {
+        y = camView[i].posYWide;
+        h = camView[i].heightWide;
+    } else {
+        y = camView[i].posY;
+        h = camView[i].height;
+    }
     if (DEBUG_ENABLED == true && grabber[i].isInitialized() == false) {
+        // dummy camera
         ofSetColor(0,19,127);
         ofFill();
-        ofDrawRectangle(camView[i].posX, camView[i].posY, camView[i].width, camView[i].height);
+        ofDrawRectangle(x, y, w, h);
+        return;
+    }
+    if (camView[i].isWide == true) {
+        // background for wide camera
+        ofSetColor(0);
+        ofFill();
+        ofDrawRectangle(x, camView[i].posY, w, camView[i].height);
+    }
+    ofSetColor(myColorWhite);
+    if ((camView[i].needCrop == true || camView[i].needResize == true)
+        && camView[i].resizedImage.isAllocated() == true) {
+        // wide
+        camView[i].resizedImage.draw(x, y, w, h);
     }
     else {
-        int x, y, w, h;
-        x = camView[i].posX;
-        y = camView[i].posY;
-        w = camView[i].width;
-        h = camView[i].height;
-        ofSetColor(myColorWhite);
-        if (camView[i].needCrop == true || camView[i].needResize == true) {
-            if (camView[i].resizedImage.isAllocated() == true) {
-                camView[i].resizedImage.draw(x, y, w, h);
-            }
-        }
-        else {
-            grabber[i].draw(x, y, w, h);
-        }
+        // normal
+        grabber[i].draw(x, y, w, h);
     }
 }
 
@@ -731,57 +746,69 @@ void drawCameraFrame(int camidx) {
 //--------------------------------------------------------------
 void drawCameraARMarker(int idx, bool isSub) {
     int i = idx;
-    if (arLapMode != ARAP_MODE_OFF && raceStarted == true
-        && camView[i].totalLaps < (raceDuraLaps + (useStartGate == true ? 1 : 0))) {
-        // rect
-        ofPushMatrix();
-        ofTranslate(camView[i].posX, camView[i].posY);
-        ofScale(camView[i].imageScale, camView[i].imageScale, 1);
-        ofSetLineWidth(3);
-        camView[i].aruco.draw2dGate(myColorYellow, myColorAlert, false);
-        ofPopMatrix();
-        if (cameraLapHistEnabled == true) {
-            return;
+    if (raceStarted == false || arLapMode == ARAP_MODE_OFF) {
+        return;
+    }
+    if (camView[i].totalLaps >= (raceDuraLaps + (useStartGate == true ? 1 : 0))) {
+        return; // finished
+    }
+    // rect
+    int tx, ty;
+    float sc;
+    tx = camView[i].posX;
+    sc = camView[i].imageScale;
+    if (camView[i].isWide == true) {
+        ty = camView[i].posYWide;
+    } else {
+        ty = camView[i].posY;
+    }
+    ofPushMatrix();
+    ofTranslate(tx, ty);
+    ofScale(sc, sc, 1);
+    ofSetLineWidth(ARAP_RECT_LINEW);
+    camView[i].aruco.draw2dGate(myColorYellow, myColorAlert, false);
+    ofPopMatrix();
+    if (cameraLapHistEnabled == true) {
+        return;
+    }
+    // meter
+    string lv_valid = "";
+    string lv_invalid = "";
+    int x, y;
+    int vnum = camView[i].foundValidMarkerNum;
+    int ivnum = camView[i].foundMarkerNum - camView[i].foundValidMarkerNum;
+    int offset = (cameraFrameEnabled == true) ? FRAME_LINEWIDTH : 0;
+    for (int j = 0; j < vnum; j++) {
+        lv_valid += "|";
+    }
+    for (int j = 0; j < ivnum; j++) {
+        lv_invalid += "|";
+    }
+    x = camView[i].lapPosX + offset;
+    y = isSub ? (camView[i].lapPosY + (LAP_HEIGHT / 2) + 5) : (camView[i].lapPosY + LAP_HEIGHT + 10);
+    y = y + offset + 10;
+    if (vnum > 0) {
+        ofSetColor(myColorYellow);
+        if (isSub) {
+            myFontLapSub.drawString(lv_valid, x, y);
+        } else {
+            myFontLap.drawString(lv_valid, x, y);
         }
-        // meter
-        string lv_valid = "";
-        string lv_invalid = "";
-        int x, y;
-        int vnum = camView[i].foundValidMarkerNum;
-        int ivnum = camView[i].foundMarkerNum - camView[i].foundValidMarkerNum;
-        int offset = (cameraFrameEnabled == true) ? FRAME_LINEWIDTH : 0;
-        for (int j = 0; j < vnum; j++) {
-            lv_valid += "|";
-        }
-        for (int j = 0; j < ivnum; j++) {
-            lv_invalid += "|";
-        }
-        x = camView[i].lapPosX + offset;
-        y = isSub ? (camView[i].lapPosY + (LAP_HEIGHT / 2) + 5) : (camView[i].lapPosY + LAP_HEIGHT + 10);
-        y = y + offset + 10;
-        if (vnum > 0) {
-            ofSetColor(myColorYellow);
-            if (isSub) {
-                myFontLapSub.drawString(lv_valid, x, y);
-            } else {
-                myFontLap.drawString(lv_valid, x, y);
+    }
+    if (ivnum > 0) {
+        ofSetColor(myColorAlert);
+        if (isSub) {
+            if (vnum > 0) {
+                x += 2;
             }
-        }
-        if (ivnum > 0) {
-            ofSetColor(myColorAlert);
-            if (isSub) {
-                if (vnum > 0) {
-                    x += 2;
-                }
-                x = x + myFontLapSub.stringWidth(lv_valid);
-                myFontLapSub.drawString(lv_invalid, x, y);
-            } else {
-                if (vnum > 0) {
-                    x += 5;
-                }
-                x = x + myFontLap.stringWidth(lv_valid);
-                myFontLap.drawString(lv_invalid, x, y);
+            x = x + myFontLapSub.stringWidth(lv_valid);
+            myFontLapSub.drawString(lv_invalid, x, y);
+        } else {
+            if (vnum > 0) {
+                x += 5;
             }
+            x = x + myFontLap.stringWidth(lv_valid);
+            myFontLap.drawString(lv_invalid, x, y);
         }
     }
 }
@@ -1298,11 +1325,12 @@ void keyPressedOverlayNone(int key) {
 void keyPressedCamCheck() {
     if (cameraNum == 0) {
         ofSystemAlertDialog("FPV receiver not found");
-        if (DEBUG_ENABLED == true) {
-            cameraNum = CAMERA_MAXNUM;
-        } else {
+        if (DEBUG_ENABLED == false) {
             ofExit();
         }
+    }
+    if (DEBUG_ENABLED == true) {
+        cameraNum = CAMERA_MAXNUM;
     }
     setupMain();
 }
@@ -1470,7 +1498,11 @@ void grabberUpdateResize(int cidx) {
         cv->resizedPixels.crop(cp->cropX, cp->cropY, cp->cropW, cp->cropH);
     }
     if (cv->needResize == true) {
-        cv->resizedPixels.resize(CAMERA_WIDTH, CAMERA_HEIGHT);
+        if (cv->isWide == true) {
+            cv->resizedPixels.resize(CAMERA_WIDTH, CAMERA_HEIGHT * 0.75);
+        } else {
+            cv->resizedPixels.resize(CAMERA_WIDTH, CAMERA_HEIGHT);
+        }
     }
     cv->resizedImage.setFromPixels(cv->resizedPixels);
 }
@@ -1964,6 +1996,10 @@ void setViewParams() {
             camView[idx].lapPosYTarget = camView[idx].lapPosYTarget - (LAP_MARGIN_Y / 2);
         }
         camView[idx].imageScale = (float)(camView[idx].width) / (float)CAMERA_WIDTH;
+        if (camView[idx].isWide == true) {
+            camView[idx].posYWideTarget = camView[idx].posYTarget + (camView[idx].heightTarget / 8);
+            camView[idx].heightWideTarget = camView[idx].heightTarget * 0.75;
+        }
     }
 }
 
@@ -2002,6 +2038,10 @@ void updateViewParams() {
         camView[idx].posX = calcViewParam(camView[idx].posXTarget, camView[idx].posX, steps);
         camView[idx].posY = calcViewParam(camView[idx].posYTarget, camView[idx].posY, steps);
         camView[idx].imageScale = (float)(camView[idx].width) / (float)CAMERA_WIDTH;
+        if (camView[idx].isWide == true) {
+            camView[idx].posYWide = camView[idx].posY + (camView[idx].height / 8);
+            camView[idx].heightWide = camView[idx].height * 0.75;
+        }
         // base
         camView[idx].basePosX = calcViewParam(camView[idx].basePosXTarget, camView[idx].basePosX, steps);
         camView[idx].basePosY = calcViewParam(camView[idx].basePosYTarget, camView[idx].basePosY, steps);

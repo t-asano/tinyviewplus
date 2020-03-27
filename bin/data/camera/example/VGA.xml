@@ -1,0 +1,17 @@
+<camera>
+    <name>VGA Device Name</name>
+    <description>4:3</description>
+    <grab>
+        <width>640</width>
+        <height>480</height>
+    </grab>
+    <crop>
+        <x>0</x>
+        <y>0</y>
+        <width>640</width>
+        <height>480</height>
+    </crop>
+    <draw>
+        <aspectRatio>4:3</aspectRatio>
+    </draw>
+</camera>

@@ -49,7 +49,7 @@
 #define BTTN_WNDW_FILE  "system/button_window.png"
 
 // camera profile
-#define CAM_FPV_FILE    "camfpv.xml"
+#define CAM_FPV_FILE    "camera/fpv.xml"
 #define CFNM_NAME       "camera:name"
 #define CFNM_GRAB_W     "camera:grab:width"
 #define CFNM_GRAB_H     "camera:grab:height"
@@ -57,6 +57,7 @@
 #define CFNM_CROP_Y     "camera:crop:y"
 #define CFNM_CROP_W     "camera:crop:width"
 #define CFNM_CROP_H     "camera:crop:height"
+#define CFNM_DRAW_ASPR  "camera:draw:aspectRatio"
 
 // color
 #define COLOR_YELLOW    255,215,0
@@ -150,8 +151,9 @@
 #define ARAP_MAX_RSECS  36000
 #define ARAP_RSLT_SCRN  0
 #define ARAP_RSLT_FILE  1
-#define WATCH_COUNT_SEC 5
 #define ARAP_RSLT_DELAY (FRAME_RATE * 3)
+#define ARAP_RECT_LINEW 5
+#define WATCH_COUNT_SEC 5
 // osc
 #define OSC_LISTEN_PORT 4000
 // speech
@@ -172,15 +174,20 @@ public:
     int moveSteps;
     int width;
     int height;
+    int heightWide;
     int widthTarget;
     int heightTarget;
+    int heightWideTarget;
     int posX;
     int posY;
+    int posYWide;
     int posXTarget;
     int posYTarget;
+    int posYWideTarget;
     float imageScale;
     bool needCrop;
     bool needResize;
+    bool isWide;
     ofPixels resizedPixels;
     ofImage resizedImage;
     // base
@@ -235,8 +242,6 @@ public:
 class tvpCamProf {
 public:
     bool enabled;
-    bool needCrop;
-    bool needResize;
     string name;
     int grabW;
     int grabH;
@@ -244,6 +249,10 @@ public:
     int cropY;
     int cropW;
     int cropH;
+    string drawAspr;
+    bool needCrop;
+    bool needResize;
+    bool isWide;
 };
 
 class ofApp : public ofBaseApp {
