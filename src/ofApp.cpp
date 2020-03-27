@@ -954,25 +954,29 @@ void drawCameraLapTime(int idx, bool issub) {
                                  camView[i].lapPosX, camView[i].lapPosY + offset);
         }
         // history
-        if (cameraLapHistEnabled == false || laps < 2 || camView[i].moveSteps > 0 || issub == true) {
+        if (cameraLapHistEnabled == false || laps < 2 || camView[i].moveSteps > 0) {
             return;
         }
-        drawCameraLapHistory(i);
+        drawCameraLapHistory(i, issub);
     }
 }
 
 //--------------------------------------------------------------
-void drawCameraLapHistory(int camidx) {
+void drawCameraLapHistory(int camidx, bool issub) {
     string text;
     float lap;
     int lapidx = camView[camidx].totalLaps - 2;
     int offset = (cameraFrameEnabled == true) ? FRAME_LINEWIDTH : 0;
+    int height = LAPHIST_HEIGHT;
     int marg = LAPHIST_MARGIN;
     int posy = camView[camidx].lapPosY + marg + offset;
     int scry = ofGetHeight() - 1;
 
+    if (issub) {
+        height = height / 2;
+    }
     for (; lapidx >= 0; lapidx--) {
-        posy += LAPHIST_HEIGHT + marg;
+        posy += height + marg;
         if (posy + marg >= min(camView[camidx].posY + camView[camidx].height, scry) - offset) {
             break;
         }
@@ -987,7 +991,11 @@ void drawCameraLapHistory(int camidx) {
             text = ofToString(lapidx + 1);
         }
         text += ": " + getLapStr(lap) + "s";
-        drawStringWithShadow(&myFontLapHist, myColorWhite, text, camView[camidx].lapPosX, posy);
+        if (issub) {
+            drawStringWithShadow(&myFontLapSub, myColorWhite, text, camView[camidx].lapPosX + offset, posy);
+        } else {
+            drawStringWithShadow(&myFontLapHist, myColorWhite, text, camView[camidx].lapPosX, posy);
+        }
     }
 }
 
