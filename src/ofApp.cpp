@@ -673,7 +673,7 @@ void drawCamCheck() {
     }
     // footer
     font = &myFontOvlayP;
-    str = "Press any key to continue";
+    str = "If all devices found, press any key to continue or Esc key to exit";
     ofSetColor(myColorYellow);
     font->drawString(str, (ofGetWidth() - font->stringWidth(str)) / 2,
                      y + h + margin + font->getLineHeight());
@@ -1325,16 +1325,16 @@ void keyPressedOverlayNone(int key) {
 
 //--------------------------------------------------------------
 void keyPressedCamCheck() {
-    if (cameraNum == 0) {
-        ofSystemAlertDialog("FPV receiver not found");
-        if (DEBUG_ENABLED == false) {
-            ofExit();
-        }
-    }
-    if (DEBUG_ENABLED == true) {
-        cameraNum = CAMERA_MAXNUM;
-    }
-    setupMain();
+    if (ofGetKeyPressed(OF_KEY_ESC)) {
+         ofExit();
+     } else {
+         if (DEBUG_ENABLED == true) {
+             cameraNum = CAMERA_MAXNUM;
+         }
+         if (cameraNum > 0) {
+             setupMain();
+         }
+     }
 }
 
 //--------------------------------------------------------------
