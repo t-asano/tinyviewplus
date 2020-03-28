@@ -1206,6 +1206,10 @@ void keyPressedOverlayHelp(int key) {
                || key == 'W' || key == 'w'
                || ofGetKeyPressed(OF_KEY_PAGE_UP)
                || ofGetKeyPressed(OF_KEY_PAGE_DOWN)
+               || ofGetKeyPressed(OF_KEY_UP)
+               || ofGetKeyPressed(OF_KEY_DOWN)
+               || ofGetKeyPressed(OF_KEY_LEFT)
+               || ofGetKeyPressed(OF_KEY_RIGHT)
                || key == 'G' || key == 'g'
                || key == 'L' || key == 'l'
                || key == 'C' || key == 'c'
@@ -1305,8 +1309,14 @@ void keyPressedOverlayNone(int key) {
             changeMinLap(1);
         } else if (ofGetKeyPressed(OF_KEY_PAGE_DOWN)) {
             changeMinLap(-1);
-        } else if (key == 'd' || key == 'D') {
-            changeRaceDuration();
+        } else if (ofGetKeyPressed(OF_KEY_UP)) {
+            changeRaceDuration(5);
+        } else if (ofGetKeyPressed(OF_KEY_DOWN)) {
+            changeRaceDuration(-5);
+        } else if (ofGetKeyPressed(OF_KEY_LEFT)) {
+            changeRaceLaps(-1);
+        } else if (ofGetKeyPressed(OF_KEY_RIGHT)) {
+            changeRaceLaps(1);
         } else if (key == 'w' || key == 'W') {
             toggleLapAfterTimeout();
         } else if (key == 'f' || key == 'F') {
@@ -2859,56 +2869,40 @@ void changeMinLap(int mlaptime) {
 }
 
 //--------------------------------------------------------------
-void changeRaceDuration() {
-    string str;
-    activateCursor();
-#ifdef TARGET_WIN32
-    ofSetFullscreen(false);
-#endif /* TARGET_WIN32 */
-    // time (seconds)
-    while (true) {
-        int sec;
-        str = (raceDuraSecs == 0) ? "" : ofToString(raceDuraSecs);
-        str = ofSystemTextBoxDialog("Race Time (0~" + ofToString(ARAP_MAX_RSECS) + " secs):", str);
-        sec = (str == "") ? 0 : ofToInt(str);
-        if (sec <= 0) {
-            // no limit
-            raceDuraSecs = 0;
-            nextNotifyRemainSecs = -1;
-            break;
-        } else if (sec <= ARAP_MAX_RSECS) {
-            raceDuraSecs = sec;
-            int remain;
-            if (raceStarted == true) {
-                remain = raceDuraSecs - (elapsedTime - WATCH_COUNT_SEC);
-            } else {
-                remain = raceDuraSecs;
-            }
-            setNextNotifyRemainSecs(remain);
-            break;
-        } else {
-            ofSystemAlertDialog("Please enter 0~" + ofToString(ARAP_MAX_RSECS) + " (0/empty means no limit)");
-            // -> retry
-        }
+void changeRaceDuration(int time) {
+    string value;
+    time = raceDuraSecs + time;
+    if (time >= 0 && time <= ARAP_MAX_RSECS) {
+        raceDuraSecs = time;
+        saveSettingsFile();
     }
-    // laps
-    while (true) {
-        int laps;
-        str = (raceDuraLaps == 0) ? "" : ofToString(raceDuraLaps);
-        str = ofSystemTextBoxDialog("Race Laps (1~"  + ofToString(ARAP_MAX_RLAPS) + "):", str);
-        laps = (str == "") ? 0 : ofToInt(str);
-        if (laps > 0 && laps <= ARAP_MAX_RLAPS) {
-            raceDuraLaps = laps;
-            break;
-        } else {
-            ofSystemAlertDialog("Please enter 1~" + ofToString(ARAP_MAX_RLAPS));
-            // -> retry
-        }
+    value = ofToString(raceDuraSecs) + " sec";
+    if (raceDuraSecs > 1) {
+        value += "s";
     }
-#ifdef TARGET_WIN32
-    ofSetFullscreen(fullscreenEnabled);
-#endif /* TARGET_WIN32 */
-    saveSettingsFile();
+    if (raceDuraSecs > 0) {
+        int remain;
+        if (raceStarted == true) {
+            remain = raceDuraSecs - (elapsedTime - WATCH_COUNT_SEC);
+        } else {
+            remain = raceDuraSecs;
+        }
+        setNextNotifyRemainSecs(remain);
+        setOverlayMessage("Race Time " + value);
+    } else {
+        nextNotifyRemainSecs = -1;
+        setOverlayMessage("No Limit Race Time");
+    }
+}
+
+//--------------------------------------------------------------
+void changeRaceLaps(int lap) {
+    lap = raceDuraLaps + lap;
+    if (lap > 0 && lap <= ARAP_MAX_RLAPS) {
+        raceDuraLaps = lap;
+        saveSettingsFile();
+    }
+    setOverlayMessage("Race Laps " + ofToString(raceDuraLaps));
 }
 
 //--------------------------------------------------------------
@@ -3442,10 +3436,13 @@ void drawHelpBody(int line) {
     if (raceDuraSecs > 1) {
         value += "s";
     }
-    value += ", " + ofToString(raceDuraLaps) + " laps";
+    value += ", " + ofToString(raceDuraLaps) + " lap";
+    if (raceDuraLaps > 1) {
+        value += "s";
+    }
     drawStringBlock(&myFontOvlayP, "Set Race Duration (Time, Laps)", blk1, line, ALIGN_LEFT, szb, szl);
     drawStringBlock(&myFontOvlayP, value, blk2, line, ALIGN_CENTER, szb, szl);
-    drawStringBlock(&myFontOvlayP, "D", blk3, line, ALIGN_CENTER, szb, szl);
+    drawStringBlock(&myFontOvlayP, "Up/Down,Left/Right", blk3, line, ALIGN_CENTER, szb, szl);
     line++;
     // Set wait for lap after time limit
     ofSetColor(myColorDGray);

@@ -363,7 +363,8 @@ void popLapRecord(int);
 void updateRacePositions();
 void toggleARLap();
 void changeMinLap(int);
-void changeRaceDuration();
+void changeRaceDuration(int);
+void changeRaceLaps(int);
 void toggleUseStartGate();
 void toggleLapAfterTimeout();
 // overlay - common
