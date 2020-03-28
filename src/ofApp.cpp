@@ -78,12 +78,6 @@ void setupInit() {
         // macOS binary release
         ofSetDataPathRoot("../Resources/data");
     }
-#ifdef TARGET_WIN32
-    HWND handleWindow;
-    AllocConsole();
-    handleWindow = FindWindowA("ConsoleWindowClass", NULL);
-    ShowWindow(handleWindow, 0);
-#endif /* TARGET_WIN32 */
     sysStatEnabled = DFLT_SYS_STAT;
     // scene
     tvpScene = SCENE_INIT;
