@@ -433,7 +433,7 @@ void ofApp::update() {
             // speak remaining time
             if (nextNotifyRemainSecs >= 0 && raceDuraSecs - relp <= nextNotifyRemainSecs) {
                 if (nextNotifyRemainSecs > 0 || lapAfterTmoEnabled == true) {
-                    notifySound.play();
+                    if (nextNotifyRemainSecs > 5) notifySound.play();
                     speakRemainTime(nextNotifyRemainSecs);
                 }
                 setNextNotifyRemainSecs(nextNotifyRemainSecs);
@@ -2344,7 +2344,7 @@ void speakLap(int camid, float sec, int num) {
 //--------------------------------------------------------------
 void setNextNotifyRemainSecs(int curr) {
     int next;
-    // ...180,120,60,30,0
+    // ...80,120,60,30,5..1,0
     if (curr > 60) {
         if (curr % 60 == 0) {
             next = curr - 60;
@@ -2353,6 +2353,16 @@ void setNextNotifyRemainSecs(int curr) {
         }
     } else if (curr > 30) {
         next = 30;
+    } else if (curr > 5) {
+        next = 5;
+    } else if (curr > 4) {
+        next = 4;
+    } else if (curr > 3) {
+        next = 3;
+    } else if (curr > 2) {
+        next = 2;
+    } else if (curr > 1) {
+        next = 1;
     } else if (curr > 0) {
         next = 0;
     } else {
@@ -2393,14 +2403,18 @@ void speakRemainTime(int sec) {
             if (jp == true) {
                 str += "秒";
             } else {
-                str += " second";
-                if (sec != 1) {
-                    str += "s";
+                if (sec > 5) {
+                    str += " second";
+                    if (sec != 1) {
+                        str += "s";
+                    }
                 }
             }
         }
         if (jp == false) {
-            str += " to go";
+            if (sec > 5) {
+                str += " to go";
+            }
         }
     }
     speakAny(jp == true ? "jp" : "en", str);
