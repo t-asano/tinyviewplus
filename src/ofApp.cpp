@@ -2124,9 +2124,7 @@ string getUserLocaleName() {
     pclose(pipe);
 #endif /* TARGET_OSX */
 #ifdef TARGET_WIN32
-    string org = ofToString(setlocale(LC_ALL, NULL));
     name = ofToString(setlocale(LC_ALL, ""));
-    setlocale(LC_ALL, org.c_str());
 #endif /* TARGET_WIN32 */
 #ifdef TARGET_LINUX
     FILE *pipe = popen("locale|grep LANG=", "r");
