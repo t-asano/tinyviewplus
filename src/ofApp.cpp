@@ -1204,7 +1204,8 @@ void keyPressedOverlayHelp(int key) {
                || key == 'A' || key == 'a'
                || key == 'D' || key == 'd'
                || key == 'W' || key == 'w'
-               || key == 'M' || key == 'm'
+               || ofGetKeyPressed(OF_KEY_PAGE_UP)
+               || ofGetKeyPressed(OF_KEY_PAGE_DOWN)
                || key == 'G' || key == 'g'
                || key == 'L' || key == 'l'
                || key == 'C' || key == 'c'
@@ -1300,8 +1301,10 @@ void keyPressedOverlayNone(int key) {
             }
         } else if (key == 'a' || key == 'A') {
             toggleARLap();
-        } else if (key == 'm' || key == 'M') {
-            changeMinLap();
+        } else if (ofGetKeyPressed(OF_KEY_PAGE_UP)) {
+            changeMinLap(1);
+        } else if (ofGetKeyPressed(OF_KEY_PAGE_DOWN)) {
+            changeMinLap(-1);
         } else if (key == 'd' || key == 'D') {
             changeRaceDuration();
         } else if (key == 'w' || key == 'W') {
@@ -2841,26 +2844,18 @@ void toggleARLap() {
 }
 
 //--------------------------------------------------------------
-void changeMinLap() {
-    string str;
-    int lap;
-    activateCursor();
-#ifdef TARGET_WIN32
-    ofSetFullscreen(false);
-#endif /* TARGET_WIN32 */
-    str = ofToString(minLapTime);
-    str = ofSystemTextBoxDialog("Min. Lap Time (1~" + ofToString(ARAP_MAX_MNLAP) + "sec):", str);
-    lap = (str == "") ? 0 : ofToInt(str);
-    if (lap > 0 && lap <= ARAP_MAX_MNLAP) {
-        minLapTime = lap;
-    } else {
-        ofSystemAlertDialog("Please enter 1~" + ofToString(ARAP_MAX_MNLAP));
-        changeMinLap();
+void changeMinLap(int mlaptime) {
+    string value;
+    mlaptime = minLapTime + mlaptime;
+    if (mlaptime > 0 && mlaptime <= ARAP_MAX_MNLAP) {
+        minLapTime = mlaptime;
+        saveSettingsFile();
     }
-#ifdef TARGET_WIN32
-    ofSetFullscreen(fullscreenEnabled);
-#endif /* TARGET_WIN32 */
-    saveSettingsFile();
+    value = ofToString(minLapTime) + " sec";
+    if (minLapTime > 1) {
+        value += "s";
+    }
+    setOverlayMessage("Minimum Lap Time " + value);
 }
 
 //--------------------------------------------------------------
@@ -3471,7 +3466,7 @@ void drawHelpBody(int line) {
     }
     drawStringBlock(&myFontOvlayP, "Set Minimum Lap Time", blk1, line, ALIGN_LEFT, szb, szl);
     drawStringBlock(&myFontOvlayP, value, blk2, line, ALIGN_CENTER, szb, szl);
-    drawStringBlock(&myFontOvlayP, "M", blk3, line, ALIGN_CENTER, szb, szl);
+    drawStringBlock(&myFontOvlayP, "Pg_Up/Pg_Down", blk3, line, ALIGN_CENTER, szb, szl);
     line++;
     // Set staggered start
     ofSetColor(myColorDGray);

@@ -362,7 +362,7 @@ void pushLapRecord(int, float);
 void popLapRecord(int);
 void updateRacePositions();
 void toggleARLap();
-void changeMinLap();
+void changeMinLap(int);
 void changeRaceDuration();
 void toggleUseStartGate();
 void toggleLapAfterTimeout();
