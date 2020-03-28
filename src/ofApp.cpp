@@ -83,7 +83,7 @@ void setupInit() {
     tvpScene = SCENE_INIT;
     ofResetElapsedTimeCounter();
     // screen
-    ofSetWindowTitle("Tiny View Plus " + ofToString(APP_VER));
+    ofSetWindowTitle("Tiny View Plus ");
     ofBackground(0, 0, 0);
     ofSetVerticalSync(VERTICAL_SYNC);
     ofSetFrameRate(FRAME_RATE);
@@ -1060,22 +1060,21 @@ void drawInfo() {
     ofColor *tcolor;
     string str;
     int x, y;
-
     y = ofGetHeight() - (1 + 4);
     // logo
     if (tvpScene == SCENE_CAMS || overlayMode == OVLMODE_HELP || overlayMode == OVLMODE_RCRSLT) {
         ofSetColor(myColorWhite);
         logoSmallImage.draw(0, 0);
+        tcolor = &myColorWhite;
+        // appinfo
+        str = "Tiny View Plus " + ofToString(APP_VER);
+        drawStringWithShadow(&myFontInfo1p, *tcolor, str, 4, y);
+        // date/time
+        str = ofGetTimestampString("%F %T");
+        x = ofGetWidth() - myFontInfo1m.stringWidth(str);
+        x = (int)(x / 5) * 5;
+        drawStringWithShadow(&myFontInfo1m, *tcolor, str, x, y);
     }
-    tcolor = &myColorWhite;
-    // appinfo
-    str = "Tiny View Plus " + ofToString(APP_VER);
-    drawStringWithShadow(&myFontInfo1p, *tcolor, str, 4, y);
-    // date/time
-    str = ofGetTimestampString("%F %T");
-    x = ofGetWidth() - myFontInfo1m.stringWidth(str);
-    x = (int)(x / 5) * 5;
-    drawStringWithShadow(&myFontInfo1m, *tcolor, str, x, y);
 }
 
 //--------------------------------------------------------------
