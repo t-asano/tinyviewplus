@@ -1064,7 +1064,7 @@ void drawInfo() {
     // logo
     if (tvpScene == SCENE_CAMS || overlayMode == OVLMODE_HELP || overlayMode == OVLMODE_RCRSLT) {
         ofSetColor(myColorWhite);
-        logoSmallImage.draw(0, 0);
+        //logoSmallImage.draw(0, 0);
         tcolor = &myColorWhite;
         // appinfo
         str = "Tiny View Plus " + ofToString(APP_VER);
