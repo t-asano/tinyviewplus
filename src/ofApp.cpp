@@ -83,7 +83,7 @@ void setupInit() {
     tvpScene = SCENE_INIT;
     ofResetElapsedTimeCounter();
     // screen
-    ofSetWindowTitle("Tiny View Plus ");
+    ofSetWindowTitle("Tiny View Plus");
     ofBackground(0, 0, 0);
     ofSetVerticalSync(VERTICAL_SYNC);
     ofSetFrameRate(FRAME_RATE);
