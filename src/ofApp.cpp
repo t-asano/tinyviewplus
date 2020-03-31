@@ -11,7 +11,7 @@
 // system
 int camCheckCount;
 int tvpScene;
-ofxXmlSettings xmlSettings, xmlCamProfFpv;
+ofxXmlSettings xmlSettings, xmlCamProfFpv, xmlPilots;
 bool sysStatEnabled;
 // view
 ofVideoGrabber grabber[CAMERA_MAXNUM];
@@ -235,6 +235,24 @@ void saveSettingsFile() {
     xmlSettings.saveFile(SETTINGS_FILE);
 }
 
+void loadPilotsFile() {
+    xmlPilots.loadFile(PILOTS_FILE);
+    for (int i = 0; i < cameraNum; i++) {
+      string caption = xmlPilots.getValue(PLT_PILOT_LABEL+to_string(i), "");
+      if (caption != "") {
+          camView[i].labelString = caption;
+          autoSelectCameraIcon(i + 1, caption);
+      }
+    }
+}
+
+void savePilotsFile() {
+    for (int i = 0; i < cameraNum; i++) {
+        if (camView[i].labelString != "Pilot" +to_string(i + 1)) xmlPilots.setValue(PLT_PILOT_LABEL+to_string(i), camView[i].labelString);
+    }
+    xmlPilots.saveFile(PILOTS_FILE);
+}
+
 //--------------------------------------------------------------
 void loadCameraProfileFile() {
     if (xmlCamProfFpv.loadFile(CAM_FPV_FILE) == false) {
@@ -356,6 +374,7 @@ void setupMain() {
         camView[i].iconImage.load(DFLT_ICON_FILE);
         camView[i].labelString = "Pilot" + ofToString(i + 1);
     }
+    loadPilotsFile();
     setViewParams();
     for (int i = 0; i < cameraNum; i++) {
         camView[i].moveSteps = 1;
@@ -1649,9 +1668,12 @@ void changeCameraLabel(int camid) {
     ofSetFullscreen(false);
     str = ansiToUtf8(str);
 #endif /* TARGET_WIN32 */
-    str = ofSystemTextBoxDialog("Camera" + ofToString(camid) + " label:", str);
-    camView[camid - 1].labelString = str;
-    autoSelectCameraIcon(camid, str);
+    str = ofTrim(ofSystemTextBoxDialog("Camera" + ofToString(camid) + " label:", str));
+    if (str.length() > 0) {
+        camView[camid - 1].labelString = str;
+        savePilotsFile();
+        autoSelectCameraIcon(camid, str);
+    }
 #ifdef TARGET_WIN32
     ofSetFullscreen(fullscreenEnabled);
 #endif/* TARGET_WIN32 */
@@ -1689,7 +1711,8 @@ void changeCameraIconPath(int camid, string path, bool synclabel) {
         camView[idx].iconImage.clear();
         camView[idx].iconImage.load(path);
         if (synclabel) {
-            camView[camid - 1].labelString = file.getBaseName();
+            camView[camid - 1].labelString = ofTrim(file.getBaseName());
+            savePilotsFile();
         }
     } else {
         ofSystemAlertDialog("Unsupported file type");
@@ -2115,6 +2138,8 @@ void initConfig() {
     raceStarted = false;
     initRaceVars();
     // finish
+    xmlPilots.clear();
+    savePilotsFile();
     saveSettingsFile();
     setOverlayMessage("Initialized settings");
 }
@@ -3644,11 +3669,12 @@ void processQrReader() {
                 scanned = true;
                 camView[qrCamIndex].qrScanned = true;
                 beepSound.play();
-                string label = zxres.getText();
+                string label = ofTrim(zxres.getText());
 #ifdef TARGET_WIN32
                 label = utf8ToAnsi(label);
 #endif /* TARGET_WIN32 */
                 camView[qrCamIndex].labelString = label;
+                savePilotsFile();
                 autoSelectCameraIcon(qrCamIndex + 1, label);
             }
         }
