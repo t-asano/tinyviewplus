@@ -51,7 +51,7 @@
 #define BTTN_WNDW_FILE  "system/button_window.png"
 
 // pilots
-#define PILOTS_FILE   "pilots/pilots.xml"
+#define PILOTS_FILE     "pilots/pilots.xml"
 #define PLT_PILOT_LABEL "pilot:label_"
 
 // camera profile

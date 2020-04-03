@@ -237,18 +237,22 @@ void saveSettingsFile() {
 
 void loadPilotsFile() {
     xmlPilots.loadFile(PILOTS_FILE);
-    for (int i = 0; i < cameraNum; i++) {
-      string caption = xmlPilots.getValue(PLT_PILOT_LABEL+to_string(i), "");
+    for (int cid = 1; cid <= cameraNum; cid++) {
+      string caption = xmlPilots.getValue(PLT_PILOT_LABEL + ofToString(cid), "");
       if (caption != "") {
-          camView[i].labelString = caption;
-          autoSelectCameraIcon(i + 1, caption);
+          int idx = cid - 1;
+          camView[idx].labelString = caption;
+          autoSelectCameraIcon(cid, caption);
       }
     }
 }
 
 void savePilotsFile() {
-    for (int i = 0; i < cameraNum; i++) {
-        if (camView[i].labelString != "Pilot" +to_string(i + 1)) xmlPilots.setValue(PLT_PILOT_LABEL+to_string(i), camView[i].labelString);
+    for (int cid = 1; cid <= cameraNum; cid++) {
+        int idx = cid - 1;
+        if (camView[idx].labelString != "Pilot" + ofToString(cid)) {
+            xmlPilots.setValue(PLT_PILOT_LABEL + ofToString(cid), camView[idx].labelString);
+        }
     }
     xmlPilots.saveFile(PILOTS_FILE);
 }
