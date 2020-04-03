@@ -2420,7 +2420,7 @@ void speakRemainTime(int sec) {
             str = "specified time has passed.";
         }
     } else {
-        if (jp == true) {
+        if (jp == true && sec > 5) {
             str += "残り";
         }
         if (sec >= 60 && sec % 60 == 0) {
@@ -2438,14 +2438,11 @@ void speakRemainTime(int sec) {
         } else {
             // second
             str += ofToString(sec);
-            if (jp == true) {
-                str += "秒";
-            } else {
-                if (sec > 5) {
+            if (sec > 5) {
+                if (jp == true) {
+                    str += "秒";
+                } else {
                     str += " seconds";
-                    if (sec != 1) {
-                        str += "s";
-                    }
                 }
             }
         }
