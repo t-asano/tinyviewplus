@@ -1336,6 +1336,8 @@ void keyPressedOverlayNone(int key) {
             changeMinLap(1);
         } else if (ofGetKeyPressed(OF_KEY_PAGE_DOWN)) {
             changeMinLap(-1);
+        } else if (key == 'd' || key == 'D') {
+            changeRaceTimeAndLaps();
         } else if (ofGetKeyPressed(OF_KEY_UP)) {
             changeRaceTime(TVP_VAL_PLUS);
         } else if (ofGetKeyPressed(OF_KEY_DOWN)) {
@@ -2970,6 +2972,56 @@ void changeRaceLaps(int pm) {
 }
 
 //--------------------------------------------------------------
+void changeRaceTimeAndLaps() {
+    string str;
+    activateCursor();
+#ifdef TARGET_WIN32
+    ofSetFullscreen(false);
+#endif /* TARGET_WIN32 */
+    // time (seconds)
+    while (true) {
+        int sec;
+        str = (raceDuraSecs == 0) ? "" : ofToString(raceDuraSecs);
+        str = ofSystemTextBoxDialog("Race Time (0~" + ofToString(ARAP_MAX_RSECS) + " seconds):", str);
+        sec = (str == "") ? 0 : ofToInt(str);
+        if (sec <= 0) {
+            // no limit
+            raceDuraSecs = 0;
+            nextNotifyRemainSecs = -1;
+            break;
+        } else if (sec <= ARAP_MAX_RSECS) {
+            raceDuraSecs = sec;
+            int remain;
+            if (raceStarted == true) {
+                remain = raceDuraSecs - (elapsedTime - WATCH_COUNT_SEC);
+            } else {
+                remain = raceDuraSecs;
+            }
+            setNextNotifyRemainSecs(remain);
+            break;
+        } else {
+            ofSystemAlertDialog("Please enter 0~" + ofToString(ARAP_MAX_RSECS) + " (0/empty means no limit)");
+            // -> retry
+        }
+    }
+    // laps
+    while (true) {
+        int laps;
+        str = (raceDuraLaps == 0) ? "" : ofToString(raceDuraLaps);
+        str = ofSystemTextBoxDialog("Race Laps (1~"  + ofToString(ARAP_MAX_RLAPS) + "):", str);
+        laps = (str == "") ? 0 : ofToInt(str);
+        if (laps > 0 && laps <= ARAP_MAX_RLAPS) {
+            raceDuraLaps = laps;
+            break;
+        } else {
+            ofSystemAlertDialog("Please enter 1~" + ofToString(ARAP_MAX_RLAPS));
+            // -> retry
+        }
+    }
+    saveSettingsFile();
+}
+
+//--------------------------------------------------------------
 void toggleUseStartGate() {
     useStartGate = !useStartGate;
     if (useStartGate == true) {
@@ -3508,7 +3560,7 @@ void drawHelpBody(int line) {
     }
     drawStringBlock(&myFontOvlayP, "Set Race Duration (Time, Laps)", blk1, line, ALIGN_LEFT, szb, szl);
     drawStringBlock(&myFontOvlayP, value, blk2, line, ALIGN_CENTER, szb, szl);
-    drawStringBlock(&myFontOvlayP, "Up/Down, Left/Right", blk3, line, ALIGN_CENTER, szb, szl);
+    drawStringBlock(&myFontOvlayP, "Up/Down, Left/Right, D", blk3, line, ALIGN_CENTER, szb, szl);
     line++;
     // Set wait for lap after time limit
     ofSetColor(myColorDGray);

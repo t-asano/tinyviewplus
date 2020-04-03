@@ -373,6 +373,7 @@ void toggleARLap();
 void changeMinLap(int);
 void changeRaceTime(int);
 void changeRaceLaps(int);
+void changeRaceTimeAndLaps();
 void toggleUseStartGate();
 void toggleLapAfterTimeout();
 // overlay - common
