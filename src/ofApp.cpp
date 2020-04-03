@@ -1337,9 +1337,9 @@ void keyPressedOverlayNone(int key) {
         } else if (key == 'a' || key == 'A') {
             toggleARLap();
         } else if (ofGetKeyPressed(OF_KEY_PAGE_UP)) {
-            changeMinLap(1);
+            changeMinLap(TVP_VAL_PLUS);
         } else if (ofGetKeyPressed(OF_KEY_PAGE_DOWN)) {
-            changeMinLap(-1);
+            changeMinLap(TVP_VAL_MINUS);
         } else if (key == 'd' || key == 'D') {
             changeRaceTimeAndLaps();
         } else if (ofGetKeyPressed(OF_KEY_UP)) {
@@ -2890,18 +2890,23 @@ void toggleARLap() {
 }
 
 //--------------------------------------------------------------
-void changeMinLap(int mlaptime) {
+void changeMinLap(int pm) {
     string value;
-    mlaptime = minLapTime + mlaptime;
-    if (mlaptime > 0 && mlaptime <= ARAP_MAX_MNLAP) {
-        minLapTime = mlaptime;
+    int target;
+    if (pm == TVP_VAL_PLUS) {
+        target = minLapTime + 1;
+    } else {
+        target = minLapTime - 1;
+    }
+    if (target > 0 && target <= ARAP_MAX_MNLAP) {
+        minLapTime = target;
         saveSettingsFile();
     }
-    value = ofToString(minLapTime) + " sec";
+    value = ofToString(minLapTime) + " second";
     if (minLapTime > 1) {
         value += "s";
     }
-    setOverlayMessage("Minimum Lap Time " + value);
+    setOverlayMessage("Minimum Lap Time: " + value);
 }
 
 //--------------------------------------------------------------
