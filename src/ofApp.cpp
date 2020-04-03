@@ -1337,9 +1337,9 @@ void keyPressedOverlayNone(int key) {
         } else if (ofGetKeyPressed(OF_KEY_PAGE_DOWN)) {
             changeMinLap(-1);
         } else if (ofGetKeyPressed(OF_KEY_UP)) {
-            changeRaceTime(5);
+            changeRaceTime(TVP_VAL_PLUS);
         } else if (ofGetKeyPressed(OF_KEY_DOWN)) {
-            changeRaceTime(-5);
+            changeRaceTime(TVP_VAL_MINUS);
         } else if (ofGetKeyPressed(OF_KEY_LEFT)) {
             changeRaceLaps(TVP_VAL_MINUS);
         } else if (ofGetKeyPressed(OF_KEY_RIGHT)) {
@@ -2899,16 +2899,31 @@ void changeMinLap(int mlaptime) {
 }
 
 //--------------------------------------------------------------
-void changeRaceTime(int time) {
+void changeRaceTime(int pm) {
     string value;
-    time = raceDuraSecs + time;
-    if (time >= 0 && time <= ARAP_MAX_RSECS) {
-        raceDuraSecs = time;
-        saveSettingsFile();
+    int target;
+    if (pm == TVP_VAL_PLUS) { // plus
+        if (raceDuraSecs < 3600) {
+            target = (raceDuraSecs + 30) / 30;
+            target = target * 30;
+        } else {
+            target = (raceDuraSecs + 3600) / 3600;
+            target = target * 3600;
+        }
+    } else { // minus
+        if (raceDuraSecs <= 3600) {
+            target = (raceDuraSecs - 30) / 30;
+            target = target * 30;
+        } else if (raceDuraSecs <= 7200) {
+            target = 3600;
+        } else {
+            target = (raceDuraSecs - 3600) / 3600;
+            target = target * 3600;
+        }
     }
-    value = ofToString(raceDuraSecs) + " second";
-    if (raceDuraSecs > 1) {
-        value += "s";
+   if (target >= 0 && target <= ARAP_MAX_RSECS) {
+        raceDuraSecs = target;
+        saveSettingsFile();
     }
     if (raceDuraSecs > 0) {
         int remain;
@@ -2918,7 +2933,9 @@ void changeRaceTime(int time) {
             remain = raceDuraSecs;
         }
         setNextNotifyRemainSecs(remain);
-        setOverlayMessage("Race Time: " + value);
+        value = getWatchString(raceDuraSecs);
+        value = value.substr(0, value.length() - 3);
+        setOverlayMessage("Race Time: " + value + "s");
     } else {
         nextNotifyRemainSecs = -1;
         setOverlayMessage("Race Time: No Limit");
@@ -2926,9 +2943,9 @@ void changeRaceTime(int time) {
 }
 
 //--------------------------------------------------------------
-void changeRaceLaps(int incdec) {
+void changeRaceLaps(int pm) {
     int target;
-    if (incdec == TVP_VAL_PLUS) { // plus
+    if (pm == TVP_VAL_PLUS) { // plus
         if (raceDuraLaps < 100) {
             target = raceDuraLaps + 1;
         } else {
