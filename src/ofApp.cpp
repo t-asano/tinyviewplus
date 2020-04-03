@@ -647,7 +647,7 @@ void drawInit() {
 //--------------------------------------------------------------
 void drawCamCheck() {
     ofxTrueTypeFontUC *font;
-    int w, h , x, xoff, y, margin;
+    int w, h, x, xoff, y, margin;
     string str;
     bool isalt;
     // common
@@ -692,10 +692,18 @@ void drawCamCheck() {
     }
     // footer
     font = &myFontOvlayP;
-    str = "If all devices found, press any key to continue or Esc key to exit";
     ofSetColor(myColorYellow);
-    font->drawString(str, (ofGetWidth() - font->stringWidth(str)) / 2,
-                     y + h + margin + font->getLineHeight());
+
+    str = "If all devices are found, press Space key to continue.";
+    x = (ofGetWidth() - font->stringWidth(str)) / 2;
+    y = y + h + margin;
+    font->drawString(str, x, y);
+
+    str = "Press Esc key to exit.";
+    x = (ofGetWidth() - font->stringWidth(str)) / 2;
+    y = y + margin;
+    font->drawString(str, x, y);
+
     drawInfo();
 }
 
@@ -1355,17 +1363,17 @@ void keyPressedOverlayNone(int key) {
 }
 
 //--------------------------------------------------------------
-void keyPressedCamCheck() {
+void keyPressedCamCheck(int key) {
     if (ofGetKeyPressed(OF_KEY_ESC)) {
          ofExit();
-     } else {
-         if (DEBUG_ENABLED == true) {
-             cameraNum = CAMERA_MAXNUM;
-         }
-         if (cameraNum > 0) {
-             setupMain();
-         }
-     }
+    } else if (key == ' ') {
+        if (DEBUG_ENABLED == true) {
+            cameraNum = CAMERA_MAXNUM;
+        }
+        if (cameraNum > 0) {
+            setupMain();
+        }
+    }
 }
 
 //--------------------------------------------------------------
@@ -1374,7 +1382,7 @@ void ofApp::keyPressed(int key) {
         setupCamCheck();
         return;
     } else if (tvpScene == SCENE_CAMS) {
-        keyPressedCamCheck();
+        keyPressedCamCheck(key);
         return;
     }
     raceResultTimer = -1;

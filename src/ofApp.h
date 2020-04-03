@@ -294,7 +294,7 @@ void drawInit();
 void setupCamCheck();
 void updateCamCheck();
 void drawCamCheck();
-void keyPressedCamCheck();
+void keyPressedCamCheck(int);
 void reloadCameras();
 // -- main --
 // common
