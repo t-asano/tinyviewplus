@@ -100,7 +100,7 @@ On Windows, if multiple receivers are connected to same USB hub, only one of the
 | A | Set AR lap timer mode (Normal/Loose/Off) (\*1) | Normal |
 | D | Set race duration time (0\~36,000s) and laps (1\~10,000) | 0s (No limit), 10 laps |
 | W | Set wait for lap after time limit (On/Off) | Off |
-| M | Set minimum lap time (1~100s) | 3s |
+| PgUp/PgDown | Set minimum lap time (1~100s) | 3s |
 | G | Set staggered start (On/Off) (\*2) | Off |
 | L | Set lap history view (On/Off) | Off |
 | Space | Start/Stop race | - |
