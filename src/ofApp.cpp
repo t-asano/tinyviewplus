@@ -3485,7 +3485,11 @@ void drawHelpBody(int line) {
     }
     drawStringBlock(&myFontOvlayP, "Set Minimum Lap Time", blk1, line, ALIGN_LEFT, szb, szl);
     drawStringBlock(&myFontOvlayP, value, blk2, line, ALIGN_CENTER, szb, szl);
-    drawStringBlock(&myFontOvlayP, "Pg_Up/Pg_Down", blk3, line, ALIGN_CENTER, szb, szl);
+#ifdef TARGET_OSX
+    drawStringBlock(&myFontOvlayP, "fn + Up/Down", blk3, line, ALIGN_CENTER, szb, szl);
+#else /* TARGET_OSX */
+    drawStringBlock(&myFontOvlayP, "PgUp/PgDown", blk3, line, ALIGN_CENTER, szb, szl);
+#endif /* TARGET_WIN32 TARGET_LINUX */
     line++;
     // Set staggered start
     ofSetColor(myColorDGray);
