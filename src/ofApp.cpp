@@ -2382,7 +2382,7 @@ void speakLap(int camid, float sec, int num) {
 //--------------------------------------------------------------
 void setNextNotifyRemainSecs(int curr) {
     int next;
-    // ...80,120,60,30,5..1,0
+    // ...180,120,60,30,5..1,0
     if (curr > 60) {
         if (curr % 60 == 0) {
             next = curr - 60;
@@ -2442,7 +2442,7 @@ void speakRemainTime(int sec) {
                 str += "秒";
             } else {
                 if (sec > 5) {
-                    str += " second";
+                    str += " seconds";
                     if (sec != 1) {
                         str += "s";
                     }
