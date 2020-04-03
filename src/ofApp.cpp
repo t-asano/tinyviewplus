@@ -2934,8 +2934,8 @@ void changeRaceTime(int pm) {
         }
         setNextNotifyRemainSecs(remain);
         value = getWatchString(raceDuraSecs);
-        value = value.substr(0, value.length() - 3);
-        setOverlayMessage("Race Time: " + value + "s");
+        value = value.substr(0, value.length() - 3) + "s";
+        setOverlayMessage("Race Time: " + value);
     } else {
         nextNotifyRemainSecs = -1;
         setOverlayMessage("Race Time: No Limit");
@@ -3496,9 +3496,11 @@ void drawHelpBody(int line) {
     ofSetColor(myColorDGray);
     drawULineBlock(blk1, blk4, line + 1, szb, szl);
     ofSetColor(myColorWhite);
-    value = (raceDuraSecs <= 0) ? "No Limit" : (ofToString(raceDuraSecs) + " sec");
-    if (raceDuraSecs > 1) {
-        value += "s";
+    if (raceDuraSecs <= 0) {
+        value = "No Limit";
+    } else {
+        value = getWatchString(raceDuraSecs);
+        value = value.substr(0, value.length() - 3) + "s";
     }
     value += ", " + ofToString(raceDuraLaps) + " lap";
     if (raceDuraLaps > 1) {
@@ -3506,7 +3508,7 @@ void drawHelpBody(int line) {
     }
     drawStringBlock(&myFontOvlayP, "Set Race Duration (Time, Laps)", blk1, line, ALIGN_LEFT, szb, szl);
     drawStringBlock(&myFontOvlayP, value, blk2, line, ALIGN_CENTER, szb, szl);
-    drawStringBlock(&myFontOvlayP, "Up/Down,Left/Right", blk3, line, ALIGN_CENTER, szb, szl);
+    drawStringBlock(&myFontOvlayP, "Up/Down, Left/Right", blk3, line, ALIGN_CENTER, szb, szl);
     line++;
     // Set wait for lap after time limit
     ofSetColor(myColorDGray);
@@ -3563,17 +3565,17 @@ void drawHelpBody(int line) {
     ofSetColor(myColorDGray);
     drawULineBlock(blk1, blk4, line + 1, szb, szl);
     ofSetColor(myColorWhite);
-    drawStringBlock(&myFontOvlayP, "Add Lap at Camera 1~4,1,3", blk1, line, ALIGN_LEFT, szb, szl);
+    drawStringBlock(&myFontOvlayP, "Add Lap at Camera 1~4, 1, 3", blk1, line, ALIGN_LEFT, szb, szl);
     drawStringBlock(&myFontOvlayP, "-", blk2, line, ALIGN_CENTER, szb, szl);
-    drawStringBlock(&myFontOvlayP, "5~8,Z,/", blk3, line, ALIGN_CENTER, szb, szl);
+    drawStringBlock(&myFontOvlayP, "5~8, Z, /", blk3, line, ALIGN_CENTER, szb, szl);
     line++;
     // Delete previous lap at camera 1~4
     ofSetColor(myColorDGray);
     drawULineBlock(blk1, blk4, line + 1, szb, szl);
     ofSetColor(myColorWhite);
-    drawStringBlock(&myFontOvlayP, "Delete Previous Lap at Camera 1~4,1,3", blk1, line, ALIGN_LEFT, szb, szl);
+    drawStringBlock(&myFontOvlayP, "Delete Previous Lap at Camera 1~4, 1, 3", blk1, line, ALIGN_LEFT, szb, szl);
     drawStringBlock(&myFontOvlayP, "-", blk2, line, ALIGN_CENTER, szb, szl);
-    drawStringBlock(&myFontOvlayP, ofToString(TVP_STR_ALT) + " + 5~8,Z,/", blk3, line, ALIGN_CENTER, szb, szl);
+    drawStringBlock(&myFontOvlayP, ofToString(TVP_STR_ALT) + " + (5~8, Z, /)", blk3, line, ALIGN_CENTER, szb, szl);
     line++;
     // Display race result
     ofSetColor(myColorDGray);
