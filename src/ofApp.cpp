@@ -1337,13 +1337,13 @@ void keyPressedOverlayNone(int key) {
         } else if (ofGetKeyPressed(OF_KEY_PAGE_DOWN)) {
             changeMinLap(-1);
         } else if (ofGetKeyPressed(OF_KEY_UP)) {
-            changeRaceDuration(5);
+            changeRaceTime(5);
         } else if (ofGetKeyPressed(OF_KEY_DOWN)) {
-            changeRaceDuration(-5);
+            changeRaceTime(-5);
         } else if (ofGetKeyPressed(OF_KEY_LEFT)) {
-            changeRaceLaps(-1);
+            changeRaceLaps(TVP_VAL_MINUS);
         } else if (ofGetKeyPressed(OF_KEY_RIGHT)) {
-            changeRaceLaps(1);
+            changeRaceLaps(TVP_VAL_PLUS);
         } else if (key == 'w' || key == 'W') {
             toggleLapAfterTimeout();
         } else if (key == 'f' || key == 'F') {
@@ -2899,14 +2899,14 @@ void changeMinLap(int mlaptime) {
 }
 
 //--------------------------------------------------------------
-void changeRaceDuration(int time) {
+void changeRaceTime(int time) {
     string value;
     time = raceDuraSecs + time;
     if (time >= 0 && time <= ARAP_MAX_RSECS) {
         raceDuraSecs = time;
         saveSettingsFile();
     }
-    value = ofToString(raceDuraSecs) + " sec";
+    value = ofToString(raceDuraSecs) + " second";
     if (raceDuraSecs > 1) {
         value += "s";
     }
@@ -2918,21 +2918,38 @@ void changeRaceDuration(int time) {
             remain = raceDuraSecs;
         }
         setNextNotifyRemainSecs(remain);
-        setOverlayMessage("Race Time " + value);
+        setOverlayMessage("Race Time: " + value);
     } else {
         nextNotifyRemainSecs = -1;
-        setOverlayMessage("No Limit Race Time");
+        setOverlayMessage("Race Time: No Limit");
     }
 }
 
 //--------------------------------------------------------------
-void changeRaceLaps(int lap) {
-    lap = raceDuraLaps + lap;
-    if (lap > 0 && lap <= ARAP_MAX_RLAPS) {
-        raceDuraLaps = lap;
+void changeRaceLaps(int incdec) {
+    int target;
+    if (incdec == TVP_VAL_PLUS) { // plus
+        if (raceDuraLaps < 100) {
+            target = raceDuraLaps + 1;
+        } else {
+            target = (raceDuraLaps + 100) / 100;
+            target = target * 100;
+        }
+    } else { // minus
+        if (raceDuraLaps <= 100) {
+            target = raceDuraLaps - 1;
+        } else if (raceDuraLaps <= 200) {
+            target = 100;
+        } else {
+            target = (raceDuraLaps - 100) / 100;
+            target = target * 100;
+        }
+    }
+    if (target > 0 && target <= ARAP_MAX_RLAPS) {
+        raceDuraLaps = target;
         saveSettingsFile();
     }
-    setOverlayMessage("Race Laps " + ofToString(raceDuraLaps));
+    setOverlayMessage("Race Laps: " + ofToString(raceDuraLaps));
 }
 
 //--------------------------------------------------------------

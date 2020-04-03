@@ -27,6 +27,8 @@
 #define TVP_STR_ALT     "Alt"
 #endif /* TARGET_WIN32 TARGET_LINUX */
 #define DFLT_SYS_STAT   false
+#define TVP_VAL_PLUS    1
+#define TVP_VAL_MINUS   -1
 
 // settings
 #define SETTINGS_FILE   "settings.xml"
@@ -369,7 +371,7 @@ void popLapRecord(int);
 void updateRacePositions();
 void toggleARLap();
 void changeMinLap(int);
-void changeRaceDuration(int);
+void changeRaceTime(int);
 void changeRaceLaps(int);
 void toggleUseStartGate();
 void toggleLapAfterTimeout();
