@@ -11,7 +11,7 @@
 // system
 int camCheckCount;
 int tvpScene;
-ofxXmlSettings xmlSettings, xmlCamProfFpv;
+ofxXmlSettings xmlSettings, xmlCamProfFpv, xmlPilots;
 bool sysStatEnabled;
 // view
 ofVideoGrabber grabber[CAMERA_MAXNUM];
@@ -78,18 +78,12 @@ void setupInit() {
         // macOS binary release
         ofSetDataPathRoot("../Resources/data");
     }
-#ifdef TARGET_WIN32
-    HWND handleWindow;
-    AllocConsole();
-    handleWindow = FindWindowA("ConsoleWindowClass", NULL);
-    ShowWindow(handleWindow, 0);
-#endif /* TARGET_WIN32 */
     sysStatEnabled = DFLT_SYS_STAT;
     // scene
     tvpScene = SCENE_INIT;
     ofResetElapsedTimeCounter();
     // screen
-    ofSetWindowTitle("Tiny View Plus " + ofToString(APP_VER));
+    ofSetWindowTitle("Tiny View Plus");
     ofBackground(0, 0, 0);
     ofSetVerticalSync(VERTICAL_SYNC);
     ofSetFrameRate(FRAME_RATE);
@@ -241,6 +235,24 @@ void saveSettingsFile() {
     xmlSettings.saveFile(SETTINGS_FILE);
 }
 
+void loadPilotsFile() {
+    xmlPilots.loadFile(PILOTS_FILE);
+    for (int i = 0; i < cameraNum; i++) {
+      string caption = xmlPilots.getValue(PLT_PILOT_LABEL+to_string(i), "");
+      if (caption != "") {
+          camView[i].labelString = caption;
+          autoSelectCameraIcon(i + 1, caption);
+      }
+    }
+}
+
+void savePilotsFile() {
+    for (int i = 0; i < cameraNum; i++) {
+        if (camView[i].labelString != "Pilot" +to_string(i + 1)) xmlPilots.setValue(PLT_PILOT_LABEL+to_string(i), camView[i].labelString);
+    }
+    xmlPilots.saveFile(PILOTS_FILE);
+}
+
 //--------------------------------------------------------------
 void loadCameraProfileFile() {
     if (xmlCamProfFpv.loadFile(CAM_FPV_FILE) == false) {
@@ -362,6 +374,7 @@ void setupMain() {
         camView[i].iconImage.load(DFLT_ICON_FILE);
         camView[i].labelString = "Pilot" + ofToString(i + 1);
     }
+    loadPilotsFile();
     setViewParams();
     for (int i = 0; i < cameraNum; i++) {
         camView[i].moveSteps = 1;
@@ -439,7 +452,7 @@ void ofApp::update() {
             // speak remaining time
             if (nextNotifyRemainSecs >= 0 && raceDuraSecs - relp <= nextNotifyRemainSecs) {
                 if (nextNotifyRemainSecs > 0 || lapAfterTmoEnabled == true) {
-                    notifySound.play();
+                    if (nextNotifyRemainSecs > 5) notifySound.play();
                     speakRemainTime(nextNotifyRemainSecs);
                 }
                 setNextNotifyRemainSecs(nextNotifyRemainSecs);
@@ -679,7 +692,7 @@ void drawCamCheck() {
     }
     // footer
     font = &myFontOvlayP;
-    str = "Press any key to continue";
+    str = "If all devices found, press any key to continue or Esc key to exit";
     ofSetColor(myColorYellow);
     font->drawString(str, (ofGetWidth() - font->stringWidth(str)) / 2,
                      y + h + margin + font->getLineHeight());
@@ -1066,22 +1079,21 @@ void drawInfo() {
     ofColor *tcolor;
     string str;
     int x, y;
-
     y = ofGetHeight() - (1 + 4);
     // logo
     if (tvpScene == SCENE_CAMS || overlayMode == OVLMODE_HELP || overlayMode == OVLMODE_RCRSLT) {
         ofSetColor(myColorWhite);
-        logoSmallImage.draw(0, 0);
+        //logoSmallImage.draw(0, 0);
+        tcolor = &myColorWhite;
+        // appinfo
+        str = "Tiny View Plus " + ofToString(APP_VER);
+        drawStringWithShadow(&myFontInfo1p, *tcolor, str, 4, y);
+        // date/time
+        str = ofGetTimestampString("%F %T");
+        x = ofGetWidth() - myFontInfo1m.stringWidth(str);
+        x = (int)(x / 5) * 5;
+        drawStringWithShadow(&myFontInfo1m, *tcolor, str, x, y);
     }
-    tcolor = &myColorWhite;
-    // appinfo
-    str = "Tiny View Plus " + ofToString(APP_VER);
-    drawStringWithShadow(&myFontInfo1p, *tcolor, str, 4, y);
-    // date/time
-    str = ofGetTimestampString("%F %T");
-    x = ofGetWidth() - myFontInfo1m.stringWidth(str);
-    x = (int)(x / 5) * 5;
-    drawStringWithShadow(&myFontInfo1m, *tcolor, str, x, y);
 }
 
 //--------------------------------------------------------------
@@ -1211,7 +1223,12 @@ void keyPressedOverlayHelp(int key) {
                || key == 'A' || key == 'a'
                || key == 'D' || key == 'd'
                || key == 'W' || key == 'w'
-               || key == 'M' || key == 'm'
+               || ofGetKeyPressed(OF_KEY_PAGE_UP)
+               || ofGetKeyPressed(OF_KEY_PAGE_DOWN)
+               || ofGetKeyPressed(OF_KEY_UP)
+               || ofGetKeyPressed(OF_KEY_DOWN)
+               || ofGetKeyPressed(OF_KEY_LEFT)
+               || ofGetKeyPressed(OF_KEY_RIGHT)
                || key == 'G' || key == 'g'
                || key == 'L' || key == 'l'
                || key == 'C' || key == 'c'
@@ -1307,10 +1324,18 @@ void keyPressedOverlayNone(int key) {
             }
         } else if (key == 'a' || key == 'A') {
             toggleARLap();
-        } else if (key == 'm' || key == 'M') {
-            changeMinLap();
-        } else if (key == 'd' || key == 'D') {
-            changeRaceDuration();
+        } else if (ofGetKeyPressed(OF_KEY_PAGE_UP)) {
+            changeMinLap(1);
+        } else if (ofGetKeyPressed(OF_KEY_PAGE_DOWN)) {
+            changeMinLap(-1);
+        } else if (ofGetKeyPressed(OF_KEY_UP)) {
+            changeRaceDuration(5);
+        } else if (ofGetKeyPressed(OF_KEY_DOWN)) {
+            changeRaceDuration(-5);
+        } else if (ofGetKeyPressed(OF_KEY_LEFT)) {
+            changeRaceLaps(-1);
+        } else if (ofGetKeyPressed(OF_KEY_RIGHT)) {
+            changeRaceLaps(1);
         } else if (key == 'w' || key == 'W') {
             toggleLapAfterTimeout();
         } else if (key == 'f' || key == 'F') {
@@ -1331,16 +1356,16 @@ void keyPressedOverlayNone(int key) {
 
 //--------------------------------------------------------------
 void keyPressedCamCheck() {
-    if (cameraNum == 0) {
-        ofSystemAlertDialog("FPV receiver not found");
-        if (DEBUG_ENABLED == false) {
-            ofExit();
-        }
-    }
-    if (DEBUG_ENABLED == true) {
-        cameraNum = CAMERA_MAXNUM;
-    }
-    setupMain();
+    if (ofGetKeyPressed(OF_KEY_ESC)) {
+         ofExit();
+     } else {
+         if (DEBUG_ENABLED == true) {
+             cameraNum = CAMERA_MAXNUM;
+         }
+         if (cameraNum > 0) {
+             setupMain();
+         }
+     }
 }
 
 //--------------------------------------------------------------
@@ -1643,9 +1668,12 @@ void changeCameraLabel(int camid) {
     ofSetFullscreen(false);
     str = ansiToUtf8(str);
 #endif /* TARGET_WIN32 */
-    str = ofSystemTextBoxDialog("Camera" + ofToString(camid) + " label:", str);
-    camView[camid - 1].labelString = str;
-    autoSelectCameraIcon(camid, str);
+    str = ofTrim(ofSystemTextBoxDialog("Camera" + ofToString(camid) + " label:", str));
+    if (str.length() > 0) {
+        camView[camid - 1].labelString = str;
+        savePilotsFile();
+        autoSelectCameraIcon(camid, str);
+    }
 #ifdef TARGET_WIN32
     ofSetFullscreen(fullscreenEnabled);
 #endif/* TARGET_WIN32 */
@@ -1683,7 +1711,8 @@ void changeCameraIconPath(int camid, string path, bool synclabel) {
         camView[idx].iconImage.clear();
         camView[idx].iconImage.load(path);
         if (synclabel) {
-            camView[camid - 1].labelString = file.getBaseName();
+            camView[camid - 1].labelString = ofTrim(file.getBaseName());
+            savePilotsFile();
         }
     } else {
         ofSystemAlertDialog("Unsupported file type");
@@ -2109,6 +2138,8 @@ void initConfig() {
     raceStarted = false;
     initRaceVars();
     // finish
+    xmlPilots.clear();
+    savePilotsFile();
     saveSettingsFile();
     setOverlayMessage("Initialized settings");
 }
@@ -2124,9 +2155,7 @@ string getUserLocaleName() {
     pclose(pipe);
 #endif /* TARGET_OSX */
 #ifdef TARGET_WIN32
-    string org = ofToString(setlocale(LC_ALL, NULL));
     name = ofToString(setlocale(LC_ALL, ""));
-    setlocale(LC_ALL, org.c_str());
 #endif /* TARGET_WIN32 */
 #ifdef TARGET_LINUX
     FILE *pipe = popen("locale|grep LANG=", "r");
@@ -2353,7 +2382,7 @@ void speakLap(int camid, float sec, int num) {
 //--------------------------------------------------------------
 void setNextNotifyRemainSecs(int curr) {
     int next;
-    // ...180,120,60,30,0
+    // ...80,120,60,30,5..1,0
     if (curr > 60) {
         if (curr % 60 == 0) {
             next = curr - 60;
@@ -2362,6 +2391,16 @@ void setNextNotifyRemainSecs(int curr) {
         }
     } else if (curr > 30) {
         next = 30;
+    } else if (curr > 5) {
+        next = 5;
+    } else if (curr > 4) {
+        next = 4;
+    } else if (curr > 3) {
+        next = 3;
+    } else if (curr > 2) {
+        next = 2;
+    } else if (curr > 1) {
+        next = 1;
     } else if (curr > 0) {
         next = 0;
     } else {
@@ -2402,14 +2441,18 @@ void speakRemainTime(int sec) {
             if (jp == true) {
                 str += "秒";
             } else {
-                str += " second";
-                if (sec != 1) {
-                    str += "s";
+                if (sec > 5) {
+                    str += " second";
+                    if (sec != 1) {
+                        str += "s";
+                    }
                 }
             }
         }
         if (jp == false) {
-            str += " to go";
+            if (sec > 5) {
+                str += " to go";
+            }
         }
     }
     speakAny(jp == true ? "jp" : "en", str);
@@ -2836,79 +2879,55 @@ void toggleARLap() {
 }
 
 //--------------------------------------------------------------
-void changeMinLap() {
-    string str;
-    int lap;
-    activateCursor();
-#ifdef TARGET_WIN32
-    ofSetFullscreen(false);
-#endif /* TARGET_WIN32 */
-    str = ofToString(minLapTime);
-    str = ofSystemTextBoxDialog("Min. Lap Time (1~" + ofToString(ARAP_MAX_MNLAP) + "sec):", str);
-    lap = (str == "") ? 0 : ofToInt(str);
-    if (lap > 0 && lap <= ARAP_MAX_MNLAP) {
-        minLapTime = lap;
-    } else {
-        ofSystemAlertDialog("Please enter 1~" + ofToString(ARAP_MAX_MNLAP));
-        changeMinLap();
+void changeMinLap(int mlaptime) {
+    string value;
+    mlaptime = minLapTime + mlaptime;
+    if (mlaptime > 0 && mlaptime <= ARAP_MAX_MNLAP) {
+        minLapTime = mlaptime;
+        saveSettingsFile();
     }
-#ifdef TARGET_WIN32
-    ofSetFullscreen(fullscreenEnabled);
-#endif /* TARGET_WIN32 */
-    saveSettingsFile();
+    value = ofToString(minLapTime) + " sec";
+    if (minLapTime > 1) {
+        value += "s";
+    }
+    setOverlayMessage("Minimum Lap Time " + value);
 }
 
 //--------------------------------------------------------------
-void changeRaceDuration() {
-    string str;
-    activateCursor();
-#ifdef TARGET_WIN32
-    ofSetFullscreen(false);
-#endif /* TARGET_WIN32 */
-    // time (seconds)
-    while (true) {
-        int sec;
-        str = (raceDuraSecs == 0) ? "" : ofToString(raceDuraSecs);
-        str = ofSystemTextBoxDialog("Race Time (0~" + ofToString(ARAP_MAX_RSECS) + " secs):", str);
-        sec = (str == "") ? 0 : ofToInt(str);
-        if (sec <= 0) {
-            // no limit
-            raceDuraSecs = 0;
-            nextNotifyRemainSecs = -1;
-            break;
-        } else if (sec <= ARAP_MAX_RSECS) {
-            raceDuraSecs = sec;
-            int remain;
-            if (raceStarted == true) {
-                remain = raceDuraSecs - (elapsedTime - WATCH_COUNT_SEC);
-            } else {
-                remain = raceDuraSecs;
-            }
-            setNextNotifyRemainSecs(remain);
-            break;
-        } else {
-            ofSystemAlertDialog("Please enter 0~" + ofToString(ARAP_MAX_RSECS) + " (0/empty means no limit)");
-            // -> retry
-        }
+void changeRaceDuration(int time) {
+    string value;
+    time = raceDuraSecs + time;
+    if (time >= 0 && time <= ARAP_MAX_RSECS) {
+        raceDuraSecs = time;
+        saveSettingsFile();
     }
-    // laps
-    while (true) {
-        int laps;
-        str = (raceDuraLaps == 0) ? "" : ofToString(raceDuraLaps);
-        str = ofSystemTextBoxDialog("Race Laps (1~"  + ofToString(ARAP_MAX_RLAPS) + "):", str);
-        laps = (str == "") ? 0 : ofToInt(str);
-        if (laps > 0 && laps <= ARAP_MAX_RLAPS) {
-            raceDuraLaps = laps;
-            break;
-        } else {
-            ofSystemAlertDialog("Please enter 1~" + ofToString(ARAP_MAX_RLAPS));
-            // -> retry
-        }
+    value = ofToString(raceDuraSecs) + " sec";
+    if (raceDuraSecs > 1) {
+        value += "s";
     }
-#ifdef TARGET_WIN32
-    ofSetFullscreen(fullscreenEnabled);
-#endif /* TARGET_WIN32 */
-    saveSettingsFile();
+    if (raceDuraSecs > 0) {
+        int remain;
+        if (raceStarted == true) {
+            remain = raceDuraSecs - (elapsedTime - WATCH_COUNT_SEC);
+        } else {
+            remain = raceDuraSecs;
+        }
+        setNextNotifyRemainSecs(remain);
+        setOverlayMessage("Race Time " + value);
+    } else {
+        nextNotifyRemainSecs = -1;
+        setOverlayMessage("No Limit Race Time");
+    }
+}
+
+//--------------------------------------------------------------
+void changeRaceLaps(int lap) {
+    lap = raceDuraLaps + lap;
+    if (lap > 0 && lap <= ARAP_MAX_RLAPS) {
+        raceDuraLaps = lap;
+        saveSettingsFile();
+    }
+    setOverlayMessage("Race Laps " + ofToString(raceDuraLaps));
 }
 
 //--------------------------------------------------------------
@@ -3442,10 +3461,13 @@ void drawHelpBody(int line) {
     if (raceDuraSecs > 1) {
         value += "s";
     }
-    value += ", " + ofToString(raceDuraLaps) + " laps";
+    value += ", " + ofToString(raceDuraLaps) + " lap";
+    if (raceDuraLaps > 1) {
+        value += "s";
+    }
     drawStringBlock(&myFontOvlayP, "Set Race Duration (Time, Laps)", blk1, line, ALIGN_LEFT, szb, szl);
     drawStringBlock(&myFontOvlayP, value, blk2, line, ALIGN_CENTER, szb, szl);
-    drawStringBlock(&myFontOvlayP, "D", blk3, line, ALIGN_CENTER, szb, szl);
+    drawStringBlock(&myFontOvlayP, "Up/Down,Left/Right", blk3, line, ALIGN_CENTER, szb, szl);
     line++;
     // Set wait for lap after time limit
     ofSetColor(myColorDGray);
@@ -3466,7 +3488,7 @@ void drawHelpBody(int line) {
     }
     drawStringBlock(&myFontOvlayP, "Set Minimum Lap Time", blk1, line, ALIGN_LEFT, szb, szl);
     drawStringBlock(&myFontOvlayP, value, blk2, line, ALIGN_CENTER, szb, szl);
-    drawStringBlock(&myFontOvlayP, "M", blk3, line, ALIGN_CENTER, szb, szl);
+    drawStringBlock(&myFontOvlayP, "Pg_Up/Pg_Down", blk3, line, ALIGN_CENTER, szb, szl);
     line++;
     // Set staggered start
     ofSetColor(myColorDGray);
@@ -3647,11 +3669,12 @@ void processQrReader() {
                 scanned = true;
                 camView[qrCamIndex].qrScanned = true;
                 beepSound.play();
-                string label = zxres.getText();
+                string label = ofTrim(zxres.getText());
 #ifdef TARGET_WIN32
                 label = utf8ToAnsi(label);
 #endif /* TARGET_WIN32 */
                 camView[qrCamIndex].labelString = label;
+                savePilotsFile();
                 autoSelectCameraIcon(qrCamIndex + 1, label);
             }
         }

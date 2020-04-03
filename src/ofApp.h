@@ -48,6 +48,10 @@
 #define BTTN_SETT_FILE  "system/button_settings.png"
 #define BTTN_WNDW_FILE  "system/button_window.png"
 
+// pilots
+#define PILOTS_FILE   "pilots/pilots.xml"
+#define PLT_PILOT_LABEL "pilot:label_"
+
 // camera profile
 #define CAM_FPV_FILE    "camera/fpv.xml"
 #define CFNM_NAME       "camera:name"
@@ -281,6 +285,8 @@ void setupInit();
 void loadWallImage(string);
 void loadSettingsFile();
 void saveSettingsFile();
+void savePilotsFile();
+void loadPilotsFile();
 void loadCameraProfileFile();
 void updateInit();
 void drawInit();
@@ -362,8 +368,9 @@ void pushLapRecord(int, float);
 void popLapRecord(int);
 void updateRacePositions();
 void toggleARLap();
-void changeMinLap();
-void changeRaceDuration();
+void changeMinLap(int);
+void changeRaceDuration(int);
+void changeRaceLaps(int);
 void toggleUseStartGate();
 void toggleLapAfterTimeout();
 // overlay - common
