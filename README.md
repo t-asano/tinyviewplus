@@ -19,8 +19,6 @@ Tiny View Plus is a FPV multi-view and lap timing system. It works on PC with UV
 </tr>
 </table>
 
-To build from source code, [openFrameworks](http://openframeworks.cc/ja/) v0.10.1 is required.
-
 ## Install
 
 Attention: We are not responsible for any problems caused by running the application.
