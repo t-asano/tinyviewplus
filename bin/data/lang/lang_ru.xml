@@ -1,0 +1,91 @@
+<lang>
+	<addlap>Добавить круг для камеры 1~4,1,3</addlap>
+        <bestlap>Лучший</bestlap>
+        <bgimgnfound>Файл с фоном не найден</bgimgnfound>
+	<camera>Камера</camera>
+        <camsetup>Настройка приемников</camsetup>
+	<cancel>отменен</cancel>
+	<clrdraceres>Результаты гонки сброшены</clrdraceres>
+	<clrraceres>Сброс результатов гонки</clrraceres>
+	<cursorkeys>Клавиши курсора</cursorkeys>
+	<dellap>Удалить круг для камеры 1~4,1,3</dellap>
+	<disabled>Отключено</disabled>
+        <finish>Финиш</finish>
+	<hrs>ч</hrs>
+	<icon>Изображение</icon>
+	<initcmd>Сброс настроек</initcmd>
+	<initsetting>Настройки сброшены</initsetting>
+	<key>Клавиша</key>
+	<label>Пилот</label>
+	<language>Язык программы</language>
+	<laphist>История прохождения кругов</laphist>
+        <lap>Круг</lap>
+        <laps>Кругов</laps>
+	<laptimemode>Режим срабатывания засечки</laptimemode>
+	<loose>Свободный</loose>
+	<min1>мин</min1>
+	<min2>минут</min2>
+	<minimlaptime>Минимальное время круга</minimlaptime>
+	<name>Пилот</name>
+        <nodevice>Устройства не найдены</nodevice>
+	<nolimit>Без лимита</nolimit>
+	<normal>Нормальный</normal>
+	<off>Выкл</off>
+	<of>из</of>
+	<on>Вкл</on>
+        <p1>1й</p1>
+        <p2>2й</p2>
+        <p3>3й</p3>
+        <p4>4й</p4>
+	<page>Страница</page>
+        <pilot>Пилот</pilot>
+	<position>Место</position>
+	<presshoresc>Нажмите H или Esc для выхода</presshoresc>
+	<pressrcontesc>Нажмите R для продолжения, Esc - для выхода</pressrcontesc>
+	<pressroresc>Нажмите R или Esc для выхода</pressroresc>
+	<racecmd>Параметры гонки</racecmd>
+	<racelaps>Кругов в гонке</racelaps>
+	<raceres>Результаты гонки</raceres>
+	<racetime>Время гонки</racetime>
+	<sayracefinish>Гонка завершена</sayracefinish>
+	<sayremainpostfix></sayremainpostfix>
+	<sayremainprefix>Осталось</sayremainprefix>
+	<saytimeover>Время вышло</saytimeover>
+        <saywelcome>Добро пожаловать в Tiny View Plus</saywelcome>
+	<scanexit>Для выхода из программы нажмите Esc.</scanexit>
+        <scanlabel>Если все устройства найдены, нажмите пробел для продолжения.</scanlabel>
+        <scanqrcode>Режим сканирования QR-кода</scanqrcode>
+        <scan>Сканирование...</scan>
+        <sec1>с</sec1>
+	<sec2>сек</sec2>
+	<sec3>секунд</sec3>
+	<setarmode>Режим срабатывания засечки</setarmode>
+	<setbgimg>Выбор фонового изображения</setbgimg>
+	<setborder>Рамка вокруг изображения</setborder>
+	<setcamtrim>Масштабирование изображения</setcamtrim>
+	<setcanviz>Видимость камеры 1~4</setcanviz>
+	<setcmd>Настройки / Параметры</setcmd>
+	<setenhvw>Увеличение камеры 1~4</setenhvw>
+	<setfullscrn>Полноэкранный режим</setfullscrn>
+	<setlang>Выбор языка</setlang>
+	<setlaphist>История прохождения кругов</setlaphist>
+	<setminlap>Минимальное время круга</setminlap>
+	<setqrcode>Запуск/Остановка сканирования QR-кода</setqrcode>
+	<setraceopts>Основные параметры (время, круги)</setraceopts>
+	<setstagg>Индивидуальный старт</setstagg>
+	<setsysstat>Системная информация</setsysstat>
+	<setting>Значение</setting>
+	<setwaitlap>Завершение круга для окончания гонки</setwaitlap>
+	<showhelp>Диалог Настроек / Параметров</showhelp>
+	<showraceres>Результаты гонки</showraceres>
+	<space>Пробел</space>
+	<staggstart>Индивидуальный старт</staggstart>
+        <started>Стартовал</started>
+        <start>Старт!</start>
+	<startstop>Запуск/Остановка гонки</startstop>
+	<syscmd>Системные параметры</syscmd>
+        <totaltime>Время</totaltime>
+	<unsupfiletype>Неподдерживаемый тип файла</unsupfiletype>
+	<viewcmd>Параметры просмотра</viewcmd>
+	<waitlap>Завершение круга для окончания гонки</waitlap>
+</lang>

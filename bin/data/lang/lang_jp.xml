@@ -1,0 +1,91 @@
+<lang>
+	<addlap>Add Lap at Camera 1~4,1,3</addlap>
+	<bestlap>BestLap</bestlap>
+	<bgimgnfound>Background image not found</bgimgnfound>
+	<camera>Camera</camera>
+	<camsetup>Camera Setup</camsetup>
+	<cancel>canceled</cancel>
+	<clrdraceres>Race result cleared</clrdraceres>
+	<clrraceres>Clear Race Result</clrraceres>
+	<cursorkeys>Cursor Keys</cursorkeys>
+	<dellap>Delete Previous Lap at Camera 1~4,1,3</dellap>
+	<disabled>Disabled</disabled>
+	<finish>Finished</finish>
+	<hrs>h</hrs>
+	<icon>Icon</icon>
+	<initcmd>Initialize Settings</initcmd>
+	<initsetting>Initialized settings</initsetting>
+	<key>Key</key>
+	<label>Label</label>
+	<language>Language</language>
+	<laphist>Lap History View</laphist>
+	<lap>ラップ</lap>
+	<laps>Laps</laps>
+	<laptimemode>AR Lap Timer Mode</laptimemode>
+	<loose>Loose</loose>
+	<min1>min</min1>
+	<min2>分</min2>
+	<minimlaptime>Minimum Lap Time</minimlaptime>
+	<name>Name</name>
+	<nodevice>No device</nodevice>
+	<nolimit>No Limit</nolimit>
+	<normal>Normal</normal>
+	<off>Off</off>
+	<of>of</of>
+	<on>On</on>
+	<p1>1st</p1>
+	<p2>2nd</p2>
+	<p3>3rd</p3>
+	<p4>4th</p4>
+	<page>Page</page>
+	<pilot>パイロット</pilot>
+	<position>Position</position>
+	<presshoresc>Press H or Esc key to exit</presshoresc>
+	<pressrcontesc>Press R key to continue, Esc key to exit</pressrcontesc>
+	<pressroresc>Press R or Esc key to exit</pressroresc>
+	<racecmd>Race Command</racecmd>
+	<racelaps>Race Laps</racelaps>
+	<raceres>Race Result</raceres>
+	<racetime>Race Time</racetime>
+	<sayracefinish>レース終了</sayracefinish>
+	<sayremainpostfix></sayremainpostfix>
+	<sayremainprefix>残り</sayremainprefix>
+	<saytimeover>規定時間が経過しました</saytimeover>
+	<saywelcome>タイニービュープラスへ、ようこそ。</saywelcome>
+	<scanexit>Press Esc key to exit.</scanexit>
+	<scanlabel>If all devices are found, press Space key to continue.</scanlabel>
+	<scanqrcode>Scanning QR Code...</scanqrcode>
+	<scan>Scanning...</scan>
+	<sec1>s</sec1>
+	<sec2>sec</sec2>
+	<sec3>秒</sec3>
+	<setarmode>Set AR Lap Timer Mode</setarmode>
+	<setbgimg>Set Background Image</setbgimg>
+	<setborder>Set Camera Frame Visibility</setborder>
+	<setcamtrim>Set Camera Fit to Window</setcamtrim>
+	<setcanviz>Set Camera 1~4 Visibility</setcanviz>
+	<setcmd>Settings / Commands</setcmd>
+	<setenhvw>Set Camera 1~4 Enhanced View</setenhvw>
+	<setfullscrn>Set Fullscreen Mode</setfullscrn>
+	<setlang>Set Language</setlang>
+	<setlaphist>Set Lap History View</setlaphist>
+	<setminlap>Set Minimum Lap Time</setminlap>
+	<setqrcode>Start/Stop QR Code Reader for Label</setqrcode>
+	<setraceopts>Set Race Duration (Time, Laps)</setraceopts>
+	<setstagg>Set Staggered Start</setstagg>
+	<setsysstat>Set System Statistics</setsysstat>
+	<setting>Setting</setting>
+	<setwaitlap>Set Wait for Lap after Time Limit</setwaitlap>
+	<showhelp>Display Help (Settings/Commands)</showhelp>
+	<showraceres>Display Race Result</showraceres>
+	<space>Space</space>
+	<staggstart>Staggered Start</staggstart>
+	<started>スタート</started>
+	<start>Go!</start>
+	<startstop>Start/Stop Race</startstop>
+	<syscmd>System Command</syscmd>
+	<totaltime>TotalTime</totaltime>
+	<unsupfiletype>Unsupported file type</unsupfiletype>
+	<viewcmd>View Command</viewcmd>
+	<waitlap>Wait for Lap after Time Limit</waitlap>
+</lang>

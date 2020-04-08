@@ -1,0 +1,5 @@
+#!/bin/bash
+
+echo "<lang>"
+grep -r "xmlLang" ./src/*.* |sed "s/\")/\"\n/g"|grep getValue|sed "s/.*lang:\(.*\)\"\,.*\"\(.*\)\"$/\t<\1>\2<\/\1>/"|sort|uniq
+echo "</lang>"

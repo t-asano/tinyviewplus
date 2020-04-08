@@ -30,7 +30,7 @@
 
 // settings
 #define SETTINGS_FILE   "settings.xml"
-#define SNM_SYS_SPCLANG "system:speechJpn"
+#define SNM_SYS_LANG    "system:lang"
 #define SNM_SYS_STAT    "system:sysStat"
 #define SNM_VIEW_FLLSCR "view:fullscreen"
 #define SNM_VIEW_BGIMG  "view:bgImage"
@@ -49,8 +49,11 @@
 #define BTTN_WNDW_FILE  "system/button_window.png"
 
 // pilots
-#define PILOTS_FILE   "pilots/pilots.xml"
-#define PLT_PILOT_LABEL "pilot:label_"
+#define PILOTS_FILE     "pilots/pilots.xml"
+#define PLT_PILOT_LABEL "pilot:label"
+
+// languages
+#define LANG_DIR        "lang/"
 
 // camera profile
 #define CAM_FPV_FILE    "camera/fpv.xml"
@@ -288,13 +291,14 @@ void saveSettingsFile();
 void savePilotsFile();
 void loadPilotsFile();
 void loadCameraProfileFile();
+void loadLangFile();
 void updateInit();
 void drawInit();
 // -- camera setup --
 void setupCamCheck();
 void updateCamCheck();
 void drawCamCheck();
-void keyPressedCamCheck();
+void keyPressedCamCheck(int);
 void reloadCameras();
 // -- main --
 // common
@@ -328,8 +332,8 @@ void recvOscCameraString(int, string, string);
 void recvOscCameraFloat(int, string, float);
 void recvOscSpeech(string, string);
 // speech
-void toggleSpeechLang();
-void autoSelectSpeechLang();
+void toggleLang();
+void autoSelectLang();
 void speakLap(int, float, int);
 void setNextNotifyRemainSecs(int);
 void speakRemainTime(int);
@@ -343,6 +347,7 @@ void drawCameraLapTime(int, bool);
 void drawCameraLapHistory(int, bool);
 void drawCamera(int);
 string getWatchString(float);
+string getTimeString(int);
 void drawWatch();
 void drawInfo();
 void drawStringWithShadow(ofxTrueTypeFontUC*, ofColor, string, int, int);

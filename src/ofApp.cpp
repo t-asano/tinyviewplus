@@ -11,7 +11,7 @@
 // system
 int camCheckCount;
 int tvpScene;
-ofxXmlSettings xmlSettings, xmlCamProfFpv, xmlPilots;
+ofxXmlSettings xmlSettings, xmlCamProfFpv, xmlPilots, xmlLang;
 bool sysStatEnabled;
 // view
 ofVideoGrabber grabber[CAMERA_MAXNUM];
@@ -39,8 +39,11 @@ bool cameraFrameEnabled;
 int hideCursorTimer;
 // osc
 ofxOscReceiver oscReceiver;
-// speech
-bool speechLangJpn;
+// language
+int langindex = 0;
+// Put your language definition here
+string lang[3] = { "en", "ru", "jp" };
+string langlabel[3] = { "English", "Русский", "日本人" };
 // AR lap timer
 ofSoundPlayer beepSound, beep3Sound, notifySound, cancelSound;
 ofSoundPlayer countSound, finishSound;
@@ -146,8 +149,8 @@ void setupInit() {
     raceResultTimer = -1;
     // QR reader
     qrEnabled = false;
-    // speech
-    autoSelectSpeechLang();
+    // language
+    autoSelectLang();
     // extra camera
     camProfFpvExtra.enabled = false;
 }
@@ -157,7 +160,11 @@ void loadWallImage(string path) {
     wallImage.clear();
     if (wallImage.load(path) == false) {
         if (tvpScene == SCENE_INIT) {
-            ofSystemAlertDialog("Background image not found: " + path);
+            string stralert = xmlLang.getValue("lang:bgimgnfound","Background image not found");
+#ifdef TARGET_WIN32
+            stralert = "Background image not found";
+#endif /* TARGET_WIN32 */
+            ofSystemAlertDialog(stralert + ": " + path);
         }
         wallPath = DFLT_WALL_FILE;
         wallImage.load(wallPath);
@@ -171,8 +178,8 @@ void loadSettingsFile() {
     xmlSettings.loadFile(SETTINGS_FILE);
 
     // SYSTEM
-    // speech language
-    speechLangJpn = xmlSettings.getValue(SNM_SYS_SPCLANG, speechLangJpn);
+    // language
+    langindex = xmlSettings.getValue(SNM_SYS_LANG, langindex);
     // system statistics
     sysStatEnabled = xmlSettings.getValue(SNM_SYS_STAT, sysStatEnabled);
 
@@ -203,8 +210,8 @@ void loadSettingsFile() {
 
 void saveSettingsFile() {
     // SYSTEM
-    // speech language
-    xmlSettings.setValue(SNM_SYS_SPCLANG, speechLangJpn);
+    // language
+    xmlSettings.setValue(SNM_SYS_LANG, langindex);
     // system statistics
     xmlSettings.setValue(SNM_SYS_STAT, sysStatEnabled);
 
@@ -238,19 +245,41 @@ void saveSettingsFile() {
 void loadPilotsFile() {
     xmlPilots.loadFile(PILOTS_FILE);
     for (int i = 0; i < cameraNum; i++) {
-      string caption = xmlPilots.getValue(PLT_PILOT_LABEL+to_string(i), "");
-      if (caption != "") {
-          camView[i].labelString = caption;
-          autoSelectCameraIcon(i + 1, caption);
-      }
+        int pid = i + 1;
+        string caption = xmlPilots.getValue(PLT_PILOT_LABEL + ofToString(pid), "");
+        if (caption != "") {
+            camView[i].labelString = caption;
+            autoSelectCameraIcon(pid, caption);
+        }
     }
 }
 
 void savePilotsFile() {
     for (int i = 0; i < cameraNum; i++) {
-        if (camView[i].labelString != "Pilot" +to_string(i + 1)) xmlPilots.setValue(PLT_PILOT_LABEL+to_string(i), camView[i].labelString);
+        int pid = i + 1;
+        if (camView[i].labelString != xmlLang.getValue("lang:pilot","Pilot") + ofToString(pid)) xmlPilots.setValue(PLT_PILOT_LABEL+ofToString(pid), camView[i].labelString);
     }
     xmlPilots.saveFile(PILOTS_FILE);
+}
+
+void loadLangFile() {
+    xmlLang.clear();
+    if (langindex != 0) {
+        if (xmlLang.loadFile("lang/lang_" + lang[langindex] + ".xml")) {
+            // For Windows here need translate all strings from unicode to ansi.
+            // Simple method - load xml file to string, convert and restore xml structure in memory from string
+#ifdef TARGET_WIN32
+            string winlang;
+            xmlLang.copyXmlToString(winlang);
+            xmlLang.clear();
+            winlang = utf8ToAnsi(winlang);
+            xmlLang.loadFromBuffer(winlang);
+#endif /* TARGET_WIN32 */
+        } else {
+            // Modal dialog block mouse in setting mode. Just will be used default values.
+            //ofSystemAlertDialog("Error language file load: " + langlabel[langindex]);
+        }
+    }
 }
 
 //--------------------------------------------------------------
@@ -372,7 +401,7 @@ void setupMain() {
     for (int i = 0; i < cameraNum; i++) {
         camView[i].visible = true;
         camView[i].iconImage.load(DFLT_ICON_FILE);
-        camView[i].labelString = "Pilot" + ofToString(i + 1);
+        camView[i].labelString = xmlLang.getValue("lang:pilot","Pilot") + ofToString(i + 1);
     }
     loadPilotsFile();
     setViewParams();
@@ -387,15 +416,8 @@ void setupMain() {
     }
     initRaceVars();
     // speech
-    if (speechLangJpn == true) {
-#ifdef TARGET_OSX
-        speakAny("jp", "タイニービュープラスへ、ようこそ。");
-#else /* TARGET_OSX */
-        speakAny("jp", "タイニービュープラスへようこそ。");
-#endif /* TARGET_WIN32 TARGET_LINUX */
-    } else {
-        speakAny("en", "Welcome to Tiny View Plus.");
-    }
+    speakAny(lang[langindex], xmlLang.getValue("lang:saywelcome","Welcome to Tiny View Plus"));
+
     // debug
     if (DEBUG_ENABLED == true) {
         generateDummyData();
@@ -410,6 +432,7 @@ void ofApp::setup() {
     loadCameraProfileFile();
     loadWallImage(wallPath);
     saveSettingsFile();
+    loadLangFile();
 }
 
 //--------------------------------------------------------------
@@ -647,7 +670,7 @@ void drawInit() {
 //--------------------------------------------------------------
 void drawCamCheck() {
     ofxTrueTypeFontUC *font;
-    int w, h , x, xoff, y, margin;
+    int w, h, x, xoff, y, margin;
     string str;
     bool isalt;
     // common
@@ -658,7 +681,7 @@ void drawCamCheck() {
     // header
     font = &myFontOvlayP2x;
     margin = font->getLineHeight();
-    str = "Camera Setup";
+    str = xmlLang.getValue("lang:camsetup","Camera Setup");
     ofSetColor(myColorYellow);
     font->drawString(str, (ofGetWidth() - font->stringWidth(str)) / 2, y - margin);
     // camera
@@ -667,7 +690,7 @@ void drawCamCheck() {
     ofDrawRectangle(-2, y - 2, ofGetWidth() + 4, h + 4);
     if (cameraNum == 0) {
         isalt = true;
-        str = "No device";
+        str = xmlLang.getValue("lang:nodevice","No device");
     } else {
         ofSetColor(myColorWhite);
         xoff = (ofGetWidth() - ((w + 4) * cameraNum)) / 2;
@@ -683,7 +706,7 @@ void drawCamCheck() {
     }
     if (camCheckCount >= 150 || camCheckCount < 30) {
         isalt = true;
-        str = "Scanning...";
+        str = xmlLang.getValue("lang:scan","Scanning...");
     }
     ofFill();
     // alert
@@ -692,10 +715,17 @@ void drawCamCheck() {
     }
     // footer
     font = &myFontOvlayP;
-    str = "If all devices found, press any key to continue or Esc key to exit";
     ofSetColor(myColorYellow);
-    font->drawString(str, (ofGetWidth() - font->stringWidth(str)) / 2,
-                     y + h + margin + font->getLineHeight());
+    str = xmlLang.getValue("lang:scanlabel","If all devices are found, press Space key to continue.");
+    x = (ofGetWidth() - font->stringWidth(str)) / 2;
+    y = y + h + margin;
+    font->drawString(str, x, y);
+
+    str = xmlLang.getValue("lang:scanexit","Press Esc key to exit.");
+    x = (ofGetWidth() - font->stringWidth(str)) / 2;
+    y = y + margin;
+    font->drawString(str, x, y);
+
     drawInfo();
 }
 
@@ -882,16 +912,16 @@ void drawCameraPilot(int cidx, bool issub) {
     int x;
     switch (pos) {
         case 1:
-            str = "1st";
+            str = xmlLang.getValue("lang:p1","1st");
             break;
         case 2:
-            str = "2nd";
+            str = xmlLang.getValue("lang:p2","2nd");
             break;
         case 3:
-            str = "3rd";
+            str = xmlLang.getValue("lang:p3","3rd");
             break;
         case 4:
-            str = "4th";
+            str = xmlLang.getValue("lang:p4","4th");
             break;
     }
     x = min(ofGetWidth(), camView[cidx].posX + camView[cidx].width) - (1 + fontlp->stringWidth(str));
@@ -915,7 +945,7 @@ void drawCameraLapTime(int idx, bool issub) {
         || camView[i].totalLaps >= (raceDuraLaps + (useStartGate == true ? 1 : 0))
         || (raceDuraSecs > 0 && (camView[i].prevElapsedSec - WATCH_COUNT_SEC) >= raceDuraSecs)) {
         // race/laps finished
-        sout = "Laps: " + ofToString((useStartGate == true && laps > 0) ? laps - 1 : laps);
+        sout = xmlLang.getValue("lang:laps","Laps") + ": " + ofToString((useStartGate == true && laps > 0) ? laps - 1 : laps);
         if (issub) {
             drawStringWithShadow(&myFontLapSub, myColorWhite, sout,
                                  camView[i].lapPosX + offset, camView[i].lapPosY + offset);
@@ -925,7 +955,7 @@ void drawCameraLapTime(int idx, bool issub) {
         }
         float blap = getBestLap(i);
         if (blap != 0) {
-            sout = "BestLap: " + getLapStr(blap) + "s";
+            sout = xmlLang.getValue("lang:bestlap","BestLap") + ": " + getLapStr(blap) + xmlLang.getValue("lang:sec1","s");
             if (issub) {
                 drawStringWithShadow(&myFontLapSub, myColorWhite, sout,
                                      camView[i].lapPosX + offset,
@@ -935,7 +965,7 @@ void drawCameraLapTime(int idx, bool issub) {
                                      camView[i].lapPosX,
                                      camView[i].lapPosY + offset + LAP_HEIGHT + 10);
             }
-            sout = "TotalTime: ";
+            sout = xmlLang.getValue("lang:totaltime","TotalTime") + ": ";
             if (useStartGate == true) {
                 sout += getWatchString(camView[i].prevElapsedSec - camView[i].lapHistElpTime[0]);
             } else {
@@ -954,10 +984,10 @@ void drawCameraLapTime(int idx, bool issub) {
     } else {
         // not finished
         if (laps == 1 && useStartGate == true) {
-            sout = "Started";
+            sout = xmlLang.getValue("lang:started","Started");
         } else {
-            sout = "Lap" + ofToString(useStartGate == true ? laps - 1 : laps);
-            sout += ": " + getLapStr(camView[i].lastLapTime) + "s";
+            sout = xmlLang.getValue("lang:lap","Lap") + ofToString(useStartGate == true ? laps - 1 : laps);
+            sout += ": " + getLapStr(camView[i].lastLapTime) + xmlLang.getValue("lang:sec1","s");
         }
         if (issub) {
             drawStringWithShadow(&myFontLapSub, myColorWhite, sout,
@@ -1003,7 +1033,7 @@ void drawCameraLapHistory(int camidx, bool issub) {
         } else {
             text = ofToString(lapidx + 1);
         }
-        text += ": " + getLapStr(lap) + "s";
+        text += ": " + getLapStr(lap) + xmlLang.getValue("lang:sec1","s");
         if (issub) {
             drawStringWithShadow(&myFontLapSub, myColorWhite, text, camView[camidx].lapPosX + offset, posy);
         } else {
@@ -1036,28 +1066,55 @@ void drawCamera(int idx) {
 string getWatchString(float sec) {
     char buf[16];
     int h, m, s, ss;
-    s = (int)(sec) % 60;
-    ss = (int)ceil(sec * 100) % 100;
+    s = int(sec) % 60;
+    ss = int(ceil(sec * 100)) % 100;
     if (sec >= 3600) {
-        h = (int)(sec) / 3600;
-        m = ((int)(sec) % 3600) / 60;
+        h = int(sec) / 3600;
+        m = (int(sec) % 3600) / 60;
         snprintf(buf, sizeof(buf), "%02d:%02d:%02d.%02d", h, m, s, ss);
     } else {
-        m = (int)(sec) / 60;
+        m = int(sec) / 60;
         snprintf(buf, sizeof(buf), "%02d:%02d.%02d", m, s, ss);
     }
     return ofToString(buf);
 }
 
 //--------------------------------------------------------------
+string getTimeString(int sec) {
+    char buf[4];
+    int h, m, s;
+    string result = "";
+    s = sec % 60;
+    m = sec / 60;
+    h = sec / 3600;
+    if (h > 24) h = h % 24;
+    if (m > 60) m = m % 60;
+    if (s > 60) s = s % 60;
+    if (m == 60) m = 0;
+    if (s == 60) s = 0;
+    if (h > 0) {
+        snprintf(buf, sizeof(buf), "%02d", h);
+        result +=  buf + xmlLang.getValue("lang:hrs","h") + " ";
+        snprintf(buf, sizeof(buf), "%02d", m);
+        result += buf + xmlLang.getValue("lang:min1","min");
+    } else {
+        snprintf(buf, sizeof(buf), "%02d", m);
+        result += buf + xmlLang.getValue("lang:min1","min") + " ";
+        snprintf(buf, sizeof(buf), "%02d", s);
+        result += buf + xmlLang.getValue("lang:sec2","sec");
+    }
+    return result;
+}
+
+//--------------------------------------------------------------
 void drawWatch() {
     string str;
     if (raceStarted == false) {
-        str = "Finished";
+        str = xmlLang.getValue("lang:finish","Finished");
     } else if (elapsedTime < 5) {
         str = ofToString(5 - (int)elapsedTime);
     } else if (elapsedTime < 7) {
-        str = "Go!";
+        str = xmlLang.getValue("lang:start","Go!");
     } else {
         float sec;
         sec = elapsedTime - WATCH_COUNT_SEC;
@@ -1070,7 +1127,7 @@ void drawWatch() {
         }
     }
     int x = (ofGetWidth() / 2) - (myFontInfo3m.stringWidth(str) / 2);
-    x = (int)(x / 10) * 10;
+    x = int(x / 10) * 10;
     drawStringWithShadow(&myFontInfo3m, myColorWhite, str, x, ofGetHeight() - 10);
 }
 
@@ -1083,15 +1140,15 @@ void drawInfo() {
     // logo
     if (tvpScene == SCENE_CAMS || overlayMode == OVLMODE_HELP || overlayMode == OVLMODE_RCRSLT) {
         ofSetColor(myColorWhite);
-        //logoSmallImage.draw(0, 0);
+        logoSmallImage.draw(0, 0);
         tcolor = &myColorWhite;
         // appinfo
-        str = "Tiny View Plus " + ofToString(APP_VER);
+        str = ofToString(APP_VER);
         drawStringWithShadow(&myFontInfo1p, *tcolor, str, 4, y);
         // date/time
         str = ofGetTimestampString("%F %T");
         x = ofGetWidth() - myFontInfo1m.stringWidth(str);
-        x = (int)(x / 5) * 5;
+        x = int(x / 5) * 5;
         drawStringWithShadow(&myFontInfo1m, *tcolor, str, x, y);
     }
 }
@@ -1165,7 +1222,7 @@ void ofApp::draw() {
     }
     // QR reader
     if (qrEnabled == true) {
-        string str = "Scanning QR Code...";
+        string str = xmlLang.getValue("lang:scanqrcode","Scanning QR Code...");
         int x = (ofGetWidth() / 2) - (myFontInfo1p.stringWidth(str) / 2);
         drawStringWithShadow(&myFontInfo1p, myColorYellow, str, x, ofGetHeight() - 10);
     }
@@ -1303,7 +1360,7 @@ void keyPressedOverlayNone(int key) {
         } else if (key == 'i' || key == 'I') {
             initConfig();
         } else if (key == 'n' || key == 'N') {
-            toggleSpeechLang();
+            toggleLang();
         } else if (key == 'b' || key == 'B') {
             changeWallImage();
         } else if (key == 'q' || key == 'Q') {
@@ -1320,7 +1377,7 @@ void keyPressedOverlayNone(int key) {
         } else if (key == 'c' || key == 'C') {
             if (raceStarted == false) {
                 initRaceVars();
-                setOverlayMessage("Cleared race result");
+                setOverlayMessage(xmlLang.getValue("lang:clrdraceres","Race result cleared"));
             }
         } else if (key == 'a' || key == 'A') {
             toggleARLap();
@@ -1329,13 +1386,33 @@ void keyPressedOverlayNone(int key) {
         } else if (ofGetKeyPressed(OF_KEY_PAGE_DOWN)) {
             changeMinLap(-1);
         } else if (ofGetKeyPressed(OF_KEY_UP)) {
-            changeRaceDuration(5);
+            if (raceDuraSecs < 600 ) {
+                changeRaceDuration(10);
+            } else if (raceDuraSecs < 3600 ) {
+                changeRaceDuration(60);
+            } else {
+                changeRaceDuration(1800);
+            }
         } else if (ofGetKeyPressed(OF_KEY_DOWN)) {
-            changeRaceDuration(-5);
+            if (raceDuraSecs > 3600 ) {
+                changeRaceDuration(-1800);
+            } else if (raceDuraSecs > 600 ) {
+                changeRaceDuration(-60);
+            } else {
+                changeRaceDuration(-10);
+            }
         } else if (ofGetKeyPressed(OF_KEY_LEFT)) {
-            changeRaceLaps(-1);
+            if (raceDuraLaps > 100) {
+                changeRaceLaps(-100);
+            } else {
+                changeRaceLaps(-1);
+            }
         } else if (ofGetKeyPressed(OF_KEY_RIGHT)) {
-            changeRaceLaps(1);
+            if (raceDuraLaps < 100) {
+                changeRaceLaps(1);
+            } else {
+                changeRaceLaps(100);
+            }
         } else if (key == 'w' || key == 'W') {
             toggleLapAfterTimeout();
         } else if (key == 'f' || key == 'F') {
@@ -1355,10 +1432,10 @@ void keyPressedOverlayNone(int key) {
 }
 
 //--------------------------------------------------------------
-void keyPressedCamCheck() {
+void keyPressedCamCheck(int key) {
     if (ofGetKeyPressed(OF_KEY_ESC)) {
          ofExit();
-     } else {
+     } else if (key == 32) {
          if (DEBUG_ENABLED == true) {
              cameraNum = CAMERA_MAXNUM;
          }
@@ -1374,7 +1451,7 @@ void ofApp::keyPressed(int key) {
         setupCamCheck();
         return;
     } else if (tvpScene == SCENE_CAMS) {
-        keyPressedCamCheck();
+        keyPressedCamCheck(key);
         return;
     }
     raceResultTimer = -1;
@@ -1659,16 +1736,18 @@ void setupColors() {
 
 //--------------------------------------------------------------
 void changeCameraLabel(int camid) {
-    string str;
+    string str, strhead;
     if (camid < 1 || camid > cameraNum) {
         return;
     }
     str = camView[camid - 1].labelString;
+    strhead = xmlLang.getValue("lang:camera","Camera") + ofToString(camid) + " - " + xmlLang.getValue("lang:label","Label");
 #ifdef TARGET_WIN32
     ofSetFullscreen(false);
     str = ansiToUtf8(str);
+    strhead = ansiToUtf8(strhead);
 #endif /* TARGET_WIN32 */
-    str = ofTrim(ofSystemTextBoxDialog("Camera" + ofToString(camid) + " label:", str));
+    str = ofTrim(ofSystemTextBoxDialog(strhead, str));
     if (str.length() > 0) {
         camView[camid - 1].labelString = str;
         savePilotsFile();
@@ -1681,15 +1760,15 @@ void changeCameraLabel(int camid) {
 
 //--------------------------------------------------------------
 void changeCameraIcon(int camid) {
-    string str;
     if (camid < 1 || camid > cameraNum) {
         return;
     }
+    string strhead = xmlLang.getValue("lang:camera","Camera") + ofToString(camid) + " - " + xmlLang.getValue("lang:icon","Icon");
 #ifdef TARGET_WIN32
     ofSetFullscreen(false);
+    strhead = "Camera" + ofToString(camid) + " - " + "Icon";
 #endif /* TARGET_WIN32 */
-    str = "Camera" + ofToString(camid) + " icon";
-    ofFileDialogResult result = ofSystemLoadDialog(str);
+    ofFileDialogResult result = ofSystemLoadDialog(strhead);
     if (result.bSuccess) {
         string path = result.getPath();
         changeCameraIconPath(camid, path, true);
@@ -1706,6 +1785,10 @@ void changeCameraIconPath(int camid, string path, bool synclabel) {
         return;
     }
     string ext = ofToLower(file.getExtension());
+    string stralert = xmlLang.getValue("lang:unsupfiletype","Unsupported file type");
+#ifdef TARGET_WIN32
+    stralert = "Unsupported file type";
+#endif /* TARGET_WIN32 */
     if (ext == "jpg" || ext == "png" || ext == "bmp") {
         int idx = camid - 1;
         camView[idx].iconImage.clear();
@@ -1715,7 +1798,7 @@ void changeCameraIconPath(int camid, string path, bool synclabel) {
             savePilotsFile();
         }
     } else {
-        ofSystemAlertDialog("Unsupported file type");
+        ofSystemAlertDialog(stralert);
     }
 }
 
@@ -1747,10 +1830,14 @@ void autoSelectCameraIcon(int camid, string pname) {
 //--------------------------------------------------------------
 void changeWallImage() {
     activateCursor();
+    string strhead = xmlLang.getValue("lang:setbgimg","Set Background Image");
+    string stralert = xmlLang.getValue("lang:unsupfiletype","Unsupported file type");
 #ifdef TARGET_WIN32
     ofSetFullscreen(false);
+    strhead = "Set Background Image";
+    stralert = "Unsupported file type";
 #endif /* TARGET_WIN32 */
-    ofFileDialogResult result = ofSystemLoadDialog("Set background image");
+    ofFileDialogResult result = ofSystemLoadDialog(strhead);
     if (result.bSuccess) {
         string path = result.getPath();
         ofFile file(path);
@@ -1760,7 +1847,7 @@ void changeWallImage() {
             loadWallImage(wallPath);
             saveSettingsFile();
         } else {
-            ofSystemAlertDialog("Unsupported file type");
+            ofSystemAlertDialog(stralert);
         }
     }
 #ifdef TARGET_WIN32
@@ -1771,7 +1858,7 @@ void changeWallImage() {
 //--------------------------------------------------------------
 void setWallParams() {
     float sratio;
-    sratio = float(ofGetWidth()) / float(ofGetHeight());
+    sratio = float(ofGetWidth() / ofGetHeight());
     if (sratio > wallRatio) {
         wallDrawWidth = ofGetWidth();
         wallDrawHeight = wallDrawWidth / wallRatio;
@@ -1786,7 +1873,7 @@ void setViewParams() {
     int idx, i;
     int width = ofGetWidth();
     int height = ofGetHeight();
-    float ratio = (float)width / (float)height;
+    float ratio = float(width / height);
     switch (cameraNumVisible) {
         case 1:
             // 1st visible camera
@@ -2032,7 +2119,7 @@ void setViewParams() {
             camView[idx].lapPosXTarget = camView[idx].lapPosXTarget - (LAP_MARGIN_X / 2);
             camView[idx].lapPosYTarget = camView[idx].lapPosYTarget - (LAP_MARGIN_Y / 2);
         }
-        camView[idx].imageScale = (float)(camView[idx].width) / (float)CAMERA_WIDTH;
+        camView[idx].imageScale = float(camView[idx].width / CAMERA_WIDTH);
         if (camView[idx].isWide == true) {
             camView[idx].posYWideTarget = camView[idx].posYTarget + (camView[idx].heightTarget / 8);
             camView[idx].heightWideTarget = camView[idx].heightTarget * 0.75;
@@ -2074,7 +2161,7 @@ void updateViewParams() {
         camView[idx].height = calcViewParam(camView[idx].heightTarget, camView[idx].height, steps);
         camView[idx].posX = calcViewParam(camView[idx].posXTarget, camView[idx].posX, steps);
         camView[idx].posY = calcViewParam(camView[idx].posYTarget, camView[idx].posY, steps);
-        camView[idx].imageScale = (float)(camView[idx].width) / (float)CAMERA_WIDTH;
+        camView[idx].imageScale = float(camView[idx].width / CAMERA_WIDTH);
         if (camView[idx].isWide == true) {
             camView[idx].posYWide = camView[idx].posY + (camView[idx].height / 8);
             camView[idx].heightWide = camView[idx].height * 0.75;
@@ -2103,7 +2190,8 @@ void updateViewParams() {
 void initConfig() {
     int i;
     // system
-    autoSelectSpeechLang();
+    autoSelectLang();
+    loadLangFile();
     sysStatEnabled = DFLT_SYS_STAT;
     // wallpaper
     wallPath = DFLT_WALL_FILE;
@@ -2119,7 +2207,7 @@ void initConfig() {
     for (i = 0; i < cameraNum; i++) {
         camView[i].iconImage.clear();
         camView[i].iconImage.load(DFLT_ICON_FILE);
-        camView[i].labelString = "Pilot" + ofToString(i + 1);
+        camView[i].labelString = xmlLang.getValue("lang:pilot","Pilot") + ofToString(i + 1);
         camView[i].lastLapTime = 0;
     }
     // view mode
@@ -2141,7 +2229,7 @@ void initConfig() {
     xmlPilots.clear();
     savePilotsFile();
     saveSettingsFile();
-    setOverlayMessage("Initialized settings");
+    setOverlayMessage(xmlLang.getValue("lang:initsetting","Initialized settings"));
 }
 
 //--------------------------------------------------------------
@@ -2217,12 +2305,7 @@ void recvOsc() {
             if (oscm.getNumArgs() != 1 || oscm.getArgType(0) != OFXOSC_TYPE_STRING) {
                 continue;
             }
-            if (addr == "/v1/speech/en/say") {
-                recvOscSpeech("en", oscm.getArgAsString(0));
-            }
-            else if (addr == "/v1/speech/jp/say") {
-                recvOscSpeech("jp", oscm.getArgAsString(0));
-            }
+            recvOscSpeech(regex_replace(addr, regex("/v1/speech/|/say"), ""), oscm.getArgAsString(0));
         }
     }
 }
@@ -2278,26 +2361,38 @@ void recvOscCameraFloat(int camid, string method, float argfloat) {
 }
 
 //--------------------------------------------------------------
-void toggleSpeechLang() {
-    speechLangJpn = !speechLangJpn;
-    if (speechLangJpn == true) {
-        setOverlayMessage("Speech Language: Japanese");
-    } else {
-        setOverlayMessage("Speech Language: English");
+void toggleLang() {
+    for (int i = 0; i < cameraNum; i++) {
+        int pid = i + 1;
+        if (camView[i].labelString == xmlLang.getValue("lang:pilot","Pilot") + ofToString(pid)) camView[i].labelString = "";
     }
+    langindex += 1;
+    if (langindex > int(lang->size())) langindex = 0;
     saveSettingsFile();
+    loadLangFile();
+    for (int i = 0; i < cameraNum; i++) {
+        int pid = i + 1;
+        if (camView[i].labelString == "") camView[i].labelString = xmlLang.getValue("lang:pilot","Pilot") + ofToString(pid);
+    }
+    setOverlayMessage(xmlLang.getValue("lang:language","Language") + ": " + langlabel[langindex]);
 }
 
 //--------------------------------------------------------------
-void autoSelectSpeechLang() {
+void autoSelectLang() {
     string lname = getUserLocaleName();
-    bool isjpn = true;
-    if (lname.find("ja_JP") == std::string::npos
-        && lname.find("932") == std::string::npos
-        && ofToLower(lname).find("japan") == std::string::npos) {
-        isjpn = false;
+    if (lname.find("ru_RU") != std::string::npos
+        || lname.find("1251") != std::string::npos
+        || ofToLower(lname).find("russian") != std::string::npos) {
+        langindex = 1;
+    } else if (lname.find("ja_JP") != std::string::npos
+        || lname.find("932") != std::string::npos
+        || ofToLower(lname).find("japan") != std::string::npos) {
+        langindex = 2;
+    // Put your language definition here
+
+    } else {
+        langindex = 0;
     }
-    speechLangJpn = isjpn;
 }
 
 //--------------------------------------------------------------
@@ -2313,18 +2408,15 @@ CComPtr<ISpVoice> cpVoice;
 class sayWin : public ofThread {
 public:
     void exec(string lang, string words) {
+        string nlang = "409";
         if (FAILED(cpVicehr)) {
             cpVicehr = cpVoice.CoCreateInstance(CLSID_SpVoice);
         }
         if (SUCCEEDED(cpVicehr)) {
-            if (lang == "en") {
-                // 409: English
-                this->xmltext = "<xml><lang langid=\"409\"><rate speed=\"2\">" + words + "</rate></lang></xml>";
-            }
-            else if (lang == "jp") {
-                // 411: Japanese
-                this->xmltext = "<xml><lang langid=\"411\"><rate speed=\"2\">" + words + "</rate></lang></xml>";
-            }
+            if (lang == "ru") nlang = "419";
+            if (lang == "jp") nlang = "411";
+            // Put your language definition here
+            this->xmltext = "<xml><lang langid=\"" + nlang + "\"><rate speed=\"2\">" + words + "</rate></lang></xml>";
             startThread();
         }
     }
@@ -2344,45 +2436,44 @@ sayWin mySayWin[SPCH_SLOT_NUM];
 
 //--------------------------------------------------------------
 void speakLap(int camid, float sec, int num) {
+    // Only base algorithm, special functions for each languages realised below via regex.
     if (camid < 1 || camid > cameraNum || sec == 0.0) {
         return;
     }
     string ssec, sout;
     sout = camView[camid - 1].labelString + ", ";
-    if (speechLangJpn == true) {
-        sout = regex_replace(sout, regex("(Pilot)(\\d)"), "パイロット $2");
-    } else {
-        sout = regex_replace(sout, regex("(Pilot)(\\d)"), "$1 $2");
-    }
+    sout = regex_replace(sout, regex("(" + xmlLang.getValue("lang:pilot","Pilot") + ")(\\d)"), "$1 $2");
     if (useStartGate == true && num == 1) {
-        if (speechLangJpn == true) {
-            sout += "スタート";
-        } else {
-            sout += "started";
-        }
-        speakAny(speechLangJpn ? "jp" : "en", sout);
+        sout += ofToLower(xmlLang.getValue("lang:started","Started"));
+        speakAny(lang[langindex], sout);
         return;
     }
     ssec = getLapStr(sec);
     if (num > 0) {
-        sout += (speechLangJpn == true) ? "ラップ" : "lap";
+        sout += ofToLower(xmlLang.getValue("lang:lap","Lap"));
         sout += " " + ofToString(num - (useStartGate == true ? 1 : 0)) + ", ";
     }
-    if (speechLangJpn == true) {
-        sout += ssec.substr(0, ssec.length() - 3) + "秒";
-        sout += ssec.substr(ssec.length() - 2, 1) + " ";
-        sout += ssec.substr(ssec.length() - 1, 1);
+    sout += ssec;
+    // internationalization
+    switch (langindex) {
+        case 1: // Russian
+            sout = regex_replace(sout, regex("(\\d).(\\d)"), "$1 $2");
+            break;
+        case 2: // Japaness
+            sout = regex_replace(sout, regex("(\\d).(\\d)(\\d)"), "$1秒$2 $3");
+            break;
+        // Put your language definition here
+        default: // English
+            sout += " seconds";
+            break;
     }
-    else {
-        sout += ssec + " seconds";
-    }
-    speakAny(speechLangJpn ? "jp" : "en", sout);
+    speakAny(lang[langindex], sout);
 }
 
 //--------------------------------------------------------------
 void setNextNotifyRemainSecs(int curr) {
     int next;
-    // ...80,120,60,30,5..1,0
+    // ...180,120,60,30,5..1,0
     if (curr > 60) {
         if (curr % 60 == 0) {
             next = curr - 60;
@@ -2411,65 +2502,65 @@ void setNextNotifyRemainSecs(int curr) {
 
 //--------------------------------------------------------------
 void speakRemainTime(int sec) {
+    // Only base algorithm, special functions for each languages realised below via regex.
     string str = "";
-    bool jp = speechLangJpn;
+    int min = sec / 60;
     if (sec == 0) {
-        if (jp == true) {
-            str = "規定時間が経過しました";
-        } else {
-            str = "specified time has passed.";
-        }
+        xmlLang.getValue("lang:saytimeover","Timeover");
     } else {
-        if (jp == true) {
-            str += "残り";
-        }
-        if (sec >= 60 && sec % 60 == 0) {
-            // minute
-            int min = sec / 60;
-            str += ofToString(min);
-            if (jp == true) {
-                str += "分";
+        if (sec > 5) {
+            str += xmlLang.getValue("lang:sayremainprefix","") + " ";
+            if (sec >= 60 && sec % 60 == 0) {
+                // minute
+                str += ofToString(min);
+                str += " " + xmlLang.getValue("lang:min2","minutes");
             } else {
-                str += " minute";
-                if (min != 1) {
-                    str += "s";
-                }
+                // second
+                str += ofToString(sec);
+                str += " " + xmlLang.getValue("lang:sec3","seconds");
             }
+            str += " " + xmlLang.getValue("lang:sayremainpostfix","");
         } else {
-            // second
             str += ofToString(sec);
-            if (jp == true) {
-                str += "秒";
-            } else {
-                if (sec > 5) {
-                    str += " second";
-                    if (sec != 1) {
-                        str += "s";
-                    }
-                }
-            }
-        }
-        if (jp == false) {
-            if (sec > 5) {
-                str += " to go";
-            }
         }
     }
-    speakAny(jp == true ? "jp" : "en", str);
+    // internationalization
+    switch (langindex) {
+        case 1: // Russian
+            if (min == 1) str = regex_replace(str, regex("1"), "одна");
+            if (min == 2) str = regex_replace(str, regex("2"), "две");
+            if (min % 10 == 1 && min > 20) str = regex_replace(str, regex("1 "), "0 одна ");
+            if (min % 10 == 2 && min > 20) str = regex_replace(str, regex("2 "), "0 две ");
+            if ((min % 10 > 1 && min % 10 < 5) && (min < 10 || min > 20)) str = regex_replace(str, regex("минут"), "минуты");
+            if ((min == 1) || (min % 10 == 1 && min > 20)) {
+                str = regex_replace(str, regex("лось"), "лась");
+                str = regex_replace(str, regex("минут"), "минута");
+            }
+            break;
+        case 2: // Japaness
+            break;
+        // Put your language definition here
+        default: // English
+            if (min == 1) str = regex_replace(str, regex("minutes"), "minute");
+            if (sec > 5) str += "to go";
+            break;
+    }
+
+    speakAny(lang[langindex], str);
 }
 
 //--------------------------------------------------------------
 void speakAny(string lang, string text) {
+    //ofLog() << "Say: " << text;
 #ifdef TARGET_OSX
     int pid = fork();
+    string voice = "Victoria";
     if (pid == 0) {
+        if (lang == "ru") voice = "Milena";
+        if (lang == "jp") voice = "Kyoko";
+        // Put your language definition here
         // child process
-        if (lang == "en") {
-            execlp("say", "", "-r", "240", "-v", "Victoria", text.c_str(), NULL);
-        }
-        else if (lang == "jp") {
-            execlp("say", "", "-r", "240", "-v", "Kyoko", text.c_str(), NULL);
-        }
+        execlp("say", "", "-r", "240", "-v", voice.c_str(), text.c_str(), NULL);
         OF_EXIT_APP(-1);
     }
 #endif /* TARGET_OSX */
@@ -2484,8 +2575,8 @@ void speakAny(string lang, string text) {
 #ifdef TARGET_LINUX
     int pid = fork();
     if (pid == 0) {
-        // Use speech-dispatcher
-        execlp("spd-say", "-w", "-r", "15", "-t", "female1", "-l", lang.c_str(), text.c_str(), NULL);
+        // Use speech-dispatcher for select voice modules
+        execlp("spd-say", "-w", "-r", "15", "-t", "female1", "-l", lang.c_str() , text.c_str(), NULL);
         OF_EXIT_APP(-1);
     }
 #endif /* TARGET_LINUX */
@@ -2549,11 +2640,7 @@ void stopRace(bool appexit) {
         raceStarted = false;
         countSound.stop();
         finishSound.play();
-        if (speechLangJpn == true) {
-            speakAny("jp", "レース終了");
-        } else {
-            speakAny("en", "race finished.");
-        }
+        speakAny(lang[langindex], xmlLang.getValue("lang:sayracefinish","Race finished"));
         raceResultTimer = ARAP_RSLT_DELAY;
     }
     fwriteRaceResult();
@@ -2697,9 +2784,9 @@ void popLapRecord(int cid) {
     }
     int newlaps = oldlaps - 1;
     cancelSound.play();
-    setOverlayMessage(camView[i].labelString + " Lap"
+    setOverlayMessage(camView[i].labelString + " " + xmlLang.getValue("lang:lap","Lap")
                       + ofToString(useStartGate == true ? oldlaps - 1 : oldlaps)
-                      + " canceled");
+                      + " " + xmlLang.getValue("lang:cancel","canceled"));
     camView[i].lapHistName[oldlaps - 1] = "";
     camView[i].lapHistLapTime[oldlaps - 1] = 0;
     camView[i].lapHistElpTime[oldlaps - 1] = 0;
@@ -2864,15 +2951,15 @@ void toggleARLap() {
     switch (arLapMode) {
         case ARAP_MODE_NORM:
             arLapMode = ARAP_MODE_LOOSE;
-            setOverlayMessage("AR Lap Timer Mode: Loose");
+            setOverlayMessage(xmlLang.getValue("lang:laptimemode","AR Lap Timer Mode") + ": " + xmlLang.getValue("lang:loose","Loose"));
             break;
         case ARAP_MODE_LOOSE:
             arLapMode = ARAP_MODE_OFF;
-            setOverlayMessage("AR Lap Timer Mode: Off");
+            setOverlayMessage(xmlLang.getValue("lang:laptimemode","AR Lap Timer Mode") + ": " + xmlLang.getValue("lang:off","Off"));
             break;
         case ARAP_MODE_OFF:
             arLapMode = ARAP_MODE_NORM;
-            setOverlayMessage("AR Lap Timer Mode: Normal");
+            setOverlayMessage(xmlLang.getValue("lang:laptimemode","AR Lap Timer Mode") + ": " + xmlLang.getValue("lang:normal","Normal"));
             break;
     }
     saveSettingsFile();
@@ -2881,30 +2968,24 @@ void toggleARLap() {
 //--------------------------------------------------------------
 void changeMinLap(int mlaptime) {
     string value;
-    mlaptime = minLapTime + mlaptime;
-    if (mlaptime > 0 && mlaptime <= ARAP_MAX_MNLAP) {
-        minLapTime = mlaptime;
+    int target = minLapTime + mlaptime;
+    if (target > 0 && target <= ARAP_MAX_MNLAP) {
+        minLapTime = target;
         saveSettingsFile();
     }
-    value = ofToString(minLapTime) + " sec";
-    if (minLapTime > 1) {
-        value += "s";
-    }
-    setOverlayMessage("Minimum Lap Time " + value);
+    value = ofToString(minLapTime) + xmlLang.getValue("lang:sec2","sec");
+    setOverlayMessage(xmlLang.getValue("lang:minimlaptime","Minimum Lap Time") + ": " + value);
 }
 
 //--------------------------------------------------------------
 void changeRaceDuration(int time) {
     string value;
-    time = raceDuraSecs + time;
-    if (time >= 0 && time <= ARAP_MAX_RSECS) {
-        raceDuraSecs = time;
+    int target = raceDuraSecs + time;
+    if (target >= 0 && target <= ARAP_MAX_RSECS) {
+        raceDuraSecs = target;
         saveSettingsFile();
     }
-    value = ofToString(raceDuraSecs) + " sec";
-    if (raceDuraSecs > 1) {
-        value += "s";
-    }
+    value = getTimeString(raceDuraSecs);
     if (raceDuraSecs > 0) {
         int remain;
         if (raceStarted == true) {
@@ -2913,30 +2994,30 @@ void changeRaceDuration(int time) {
             remain = raceDuraSecs;
         }
         setNextNotifyRemainSecs(remain);
-        setOverlayMessage("Race Time " + value);
+        setOverlayMessage(xmlLang.getValue("lang:racetime","Race Time") + ": " + value);
     } else {
         nextNotifyRemainSecs = -1;
-        setOverlayMessage("No Limit Race Time");
+        setOverlayMessage(xmlLang.getValue("lang:racetime","Race Time") + ": " + xmlLang.getValue("lang:nolimit","No Limit"));
     }
 }
 
 //--------------------------------------------------------------
 void changeRaceLaps(int lap) {
-    lap = raceDuraLaps + lap;
-    if (lap > 0 && lap <= ARAP_MAX_RLAPS) {
-        raceDuraLaps = lap;
+    int target = raceDuraLaps + lap;
+    if (target > 0 && target <= ARAP_MAX_RLAPS) {
+        raceDuraLaps = target;
         saveSettingsFile();
     }
-    setOverlayMessage("Race Laps " + ofToString(raceDuraLaps));
+    setOverlayMessage(xmlLang.getValue("lang:racelaps","Race Laps") + ": " + ofToString(raceDuraLaps));
 }
 
 //--------------------------------------------------------------
 void toggleUseStartGate() {
     useStartGate = !useStartGate;
     if (useStartGate == true) {
-        setOverlayMessage("Staggered Start: On");
+        setOverlayMessage(xmlLang.getValue("lang:staggstart","Staggered Start") + ": " + xmlLang.getValue("lang:on","On"));
     } else {
-        setOverlayMessage("Staggered Start: Off");
+        setOverlayMessage(xmlLang.getValue("lang:staggstart","Staggered Start") + ": " + xmlLang.getValue("lang:off","Off"));
     }
     saveSettingsFile();
     updateRacePositions();
@@ -2949,9 +3030,9 @@ void toggleLapAfterTimeout() {
     }
     lapAfterTmoEnabled = !lapAfterTmoEnabled;
     if (lapAfterTmoEnabled == true) {
-        setOverlayMessage("Wait for Lap after Time Limit: On");
+        setOverlayMessage(xmlLang.getValue("lang:waitlap","Wait for Lap after Time Limit") +": " + xmlLang.getValue("lang:on","On"));
     } else {
-        setOverlayMessage("Wait for Lap after Time Limit: Off");
+        setOverlayMessage(xmlLang.getValue("lang:waitlap","Wait for Lap after Time Limit") +": " + xmlLang.getValue("lang:off","Off"));
     }
     saveSettingsFile();
 }
@@ -2980,9 +3061,9 @@ void toggleCameraFrame() {
 void toggleLapHistory() {
     cameraLapHistEnabled = !cameraLapHistEnabled;
     if (cameraLapHistEnabled == true) {
-        setOverlayMessage("Lap History View: On");
+        setOverlayMessage(xmlLang.getValue("lang:laphist","Lap History View") + ": " + xmlLang.getValue("lang:on","On"));
     } else {
-        setOverlayMessage("Lap History View: Off");
+        setOverlayMessage(xmlLang.getValue("lang:laphist","Lap History View") + ": " + xmlLang.getValue("lang:off","Off"));
     }
     saveSettingsFile();
 }
@@ -3160,7 +3241,7 @@ void drawRaceResult(int pageidx) {
     // title
     line = 1;
     ofSetColor(myColorYellow);
-    drawStringBlock(&myFontOvlayP2x, "Race Result", 0, line, ALIGN_CENTER, 1, szl);
+    drawStringBlock(&myFontOvlayP2x, xmlLang.getValue("lang:raceres","Race Result"), 0, line, ALIGN_CENTER, 1, szl);
 
     // summary : name position laps bestlap total
     updateRacePositions();
@@ -3168,13 +3249,13 @@ void drawRaceResult(int pageidx) {
     blk = 1;
     line = 3;
     ofSetColor(myColorWhite);
-    drawStringBlock(&myFontOvlayP, "Name", blk++, line, ALIGN_CENTER, szb, szl);
+    drawStringBlock(&myFontOvlayP, xmlLang.getValue("lang:name","Name"), blk++, line, ALIGN_CENTER, szb, szl);
     if (cameraNum > 1) {
-        drawStringBlock(&myFontOvlayP, "Position", blk++, line, ALIGN_CENTER, szb, szl);
+        drawStringBlock(&myFontOvlayP, xmlLang.getValue("lang:position","Position"), blk++, line, ALIGN_CENTER, szb, szl);
     }
-    drawStringBlock(&myFontOvlayP, "Laps", blk++, line, ALIGN_CENTER, szb, szl);
-    drawStringBlock(&myFontOvlayP, "BestLap", blk++, line, ALIGN_CENTER, szb, szl);
-    drawStringBlock(&myFontOvlayP, "TotalTime", blk, line, ALIGN_CENTER, szb, szl);
+    drawStringBlock(&myFontOvlayP, xmlLang.getValue("lang:laps","Laps"), blk++, line, ALIGN_CENTER, szb, szl);
+    drawStringBlock(&myFontOvlayP, xmlLang.getValue("lang:bestlap","BestLap"), blk++, line, ALIGN_CENTER, szb, szl);
+    drawStringBlock(&myFontOvlayP, xmlLang.getValue("lang:totaltime","TotalTime"), blk, line, ALIGN_CENTER, szb, szl);
     line += 1;
     ofSetColor(myColorYellow);
     drawLineBlock(1, blk, line, szb, szl);
@@ -3188,7 +3269,7 @@ void drawRaceResult(int pageidx) {
         blk = 1;
         line += 1;
         // pilot
-        str = (camView[i].labelString == "") ? ("Pilot" + ofToString(i + 1)) : camView[i].labelString;
+        str = (camView[i].labelString == "") ? (xmlLang.getValue("lang:pilot","Pilot") + ofToString(i + 1)) : camView[i].labelString;
         drawStringBlock(&myFontOvlayP, str, blk++, line, ALIGN_CENTER, szb, szl);
         // pos
         if (cameraNum > 1) {
@@ -3221,9 +3302,9 @@ void drawRaceResult(int pageidx) {
     // _header
     int xoff = blk + 2;
     line = 3;
-    drawStringBlock(&myFontOvlayP, "Lap", xoff, line, ALIGN_CENTER, szb, szl);
+    drawStringBlock(&myFontOvlayP, xmlLang.getValue("lang:lap","Lap"), xoff, line, ALIGN_CENTER, szb, szl);
     for (int i = 0; i < cameraNum; i++) {
-        string pilot = (camView[i].labelString == "") ? ("Pilot" + ofToString(i + 1)) : camView[i].labelString;
+        string pilot = (camView[i].labelString == "") ? (xmlLang.getValue("lang:pilot","Pilot") + ofToString(i + 1)) : camView[i].labelString;
         drawStringBlock(&myFontOvlayP, pilot, xoff + i + 1, line, ALIGN_CENTER, szb, szl);
     }
     line += 1;
@@ -3259,16 +3340,16 @@ void drawRaceResult(int pageidx) {
         line += 1;
         ofSetColor(myColorLGray);
         drawStringBlock(&myFontOvlayP,
-                        "(Page " + ofToString(pageidx + 1) + " of " + ofToString(pages) + ")",
+                        "(" + xmlLang.getValue("lang:page","Page") +" " + ofToString(pageidx + 1) + " " + xmlLang.getValue("lang:of","of") + " " + ofToString(pages) + ")",
                         xoff + 2, line, ALIGN_CENTER, szb, szl);
     }
 
     // message
     line = OVLTXT_LINES - 1;
     if (pages > 1 && (pageidx + 1) < pages) {
-        str = "Press R key to continue, Esc key to exit";
+        str = xmlLang.getValue("lang:pressrcontesc","Press R key to continue, Esc key to exit");
     } else {
-        str = "Press R or Esc key to exit";
+        str = xmlLang.getValue("lang:pressroresc","Press R or Esc key to exit");
     }
     ofSetColor(myColorYellow);
     drawStringBlock(&myFontOvlayP, str, 0, line, ALIGN_CENTER, 1, szl);
@@ -3285,14 +3366,14 @@ void drawHelp() {
     // title(3 lines)
     line = 1;
     ofSetColor(myColorYellow);
-    drawStringBlock(&myFontOvlayP2x, "Settings / Commands", 0, line, ALIGN_CENTER, 1, szl);
+    drawStringBlock(&myFontOvlayP2x, xmlLang.getValue("lang:setcmd","Settings / Commands"), 0, line, ALIGN_CENTER, 1, szl);
     line += 2;
     // body
     drawHelpBody(line);
     // message(2 lines)
     line = HELP_LINES - 1;
     ofSetColor(myColorYellow);
-    drawStringBlock(&myFontOvlayP, "Press H or Esc key to exit", 0, line, ALIGN_CENTER, 1, szl);
+    drawStringBlock(&myFontOvlayP, xmlLang.getValue("lang:presshoresc","Press H or Esc key to exit"), 0, line, ALIGN_CENTER, 1, szl);
 }
 
 //--------------------------------------------------------------
@@ -3308,29 +3389,28 @@ void drawHelpBody(int line) {
 
     // SYSTEM
     ofSetColor(myColorWhite);
-    drawStringBlock(&myFontOvlayP, "System Command", blk0, line, ALIGN_CENTER, szb, szl);
-    drawStringBlock(&myFontOvlayP, "Setting", blk2, line, ALIGN_CENTER, szb, szl);
-    drawStringBlock(&myFontOvlayP, "Key", blk3, line, ALIGN_CENTER, szb, szl);
+    drawStringBlock(&myFontOvlayP, xmlLang.getValue("lang:syscmd","System Command"), blk0, line, ALIGN_CENTER, szb, szl);
+    drawStringBlock(&myFontOvlayP, xmlLang.getValue("lang:setting","Setting"), blk2, line, ALIGN_CENTER, szb, szl);
+    drawStringBlock(&myFontOvlayP, xmlLang.getValue("lang:key","Key"), blk3, line, ALIGN_CENTER, szb, szl);
     line++;
     ofSetColor(myColorYellow);
     drawLineBlock(blk1, blk4, line, szb, szl);
     line++;
     ofSetColor(myColorWhite);
-    // Set speech language
+    // Set language
     ofSetColor(myColorDGray);
     drawULineBlock(blk1, blk4, line + 1, szb, szl);
     ofSetColor(myColorWhite);
-    value = speechLangJpn ? "Japanese" : "English";
-    drawStringBlock(&myFontOvlayP, "Set Speech Language", blk1, line, ALIGN_LEFT, szb, szl);
-    drawStringBlock(&myFontOvlayP, value, blk2, line, ALIGN_CENTER, szb, szl);
+    drawStringBlock(&myFontOvlayP, xmlLang.getValue("lang:setlang","Set Language"), blk1, line, ALIGN_LEFT, szb, szl);
+    drawStringBlock(&myFontOvlayP, langlabel[langindex], blk2, line, ALIGN_CENTER, szb, szl);
     drawStringBlock(&myFontOvlayP, "N", blk3, line, ALIGN_CENTER, szb, szl);
     line++;
     // Set system statistics
     ofSetColor(myColorDGray);
     drawULineBlock(blk1, blk4, line + 1, szb, szl);
     ofSetColor(myColorWhite);
-    value = sysStatEnabled ? "On" : "Off";
-    drawStringBlock(&myFontOvlayP, "Set System Statistics", blk1, line, ALIGN_LEFT, szb, szl);
+    value = sysStatEnabled ? xmlLang.getValue("lang:on","On") : xmlLang.getValue("lang:off","Off");
+    drawStringBlock(&myFontOvlayP, xmlLang.getValue("lang:setsysstat","Set System Statistics"), blk1, line, ALIGN_LEFT, szb, szl);
     drawStringBlock(&myFontOvlayP, value, blk2, line, ALIGN_CENTER, szb, szl);
     drawStringBlock(&myFontOvlayP, "S", blk3, line, ALIGN_CENTER, szb, szl);
     line++;
@@ -3338,7 +3418,7 @@ void drawHelpBody(int line) {
     ofSetColor(myColorDGray);
     drawULineBlock(blk1, blk4, line + 1, szb, szl);
     ofSetColor(myColorWhite);
-    drawStringBlock(&myFontOvlayP, "Display Help (Settings/Commands)", blk1, line, ALIGN_LEFT, szb, szl);
+    drawStringBlock(&myFontOvlayP, xmlLang.getValue("lang:showhelp","Display Help (Settings/Commands)"), blk1, line, ALIGN_LEFT, szb, szl);
     drawStringBlock(&myFontOvlayP, "-", blk2, line, ALIGN_CENTER, szb, szl);
     drawStringBlock(&myFontOvlayP, "H", blk3, line, ALIGN_CENTER, szb, szl);
     line++;
@@ -3346,16 +3426,16 @@ void drawHelpBody(int line) {
     ofSetColor(myColorDGray);
     drawULineBlock(blk1, blk4, line + 1, szb, szl);
     ofSetColor(myColorWhite);
-    drawStringBlock(&myFontOvlayP, "Initialize Settings", blk1, line, ALIGN_LEFT, szb, szl);
+    drawStringBlock(&myFontOvlayP, xmlLang.getValue("lang:initcmd","Initialize Settings"), blk1, line, ALIGN_LEFT, szb, szl);
     drawStringBlock(&myFontOvlayP, "-", blk2, line, ALIGN_CENTER, szb, szl);
     drawStringBlock(&myFontOvlayP, "I", blk3, line, ALIGN_CENTER, szb, szl);
     line++;
 
     // VIEW
     line++;
-    drawStringBlock(&myFontOvlayP, "View Command", blk0, line, ALIGN_CENTER, szb, szl);
-    drawStringBlock(&myFontOvlayP, "Setting", blk2, line, ALIGN_CENTER, szb, szl);
-    drawStringBlock(&myFontOvlayP, "Key", blk3, line, ALIGN_CENTER, szb, szl);
+    drawStringBlock(&myFontOvlayP, xmlLang.getValue("lang:viewcmd","View Command"), blk0, line, ALIGN_CENTER, szb, szl);
+    drawStringBlock(&myFontOvlayP, xmlLang.getValue("lang:setting","Setting"), blk2, line, ALIGN_CENTER, szb, szl);
+    drawStringBlock(&myFontOvlayP, xmlLang.getValue("lang:key","Key"), blk3, line, ALIGN_CENTER, szb, szl);
     line++;
     ofSetColor(myColorYellow);
     drawLineBlock(blk1, blk4, line, szb, szl);
@@ -3365,8 +3445,8 @@ void drawHelpBody(int line) {
     ofSetColor(myColorDGray);
     drawULineBlock(blk1, blk4, line + 1, szb, szl);
     ofSetColor(myColorWhite);
-    value = fullscreenEnabled ? "On" : "Off";
-    drawStringBlock(&myFontOvlayP, "Set Fullscreen Mode", blk1, line, ALIGN_LEFT, szb, szl);
+    value = fullscreenEnabled ? xmlLang.getValue("lang:on","On") : xmlLang.getValue("lang:off","Off");
+    drawStringBlock(&myFontOvlayP, xmlLang.getValue("lang:setfullscrn","Set Fullscreen Mode"), blk1, line, ALIGN_LEFT, szb, szl);
     drawStringBlock(&myFontOvlayP, value, blk2, line, ALIGN_CENTER, szb, szl);
     drawStringBlock(&myFontOvlayP, "F, Esc", blk3, line, ALIGN_CENTER, szb, szl);
     line++;
@@ -3374,7 +3454,7 @@ void drawHelpBody(int line) {
     ofSetColor(myColorDGray);
     drawULineBlock(blk1, blk4, line + 1, szb, szl);
     ofSetColor(myColorWhite);
-    drawStringBlock(&myFontOvlayP, "Set Background Image", blk1, line, ALIGN_LEFT, szb, szl);
+    drawStringBlock(&myFontOvlayP, xmlLang.getValue("lang:setbgimg","Set Background Image"), blk1, line, ALIGN_LEFT, szb, szl);
     drawStringBlock(&myFontOvlayP, "-", blk2, line, ALIGN_CENTER, szb, szl);
     drawStringBlock(&myFontOvlayP, "B", blk3, line, ALIGN_CENTER, szb, szl);
     line++;
@@ -3382,8 +3462,8 @@ void drawHelpBody(int line) {
     ofSetColor(myColorDGray);
     drawULineBlock(blk1, blk4, line + 1, szb, szl);
     ofSetColor(myColorWhite);
-    value = cameraTrimEnabled ? "On" : "Off";
-    drawStringBlock(&myFontOvlayP, "Set Camera View Trimming", blk1, line, ALIGN_LEFT, szb, szl);
+    value = cameraTrimEnabled ? xmlLang.getValue("lang:off","Off") : xmlLang.getValue("lang:on","On");
+    drawStringBlock(&myFontOvlayP, xmlLang.getValue("lang:setcamtrim","Set Camera Fit to Window"), blk1, line, ALIGN_LEFT, szb, szl);
     drawStringBlock(&myFontOvlayP, value, blk2, line, ALIGN_CENTER, szb, szl);
     drawStringBlock(&myFontOvlayP, "T", blk3, line, ALIGN_CENTER, szb, szl);
     line++;
@@ -3391,8 +3471,8 @@ void drawHelpBody(int line) {
     ofSetColor(myColorDGray);
     drawULineBlock(blk1, blk4, line + 1, szb, szl);
     ofSetColor(myColorWhite);
-    value = cameraFrameEnabled ? "On" : "Off";
-    drawStringBlock(&myFontOvlayP, "Set Camera Frame Visibility", blk1, line, ALIGN_LEFT, szb, szl);
+    value = cameraFrameEnabled ? xmlLang.getValue("lang:on","On") : xmlLang.getValue("lang:off","Off");
+    drawStringBlock(&myFontOvlayP, xmlLang.getValue("lang:setborder","Set Camera Frame Visibility"), blk1, line, ALIGN_LEFT, szb, szl);
     drawStringBlock(&myFontOvlayP, value, blk2, line, ALIGN_CENTER, szb, szl);
     drawStringBlock(&myFontOvlayP, "E", blk3, line, ALIGN_CENTER, szb, szl);
     line++;
@@ -3400,8 +3480,8 @@ void drawHelpBody(int line) {
     ofSetColor(myColorDGray);
     drawULineBlock(blk1, blk4, line + 1, szb, szl);
     ofSetColor(myColorWhite);
-    value = (cameraIdxSolo == -1) ? "Disabled" : "Camera " + ofToString(cameraIdxSolo + 1);
-    drawStringBlock(&myFontOvlayP, "Set Camera 1~4 Enhanced View", blk1, line, ALIGN_LEFT, szb, szl);
+    value = (cameraIdxSolo == -1) ? xmlLang.getValue("lang:disabled","Disabled") : xmlLang.getValue("lang:camera","Camera") + " " + ofToString(cameraIdxSolo + 1);
+    drawStringBlock(&myFontOvlayP, xmlLang.getValue("lang:setenhvw","Set Camera 1~4 Enhanced View"), blk1, line, ALIGN_LEFT, szb, szl);
     drawStringBlock(&myFontOvlayP, value, blk2, line, ALIGN_CENTER, szb, szl);
     drawStringBlock(&myFontOvlayP, "1~4", blk3, line, ALIGN_CENTER, szb, szl);
     line++;
@@ -3415,12 +3495,12 @@ void drawHelpBody(int line) {
             value += ", ";
         }
         if (i < cameraNum) {
-            value += (camView[i].visible == true) ? "On" : "Off";
+            value += (camView[i].visible == true) ? xmlLang.getValue("lang:on","On") : xmlLang.getValue("lang:off","Off");
         } else {
             value += "-";
         }
     }
-    drawStringBlock(&myFontOvlayP, "Set Camera 1~4 Visibility", blk1, line, ALIGN_LEFT, szb, szl);
+    drawStringBlock(&myFontOvlayP, xmlLang.getValue("lang:setcanviz","Set Camera 1~4 Visibility"), blk1, line, ALIGN_LEFT, szb, szl);
     drawStringBlock(&myFontOvlayP, value, blk2, line, ALIGN_CENTER, szb, szl);
     drawStringBlock(&myFontOvlayP, ofToString(TVP_STR_ALT) + " + 1~4", blk3, line, ALIGN_CENTER, szb, szl);
     line++;
@@ -3428,7 +3508,7 @@ void drawHelpBody(int line) {
     ofSetColor(myColorDGray);
     drawULineBlock(blk1, blk4, line + 1, szb, szl);
     ofSetColor(myColorWhite);
-    drawStringBlock(&myFontOvlayP, "Start/Stop QR Code Reader for Label", blk1, line, ALIGN_LEFT, szb, szl);
+    drawStringBlock(&myFontOvlayP, xmlLang.getValue("lang:setqrcode","Start/Stop QR Code Reader for Label"), blk1, line, ALIGN_LEFT, szb, szl);
     drawStringBlock(&myFontOvlayP, "-", blk2, line, ALIGN_CENTER, szb, szl);
     drawStringBlock(&myFontOvlayP, "Q", blk3, line, ALIGN_CENTER, szb, szl);
     line++;
@@ -3436,9 +3516,9 @@ void drawHelpBody(int line) {
     // RACE
     line++;
     ofSetColor(myColorWhite);
-    drawStringBlock(&myFontOvlayP, "Race Command", blk0, line, ALIGN_CENTER, szb, szl);
-    drawStringBlock(&myFontOvlayP, "Setting", blk2, line, ALIGN_CENTER, szb, szl);
-    drawStringBlock(&myFontOvlayP, "Key", blk3, line, ALIGN_CENTER, szb, szl);
+    drawStringBlock(&myFontOvlayP, xmlLang.getValue("lang:racecmd","Race Command"), blk0, line, ALIGN_CENTER, szb, szl);
+    drawStringBlock(&myFontOvlayP, xmlLang.getValue("lang:setting","Setting"), blk2, line, ALIGN_CENTER, szb, szl);
+    drawStringBlock(&myFontOvlayP, xmlLang.getValue("lang:key","Key"), blk3, line, ALIGN_CENTER, szb, szl);
     line++;
     ofSetColor(myColorYellow);
     drawLineBlock(blk1, blk4, line, szb, szl);
@@ -3448,8 +3528,8 @@ void drawHelpBody(int line) {
     ofSetColor(myColorDGray);
     drawULineBlock(blk1, blk4, line + 1, szb, szl);
     ofSetColor(myColorWhite);
-    value = (arLapMode == ARAP_MODE_NORM) ? "Normal" : ((arLapMode == ARAP_MODE_LOOSE) ? "Loose" : "Off");
-    drawStringBlock(&myFontOvlayP, "Set AR Lap Timer Mode", blk1, line, ALIGN_LEFT, szb, szl);
+    value = (arLapMode == ARAP_MODE_NORM) ? xmlLang.getValue("lang:normal","Normal") : ((arLapMode == ARAP_MODE_LOOSE) ? xmlLang.getValue("lang:loose","Loose") : xmlLang.getValue("lang:off","Off"));
+    drawStringBlock(&myFontOvlayP, xmlLang.getValue("lang:setarmode","Set AR Lap Timer Mode"), blk1, line, ALIGN_LEFT, szb, szl);
     drawStringBlock(&myFontOvlayP, value, blk2, line, ALIGN_CENTER, szb, szl);
     drawStringBlock(&myFontOvlayP, "A", blk3, line, ALIGN_CENTER, szb, szl);
     line++;
@@ -3457,24 +3537,18 @@ void drawHelpBody(int line) {
     ofSetColor(myColorDGray);
     drawULineBlock(blk1, blk4, line + 1, szb, szl);
     ofSetColor(myColorWhite);
-    value = (raceDuraSecs <= 0) ? "No Limit" : (ofToString(raceDuraSecs) + " sec");
-    if (raceDuraSecs > 1) {
-        value += "s";
-    }
-    value += ", " + ofToString(raceDuraLaps) + " lap";
-    if (raceDuraLaps > 1) {
-        value += "s";
-    }
-    drawStringBlock(&myFontOvlayP, "Set Race Duration (Time, Laps)", blk1, line, ALIGN_LEFT, szb, szl);
+    value = (raceDuraSecs <= 0) ? xmlLang.getValue("lang:nolimit","No Limit") : getTimeString(raceDuraSecs);
+    value += ", " + ofToLower(xmlLang.getValue("lang:laps","Laps")) + ": " + ofToString(raceDuraLaps);
+    drawStringBlock(&myFontOvlayP, xmlLang.getValue("lang:setraceopts","Set Race Duration (Time, Laps)"), blk1, line, ALIGN_LEFT, szb, szl);
     drawStringBlock(&myFontOvlayP, value, blk2, line, ALIGN_CENTER, szb, szl);
-    drawStringBlock(&myFontOvlayP, "Up/Down,Left/Right", blk3, line, ALIGN_CENTER, szb, szl);
+    drawStringBlock(&myFontOvlayP, xmlLang.getValue("lang:cursorkeys","Cursor Keys"), blk3, line, ALIGN_CENTER, szb, szl);
     line++;
     // Set wait for lap after time limit
     ofSetColor(myColorDGray);
     drawULineBlock(blk1, blk4, line + 1, szb, szl);
     ofSetColor(myColorWhite);
-    value = lapAfterTmoEnabled ? "On" : "Off";
-    drawStringBlock(&myFontOvlayP, "Set Wait for Lap after Time Limit", blk1, line, ALIGN_LEFT, szb, szl);
+    value = lapAfterTmoEnabled ? xmlLang.getValue("lang:on","On") : xmlLang.getValue("lang:off","Off");
+    drawStringBlock(&myFontOvlayP, xmlLang.getValue("lang:setwaitlap","Set Wait for Lap after Time Limit"), blk1, line, ALIGN_LEFT, szb, szl);
     drawStringBlock(&myFontOvlayP, value, blk2, line, ALIGN_CENTER, szb, szl);
     drawStringBlock(&myFontOvlayP, "W", blk3, line, ALIGN_CENTER, szb, szl);
     line++;
@@ -3482,20 +3556,21 @@ void drawHelpBody(int line) {
     ofSetColor(myColorDGray);
     drawULineBlock(blk1, blk4, line + 1, szb, szl);
     ofSetColor(myColorWhite);
-    value = ofToString(minLapTime) + " sec";
-    if (minLapTime > 1) {
-        value += "s";
-    }
-    drawStringBlock(&myFontOvlayP, "Set Minimum Lap Time", blk1, line, ALIGN_LEFT, szb, szl);
+    value = ofToString(minLapTime) + xmlLang.getValue("lang:sec2","sec");
+    drawStringBlock(&myFontOvlayP, xmlLang.getValue("lang:setminlap","Set Minimum Lap Time"), blk1, line, ALIGN_LEFT, szb, szl);
     drawStringBlock(&myFontOvlayP, value, blk2, line, ALIGN_CENTER, szb, szl);
-    drawStringBlock(&myFontOvlayP, "Pg_Up/Pg_Down", blk3, line, ALIGN_CENTER, szb, szl);
+    #ifdef TARGET_OSX
+        drawStringBlock(&myFontOvlayP, "fn + Up/Down", blk3, line, ALIGN_CENTER, szb, szl);
+    #else /* TARGET_OSX */
+        drawStringBlock(&myFontOvlayP, "PgUp/PgDown", blk3, line, ALIGN_CENTER, szb, szl);
+    #endif /* TARGET_WIN32 TARGET_LINUX */
     line++;
     // Set staggered start
     ofSetColor(myColorDGray);
     drawULineBlock(blk1, blk4, line + 1, szb, szl);
     ofSetColor(myColorWhite);
-    value = useStartGate ? "On" : "Off";
-    drawStringBlock(&myFontOvlayP, "Set Staggered Start", blk1, line, ALIGN_LEFT, szb, szl);
+    value = useStartGate ? xmlLang.getValue("lang:on","On") : xmlLang.getValue("lang:off","Off");
+    drawStringBlock(&myFontOvlayP, xmlLang.getValue("lang:setstagg","Set Staggered Start"), blk1, line, ALIGN_LEFT, szb, szl);
     drawStringBlock(&myFontOvlayP, value, blk2, line, ALIGN_CENTER, szb, szl);
     drawStringBlock(&myFontOvlayP, "G", blk3, line, ALIGN_CENTER, szb, szl);
     line++;
@@ -3503,8 +3578,8 @@ void drawHelpBody(int line) {
     ofSetColor(myColorDGray);
     drawULineBlock(blk1, blk4, line + 1, szb, szl);
     ofSetColor(myColorWhite);
-    value = cameraLapHistEnabled ? "On" : "Off";
-    drawStringBlock(&myFontOvlayP, "Set Lap History View", blk1, line, ALIGN_LEFT, szb, szl);
+    value = cameraLapHistEnabled ? xmlLang.getValue("lang:on","On") : xmlLang.getValue("lang:off","Off");
+    drawStringBlock(&myFontOvlayP, xmlLang.getValue("lang:setlaphist","Set Lap History View"), blk1, line, ALIGN_LEFT, szb, szl);
     drawStringBlock(&myFontOvlayP, value, blk2, line, ALIGN_CENTER, szb, szl);
     drawStringBlock(&myFontOvlayP, "L", blk3, line, ALIGN_CENTER, szb, szl);
     line++;
@@ -3512,15 +3587,15 @@ void drawHelpBody(int line) {
     ofSetColor(myColorDGray);
     drawULineBlock(blk1, blk4, line + 1, szb, szl);
     ofSetColor(myColorWhite);
-    drawStringBlock(&myFontOvlayP, "Start/Stop Race", blk1, line, ALIGN_LEFT, szb, szl);
+    drawStringBlock(&myFontOvlayP, xmlLang.getValue("lang:startstop","Start/Stop Race"), blk1, line, ALIGN_LEFT, szb, szl);
     drawStringBlock(&myFontOvlayP, "-", blk2, line, ALIGN_CENTER, szb, szl);
-    drawStringBlock(&myFontOvlayP, "Space", blk3, line, ALIGN_CENTER, szb, szl);
+    drawStringBlock(&myFontOvlayP, xmlLang.getValue("lang:space","Space"), blk3, line, ALIGN_CENTER, szb, szl);
     line++;
     // Add lap at camera 1~4
     ofSetColor(myColorDGray);
     drawULineBlock(blk1, blk4, line + 1, szb, szl);
     ofSetColor(myColorWhite);
-    drawStringBlock(&myFontOvlayP, "Add Lap at Camera 1~4,1,3", blk1, line, ALIGN_LEFT, szb, szl);
+    drawStringBlock(&myFontOvlayP, xmlLang.getValue("lang:addlap","Add Lap at Camera 1~4,1,3"), blk1, line, ALIGN_LEFT, szb, szl);
     drawStringBlock(&myFontOvlayP, "-", blk2, line, ALIGN_CENTER, szb, szl);
     drawStringBlock(&myFontOvlayP, "5~8,Z,/", blk3, line, ALIGN_CENTER, szb, szl);
     line++;
@@ -3528,7 +3603,7 @@ void drawHelpBody(int line) {
     ofSetColor(myColorDGray);
     drawULineBlock(blk1, blk4, line + 1, szb, szl);
     ofSetColor(myColorWhite);
-    drawStringBlock(&myFontOvlayP, "Delete Previous Lap at Camera 1~4,1,3", blk1, line, ALIGN_LEFT, szb, szl);
+    drawStringBlock(&myFontOvlayP, xmlLang.getValue("lang:dellap","Delete Previous Lap at Camera 1~4,1,3"), blk1, line, ALIGN_LEFT, szb, szl);
     drawStringBlock(&myFontOvlayP, "-", blk2, line, ALIGN_CENTER, szb, szl);
     drawStringBlock(&myFontOvlayP, ofToString(TVP_STR_ALT) + " + 5~8,Z,/", blk3, line, ALIGN_CENTER, szb, szl);
     line++;
@@ -3536,7 +3611,7 @@ void drawHelpBody(int line) {
     ofSetColor(myColorDGray);
     drawULineBlock(blk1, blk4, line + 1, szb, szl);
     ofSetColor(myColorWhite);
-    drawStringBlock(&myFontOvlayP, "Display Race Result", blk1, line, ALIGN_LEFT, szb, szl);
+    drawStringBlock(&myFontOvlayP, xmlLang.getValue("lang:showraceres","Display Race Result"), blk1, line, ALIGN_LEFT, szb, szl);
     drawStringBlock(&myFontOvlayP, "-", blk2, line, ALIGN_CENTER, szb, szl);
     drawStringBlock(&myFontOvlayP, "R", blk3, line, ALIGN_CENTER, szb, szl);
     line++;
@@ -3544,7 +3619,7 @@ void drawHelpBody(int line) {
     ofSetColor(myColorDGray);
     drawULineBlock(blk1, blk4, line + 1, szb, szl);
     ofSetColor(myColorWhite);
-    drawStringBlock(&myFontOvlayP, "Clear Race Result", blk1, line, ALIGN_LEFT, szb, szl);
+    drawStringBlock(&myFontOvlayP, xmlLang.getValue("lang:clrraceres","Clear Race Result"), blk1, line, ALIGN_LEFT, szb, szl);
     drawStringBlock(&myFontOvlayP, "-", blk2, line, ALIGN_CENTER, szb, szl);
     drawStringBlock(&myFontOvlayP, "C", blk3, line, ALIGN_CENTER, szb, szl);
     line++;
@@ -3577,10 +3652,10 @@ void drawOverlayMessageCore(ofxTrueTypeFontUC *font, string msg) {
     // background
     ofSetColor(myColorBGDark);
     ofFill();
-    ofDrawRectangle(sx - margin, sy - (fh + margin), sw + (margin * 2), fh + (margin * 2));
+    ofDrawRectangle(int(sx - margin), int(sy - (fh + margin)), int(sw + (margin * 2)), int(fh + (margin * 2)));
     // message
     ofSetColor(myColorWhite);
-    font->drawString(msg, sx, sy);
+    font->drawString(msg, int(sx), int(sy));
 }
 
 //--------------------------------------------------------------
