@@ -1858,7 +1858,7 @@ void changeWallImage() {
 //--------------------------------------------------------------
 void setWallParams() {
     float sratio;
-    sratio = float(ofGetWidth() / ofGetHeight());
+    sratio = float(ofGetWidth()) / float(ofGetHeight());
     if (sratio > wallRatio) {
         wallDrawWidth = ofGetWidth();
         wallDrawHeight = wallDrawWidth / wallRatio;
@@ -1873,7 +1873,7 @@ void setViewParams() {
     int idx, i;
     int width = ofGetWidth();
     int height = ofGetHeight();
-    float ratio = float(width / height);
+    float ratio = float(width) / float(height);
     switch (cameraNumVisible) {
         case 1:
             // 1st visible camera
@@ -2119,7 +2119,7 @@ void setViewParams() {
             camView[idx].lapPosXTarget = camView[idx].lapPosXTarget - (LAP_MARGIN_X / 2);
             camView[idx].lapPosYTarget = camView[idx].lapPosYTarget - (LAP_MARGIN_Y / 2);
         }
-        camView[idx].imageScale = float(camView[idx].width / CAMERA_WIDTH);
+        camView[idx].imageScale = float(camView[idx].width) / float(CAMERA_WIDTH);
         if (camView[idx].isWide == true) {
             camView[idx].posYWideTarget = camView[idx].posYTarget + (camView[idx].heightTarget / 8);
             camView[idx].heightWideTarget = camView[idx].heightTarget * 0.75;
@@ -2161,7 +2161,7 @@ void updateViewParams() {
         camView[idx].height = calcViewParam(camView[idx].heightTarget, camView[idx].height, steps);
         camView[idx].posX = calcViewParam(camView[idx].posXTarget, camView[idx].posX, steps);
         camView[idx].posY = calcViewParam(camView[idx].posYTarget, camView[idx].posY, steps);
-        camView[idx].imageScale = float(camView[idx].width / CAMERA_WIDTH);
+        camView[idx].imageScale = float(camView[idx].width) / float(CAMERA_WIDTH);
         if (camView[idx].isWide == true) {
             camView[idx].posYWide = camView[idx].posY + (camView[idx].height / 8);
             camView[idx].heightWide = camView[idx].height * 0.75;
