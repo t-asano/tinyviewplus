@@ -2387,6 +2387,7 @@ void autoSelectLang() {
     ofDirectory dir(LANG_DIR);
     dir.allowExt("xml");
     int langindex = dir.listDir();
+    dir.sort();
     if (langindex > LANG_MAX_FILES) langindex = LANG_MAX_FILES;
     // default language declaration
     lang[0][0] = "en";
