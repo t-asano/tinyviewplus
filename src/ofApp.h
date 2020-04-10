@@ -54,6 +54,7 @@
 
 // languages
 #define LANG_DIR        "lang/"
+#define LANG_MAX_FILES  50
 
 // camera profile
 #define CAM_FPV_FILE    "camera/fpv.xml"
@@ -291,7 +292,6 @@ void saveSettingsFile();
 void savePilotsFile();
 void loadPilotsFile();
 void loadCameraProfileFile();
-void loadLangFile();
 void updateInit();
 void drawInit();
 // -- camera setup --
@@ -331,9 +331,12 @@ void recvOsc();
 void recvOscCameraString(int, string, string);
 void recvOscCameraFloat(int, string, float);
 void recvOscSpeech(string, string);
-// speech
+// localization
 void toggleLang();
 void autoSelectLang();
+void loadLangFile();
+int findLangIndex(string);
+// speech
 void speakLap(int, float, int);
 void setNextNotifyRemainSecs(int);
 void speakRemainTime(int);

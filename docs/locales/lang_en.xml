@@ -1,4 +1,4 @@
-<lang>
+<lang id="en" label="English" name="english" locale="en_US" wincodepage="1250" winvoice="409" osxvoice="Victoria">
 	<addlap>Add Lap at Camera 1~4,1,3</addlap>
 	<bestlap>BestLap</bestlap>
 	<bgimgnfound>Background image not found</bgimgnfound>

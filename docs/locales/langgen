@@ -1,5 +1,5 @@
 #!/bin/bash
 
-echo "<lang>"
+echo '<lang id="en" label="English" name="english" locale="en_US" wincodepage="1250" winvoice="409" osxvoice="Victoria">'
 grep -r "xmlLang" ./src/*.* |sed "s/\")/\"\n/g"|grep getValue|sed "s/.*lang:\(.*\)\"\,.*\"\(.*\)\"$/\t<\1>\2<\/\1>/"|sort|uniq
-echo "</lang>"
+echo '</lang>'

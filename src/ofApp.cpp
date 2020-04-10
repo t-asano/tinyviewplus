@@ -40,10 +40,9 @@ int hideCursorTimer;
 // osc
 ofxOscReceiver oscReceiver;
 // language
-int langindex = 0;
-// Put your language definition here
-string lang[3] = { "en", "ru", "jp" };
-string langlabel[3] = { "English", "Русский", "日本人" };
+string lang[LANG_MAX_FILES][7];
+string currentlang = "en";
+string currentlanglabel = "English";
 // AR lap timer
 ofSoundPlayer beepSound, beep3Sound, notifySound, cancelSound;
 ofSoundPlayer countSound, finishSound;
@@ -179,7 +178,7 @@ void loadSettingsFile() {
 
     // SYSTEM
     // language
-    langindex = xmlSettings.getValue(SNM_SYS_LANG, langindex);
+    currentlang = xmlSettings.getValue(SNM_SYS_LANG, currentlang);
     // system statistics
     sysStatEnabled = xmlSettings.getValue(SNM_SYS_STAT, sysStatEnabled);
 
@@ -211,7 +210,7 @@ void loadSettingsFile() {
 void saveSettingsFile() {
     // SYSTEM
     // language
-    xmlSettings.setValue(SNM_SYS_LANG, langindex);
+    xmlSettings.setValue(SNM_SYS_LANG, currentlang);
     // system statistics
     xmlSettings.setValue(SNM_SYS_STAT, sysStatEnabled);
 
@@ -264,8 +263,9 @@ void savePilotsFile() {
 
 void loadLangFile() {
     xmlLang.clear();
-    if (langindex != 0) {
-        if (xmlLang.loadFile("lang/lang_" + lang[langindex] + ".xml")) {
+    currentlanglabel="English";
+    if (currentlang != "en") {
+        if (xmlLang.loadFile("lang/lang_" + currentlang + ".xml")) {
             // For Windows here need translate all strings from unicode to ansi.
             // Simple method - load xml file to string, convert and restore xml structure in memory from string
 #ifdef TARGET_WIN32
@@ -275,9 +275,10 @@ void loadLangFile() {
             winlang = utf8ToAnsi(winlang);
             xmlLang.loadFromBuffer(winlang);
 #endif /* TARGET_WIN32 */
+            currentlanglabel=xmlLang.getAttribute("lang","label","English");
         } else {
             // Modal dialog block mouse in setting mode. Just will be used default values.
-            //ofSystemAlertDialog("Error language file load: " + langlabel[langindex]);
+            //ofSystemAlertDialog("Error language file load";
         }
     }
 }
@@ -416,7 +417,7 @@ void setupMain() {
     }
     initRaceVars();
     // speech
-    speakAny(lang[langindex], xmlLang.getValue("lang:saywelcome","Welcome to Tiny View Plus"));
+    speakAny(currentlang, xmlLang.getValue("lang:saywelcome","Welcome to Tiny View Plus"));
 
     // debug
     if (DEBUG_ENABLED == true) {
@@ -2366,39 +2367,72 @@ void toggleLang() {
         int pid = i + 1;
         if (camView[i].labelString == xmlLang.getValue("lang:pilot","Pilot") + ofToString(pid)) camView[i].labelString = "";
     }
+    int langindex = findLangIndex(currentlang);
     langindex += 1;
-    if (langindex > int(lang->size())) langindex = 0;
+    if (langindex >= LANG_MAX_FILES) langindex = 0;
+    if (lang[langindex][0] == "" ) langindex = 0;
+    currentlang = lang[langindex][0];
     saveSettingsFile();
     loadLangFile();
     for (int i = 0; i < cameraNum; i++) {
         int pid = i + 1;
         if (camView[i].labelString == "") camView[i].labelString = xmlLang.getValue("lang:pilot","Pilot") + ofToString(pid);
     }
-    setOverlayMessage(xmlLang.getValue("lang:language","Language") + ": " + langlabel[langindex]);
+    setOverlayMessage(xmlLang.getValue("lang:language","Language") + ": " + currentlanglabel);
 }
 
 //--------------------------------------------------------------
 void autoSelectLang() {
     string lname = getUserLocaleName();
-    if (lname.find("ru_RU") != std::string::npos
-        || lname.find("1251") != std::string::npos
-        || ofToLower(lname).find("russian") != std::string::npos) {
-        langindex = 1;
-    } else if (lname.find("ja_JP") != std::string::npos
-        || lname.find("932") != std::string::npos
-        || ofToLower(lname).find("japan") != std::string::npos) {
-        langindex = 2;
-    // Put your language definition here
-
-    } else {
-        langindex = 0;
+    ofDirectory dir(LANG_DIR);
+    dir.allowExt("xml");
+    int langindex = dir.listDir();
+    if (langindex > LANG_MAX_FILES) langindex = LANG_MAX_FILES;
+    // default language declaration
+    lang[0][0] = "en";
+    lang[0][1] = "English";
+    lang[0][2] = "english";
+    lang[0][3] = "en_US";
+    lang[0][4] = "1250";
+    lang[0][5] = "409";
+    lang[0][6] = "Victoria";
+    for(int i = 0; i < langindex; i++) {
+        xmlLang.loadFile(dir.getPath(i));
+        int lid = i +1;
+        if (xmlLang.getAttribute("lang","id","") != "") {
+            lang[lid][0] = xmlLang.getAttribute("lang","id","");
+            lang[lid][1] = xmlLang.getAttribute("lang","label","_");
+            lang[lid][2] = xmlLang.getAttribute("lang","name","_");
+            lang[lid][3] = xmlLang.getAttribute("lang","locale","_");
+            lang[lid][4] = xmlLang.getAttribute("lang","wincodepage","1250");
+            lang[lid][5] = xmlLang.getAttribute("lang","winvoice","409");
+            lang[lid][6] = xmlLang.getAttribute("lang","osxvoice","Victoria");
+            if (lname.find(lang[lid][2]) != std::string::npos
+                    || lname.find(lang[lid][3]) != std::string::npos
+                    || ofToLower(lname).find(lang[lid][4]) != std::string::npos) {
+                currentlang = lang[lid][0];
+                currentlanglabel = lang[lid][1];
+            }
+        }
+        xmlLang.clear();
     }
 }
 
+int findLangIndex(string language) {
+    int langindex = 0;
+    for(int i = 0; i < LANG_MAX_FILES; i++) {
+        if (lang[i][0] == ofTrim(language)) {
+            langindex = i;
+            break;
+        }
+    }
+    return langindex;
+}
+
 //--------------------------------------------------------------
-void recvOscSpeech(string lang, string text) {
-    ofLogNotice() << "osc spc(s): " << lang << "," << text;
-    speakAny(lang, text);
+void recvOscSpeech(string language, string text) {
+    ofLogNotice() << "osc spc(s): " << language << "," << text;
+    speakAny(language, text);
 }
 
 #ifdef TARGET_WIN32
@@ -2407,16 +2441,12 @@ CComPtr<ISpVoice> cpVoice;
 
 class sayWin : public ofThread {
 public:
-    void exec(string lang, string words) {
-        string nlang = "409";
+    void exec(string language, string words) {
         if (FAILED(cpVicehr)) {
             cpVicehr = cpVoice.CoCreateInstance(CLSID_SpVoice);
         }
         if (SUCCEEDED(cpVicehr)) {
-            if (lang == "ru") nlang = "419";
-            if (lang == "jp") nlang = "411";
-            // Put your language definition here
-            this->xmltext = "<xml><lang langid=\"" + nlang + "\"><rate speed=\"2\">" + words + "</rate></lang></xml>";
+            this->xmltext = "<xml><lang langid=\"" + language + "\"><rate speed=\"2\">" + words + "</rate></lang></xml>";
             startThread();
         }
     }
@@ -2445,7 +2475,7 @@ void speakLap(int camid, float sec, int num) {
     sout = regex_replace(sout, regex("(" + xmlLang.getValue("lang:pilot","Pilot") + ")(\\d)"), "$1 $2");
     if (useStartGate == true && num == 1) {
         sout += ofToLower(xmlLang.getValue("lang:started","Started"));
-        speakAny(lang[langindex], sout);
+        speakAny(currentlang, sout);
         return;
     }
     ssec = getLapStr(sec);
@@ -2455,19 +2485,14 @@ void speakLap(int camid, float sec, int num) {
     }
     sout += ssec;
     // internationalization
-    switch (langindex) {
-        case 1: // Russian
-            sout = regex_replace(sout, regex("(\\d).(\\d)"), "$1 $2");
-            break;
-        case 2: // Japaness
-            sout = regex_replace(sout, regex("(\\d).(\\d)(\\d)"), "$1秒$2 $3");
-            break;
-        // Put your language definition here
-        default: // English
-            sout += " seconds";
-            break;
-    }
-    speakAny(lang[langindex], sout);
+    // English
+    if (currentlang == "en") sout += " seconds";
+    // Russian
+    if (currentlang == "ru") sout = regex_replace(sout, regex("(\\d).(\\d)"), "$1 $2");
+    // Japanese
+    if (currentlang == "jp") sout = regex_replace(sout, regex("(\\d).(\\d)(\\d)"), "$1秒$2 $3");
+    // Put your language definition here
+    speakAny(currentlang, sout);
 }
 
 //--------------------------------------------------------------
@@ -2525,49 +2550,47 @@ void speakRemainTime(int sec) {
         }
     }
     // internationalization
-    switch (langindex) {
-        case 1: // Russian
-            if (min == 1) str = regex_replace(str, regex("1"), "одна");
-            if (min == 2) str = regex_replace(str, regex("2"), "две");
-            if (min % 10 == 1 && min > 20) str = regex_replace(str, regex("1 "), "0 одна ");
-            if (min % 10 == 2 && min > 20) str = regex_replace(str, regex("2 "), "0 две ");
-            if ((min % 10 > 1 && min % 10 < 5) && (min < 10 || min > 20)) str = regex_replace(str, regex("минут"), "минуты");
-            if ((min == 1) || (min % 10 == 1 && min > 20)) {
-                str = regex_replace(str, regex("лось"), "лась");
-                str = regex_replace(str, regex("минут"), "минута");
-            }
-            break;
-        case 2: // Japaness
-            break;
-        // Put your language definition here
-        default: // English
-            if (min == 1) str = regex_replace(str, regex("minutes"), "minute");
-            if (sec > 5) str += "to go";
-            break;
+    // English
+    if (currentlang == "en") {
+        if (min == 1) str = regex_replace(str, regex("minutes"), "minute");
+        if (sec > 5) str += "to go";
     }
-
-    speakAny(lang[langindex], str);
+    // Russian
+    if (currentlang == "ru") {
+        if (min == 1) str = regex_replace(str, regex("1"), "одна");
+        if (min == 2) str = regex_replace(str, regex("2"), "две");
+        if (min % 10 == 1 && min > 20) str = regex_replace(str, regex("1 "), "0 одна ");
+        if (min % 10 == 2 && min > 20) str = regex_replace(str, regex("2 "), "0 две ");
+        if ((min % 10 > 1 && min % 10 < 5) && (min < 10 || min > 20)) str = regex_replace(str, regex("минут"), "минуты");
+        if ((min == 1) || (min % 10 == 1 && min > 20)) {
+            str = regex_replace(str, regex("лось"), "лась");
+            str = regex_replace(str, regex("минут"), "минута");
+        }
+    }
+    // Japanese
+    if (currentlang == "jp") {}
+    // Put your language definition here
+    speakAny(currentlang, str);
 }
 
 //--------------------------------------------------------------
-void speakAny(string lang, string text) {
+void speakAny(string language, string text) {
     //ofLog() << "Say: " << text;
+    int langindex = findLangIndex(language);
 #ifdef TARGET_OSX
+    string voice = lang[langindex][6];
     int pid = fork();
-    string voice = "Victoria";
     if (pid == 0) {
-        if (lang == "ru") voice = "Milena";
-        if (lang == "jp") voice = "Kyoko";
-        // Put your language definition here
         // child process
         execlp("say", "", "-r", "240", "-v", voice.c_str(), text.c_str(), NULL);
         OF_EXIT_APP(-1);
     }
 #endif /* TARGET_OSX */
 #ifdef TARGET_WIN32
+    string voice = lang[langindex][5];
     for (int i = 0; i < SPCH_SLOT_NUM; i++) {
         if (mySayWin[i].isThreadRunning() == false) {
-            mySayWin[i].exec(lang, text);
+            mySayWin[i].exec(voice, text);
             break;
         }
     }
@@ -2576,7 +2599,7 @@ void speakAny(string lang, string text) {
     int pid = fork();
     if (pid == 0) {
         // Use speech-dispatcher for select voice modules
-        execlp("spd-say", "-w", "-r", "15", "-t", "female1", "-l", lang.c_str() , text.c_str(), NULL);
+        execlp("spd-say", "-w", "-r", "15", "-t", "female1", "-l", currentlang.c_str() , text.c_str(), NULL);
         OF_EXIT_APP(-1);
     }
 #endif /* TARGET_LINUX */
@@ -2640,7 +2663,7 @@ void stopRace(bool appexit) {
         raceStarted = false;
         countSound.stop();
         finishSound.play();
-        speakAny(lang[langindex], xmlLang.getValue("lang:sayracefinish","Race finished"));
+        speakAny(currentlang, xmlLang.getValue("lang:sayracefinish","Race finished"));
         raceResultTimer = ARAP_RSLT_DELAY;
     }
     fwriteRaceResult();
@@ -3402,7 +3425,7 @@ void drawHelpBody(int line) {
     drawULineBlock(blk1, blk4, line + 1, szb, szl);
     ofSetColor(myColorWhite);
     drawStringBlock(&myFontOvlayP, xmlLang.getValue("lang:setlang","Set Language"), blk1, line, ALIGN_LEFT, szb, szl);
-    drawStringBlock(&myFontOvlayP, langlabel[langindex], blk2, line, ALIGN_CENTER, szb, szl);
+    drawStringBlock(&myFontOvlayP, currentlanglabel, blk2, line, ALIGN_CENTER, szb, szl);
     drawStringBlock(&myFontOvlayP, "N", blk3, line, ALIGN_CENTER, szb, szl);
     line++;
     // Set system statistics

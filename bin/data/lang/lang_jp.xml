@@ -1,4 +1,4 @@
-<lang>
+<lang id="jp" label="日本人" name="japan" locale="ja_JP" wincodepage="932" winvoice="411" osxvoice="Kyoko">
 	<addlap>Add Lap at Camera 1~4,1,3</addlap>
 	<bestlap>BestLap</bestlap>
 	<bgimgnfound>Background image not found</bgimgnfound>
