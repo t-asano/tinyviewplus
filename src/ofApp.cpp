@@ -40,7 +40,7 @@ int hideCursorTimer;
 // osc
 ofxOscReceiver oscReceiver;
 // language
-string lang[LANG_MAX_FILES][4];
+string lang[LANG_MAX_FILES];
 string currentlang = "en";
 // AR lap timer
 ofSoundPlayer beepSound, beep3Sound, notifySound, cancelSound;
@@ -2367,8 +2367,8 @@ void toggleLang() {
     int langindex = findLangIndex(currentlang);
     langindex += 1;
     if (langindex >= LANG_MAX_FILES) langindex = 0;
-    if (lang[langindex][0] == "" ) langindex = 0;
-    currentlang = lang[langindex][0];
+    if (lang[langindex] == "" ) langindex = 0;
+    currentlang = lang[langindex];
     saveSettingsFile();
     loadLangFile();
     for (int i = 0; i < cameraNum; i++) {
@@ -2387,21 +2387,15 @@ void autoSelectLang() {
     dir.sort();
     if (langindex > LANG_MAX_FILES) langindex = LANG_MAX_FILES;
     // default language declaration
-    lang[0][0] = "en";
-    lang[0][1] = "english";
-    lang[0][2] = "en_US";
-    lang[0][3] = "1250";
+    lang[0] = "en";
     for(int i = 0; i < langindex; i++) {
         xmlLang.loadFile(dir.getPath(i));
         int lid = i +1;
         if (xmlLang.getAttribute("lang","id","") != "") {
-            lang[lid][0] = xmlLang.getAttribute("lang","id","");
-            lang[lid][1] = xmlLang.getAttribute("lang","name","_");
-            lang[lid][2] = xmlLang.getAttribute("lang","locale","_");
-            lang[lid][3] = xmlLang.getAttribute("lang","wincodepage","1250");
-            if (lname.find(lang[lid][1]) != std::string::npos
-                    || lname.find(lang[lid][2]) != std::string::npos
-                    || ofToLower(lname).find(lang[lid][3]) != std::string::npos) currentlang = lang[lid][0];
+            lang[lid] = xmlLang.getAttribute("lang","id","");
+            if (lname.find(xmlLang.getAttribute("lang","name","english")) != std::string::npos
+                    || lname.find(xmlLang.getAttribute("lang","locale","en_US")) != std::string::npos
+                    || ofToLower(lname).find(xmlLang.getAttribute("lang","wincodepage","1250")) != std::string::npos) currentlang = lang[lid];
         }
         xmlLang.clear();
     }
@@ -2410,7 +2404,7 @@ void autoSelectLang() {
 int findLangIndex(string language) {
     int langindex = 0;
     for(int i = 0; i < LANG_MAX_FILES; i++) {
-        if (lang[i][0] == ofTrim(language)) {
+        if (lang[i] == ofTrim(language)) {
             langindex = i;
             break;
         }
