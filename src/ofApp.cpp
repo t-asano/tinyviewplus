@@ -2390,7 +2390,7 @@ void autoSelectLang() {
     lang[0] = "en";
     for(int i = 0; i < langindex; i++) {
         xmlLang.loadFile(dir.getPath(i));
-        int lid = i +1;
+        int lid = i + 1;
         if (xmlLang.getAttribute("lang","id","") != "") {
             lang[lid] = xmlLang.getAttribute("lang","id","");
             if (lname.find(xmlLang.getAttribute("lang","name","english")) != std::string::npos
