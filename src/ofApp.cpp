@@ -40,9 +40,8 @@ int hideCursorTimer;
 // osc
 ofxOscReceiver oscReceiver;
 // language
-string lang[LANG_MAX_FILES][7];
+string lang[LANG_MAX_FILES][4];
 string currentlang = "en";
-string currentlanglabel = "English";
 // AR lap timer
 ofSoundPlayer beepSound, beep3Sound, notifySound, cancelSound;
 ofSoundPlayer countSound, finishSound;
@@ -263,7 +262,6 @@ void savePilotsFile() {
 
 void loadLangFile() {
     xmlLang.clear();
-    currentlanglabel="English";
     if (currentlang != "en") {
         if (xmlLang.loadFile("lang/lang_" + currentlang + ".xml")) {
             // For Windows here need translate all strings from unicode to ansi.
@@ -275,7 +273,6 @@ void loadLangFile() {
             winlang = utf8ToAnsi(winlang);
             xmlLang.loadFromBuffer(winlang);
 #endif /* TARGET_WIN32 */
-            currentlanglabel=xmlLang.getAttribute("lang","label","English");
         } else {
             // Modal dialog block mouse in setting mode. Just will be used default values.
             //ofSystemAlertDialog("Error language file load";
@@ -2378,7 +2375,7 @@ void toggleLang() {
         int pid = i + 1;
         if (camView[i].labelString == "") camView[i].labelString = xmlLang.getValue("lang:pilot","Pilot") + ofToString(pid);
     }
-    setOverlayMessage(xmlLang.getValue("lang:language","Language") + ": " + currentlanglabel);
+    setOverlayMessage(xmlLang.getValue("lang:language","Language") + ": " + xmlLang.getAttribute("lang","label","English"));
 }
 
 //--------------------------------------------------------------
@@ -2391,29 +2388,20 @@ void autoSelectLang() {
     if (langindex > LANG_MAX_FILES) langindex = LANG_MAX_FILES;
     // default language declaration
     lang[0][0] = "en";
-    lang[0][1] = "English";
-    lang[0][2] = "english";
-    lang[0][3] = "en_US";
-    lang[0][4] = "1250";
-    lang[0][5] = "409";
-    lang[0][6] = "Victoria";
+    lang[0][1] = "english";
+    lang[0][2] = "en_US";
+    lang[0][3] = "1250";
     for(int i = 0; i < langindex; i++) {
         xmlLang.loadFile(dir.getPath(i));
         int lid = i +1;
         if (xmlLang.getAttribute("lang","id","") != "") {
             lang[lid][0] = xmlLang.getAttribute("lang","id","");
-            lang[lid][1] = xmlLang.getAttribute("lang","label","_");
-            lang[lid][2] = xmlLang.getAttribute("lang","name","_");
-            lang[lid][3] = xmlLang.getAttribute("lang","locale","_");
-            lang[lid][4] = xmlLang.getAttribute("lang","wincodepage","1250");
-            lang[lid][5] = xmlLang.getAttribute("lang","winvoice","409");
-            lang[lid][6] = xmlLang.getAttribute("lang","osxvoice","Victoria");
-            if (lname.find(lang[lid][2]) != std::string::npos
-                    || lname.find(lang[lid][3]) != std::string::npos
-                    || ofToLower(lname).find(lang[lid][4]) != std::string::npos) {
-                currentlang = lang[lid][0];
-                currentlanglabel = lang[lid][1];
-            }
+            lang[lid][1] = xmlLang.getAttribute("lang","name","_");
+            lang[lid][2] = xmlLang.getAttribute("lang","locale","_");
+            lang[lid][3] = xmlLang.getAttribute("lang","wincodepage","1250");
+            if (lname.find(lang[lid][1]) != std::string::npos
+                    || lname.find(lang[lid][2]) != std::string::npos
+                    || ofToLower(lname).find(lang[lid][3]) != std::string::npos) currentlang = lang[lid][0];
         }
         xmlLang.clear();
     }
@@ -2579,7 +2567,7 @@ void speakAny(string language, string text) {
     //ofLog() << "Say: " << text;
     int langindex = findLangIndex(language);
 #ifdef TARGET_OSX
-    string voice = lang[langindex][6];
+    string voice = xmlLang.getAttribute("lang","osxvoice","Victoria");
     int pid = fork();
     if (pid == 0) {
         // child process
@@ -2588,7 +2576,7 @@ void speakAny(string language, string text) {
     }
 #endif /* TARGET_OSX */
 #ifdef TARGET_WIN32
-    string voice = lang[langindex][5];
+    string voice = xmlLang.getAttribute("lang","winvoice","409");
     for (int i = 0; i < SPCH_SLOT_NUM; i++) {
         if (mySayWin[i].isThreadRunning() == false) {
             mySayWin[i].exec(voice, text);
@@ -3426,7 +3414,7 @@ void drawHelpBody(int line) {
     drawULineBlock(blk1, blk4, line + 1, szb, szl);
     ofSetColor(myColorWhite);
     drawStringBlock(&myFontOvlayP, xmlLang.getValue("lang:setlang","Set Language"), blk1, line, ALIGN_LEFT, szb, szl);
-    drawStringBlock(&myFontOvlayP, currentlanglabel, blk2, line, ALIGN_CENTER, szb, szl);
+    drawStringBlock(&myFontOvlayP, xmlLang.getAttribute("lang","label","English"), blk2, line, ALIGN_CENTER, szb, szl);
     drawStringBlock(&myFontOvlayP, "N", blk3, line, ALIGN_CENTER, szb, szl);
     line++;
     // Set system statistics
