@@ -28,9 +28,9 @@
      inkscape:pageshadow="2"
      inkscape:zoom="0.39290625"
      inkscape:cx="1511.811"
-     inkscape:cy="1511.811"
+     inkscape:cy="1957.2099"
      inkscape:document-units="mm"
-     inkscape:current-layer="layer1"
+     inkscape:current-layer="layer5"
      showgrid="false"
      inkscape:window-width="2560"
      inkscape:window-height="1495"
@@ -394,14 +394,14 @@
      inkscape:groupmode="layer"
      id="layer5"
      inkscape:label="div"
-     style="display:none">
+     style="display:inline">
     <rect
        style="opacity:1;fill:none;stroke:#000000;stroke-width:0.59329587;stroke-opacity:1"
        id="rect7815"
        width="419.40671"
        height="296.40671"
-       x="241.2133"
-       y="-0.39310023" />
+       x="190.29665"
+       y="-46.95977" />
     <g
        id="g9589"
        transform="matrix(0.91862286,0.38050589,-0.38050605,0.9186225,184.75328,-119.65136)">
@@ -447,13 +447,13 @@
     <text
        xml:space="preserve"
        style="font-style:normal;font-variant:normal;font-weight:500;font-stretch:normal;font-size:19.75437546px;line-height:1.25;font-family:Orbitron;-inkscape-font-specification:'Orbitron, Medium';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:start;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:start;display:inline;opacity:1;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.26456752"
-       x="625.95837"
-       y="15.857345"
+       x="568.71588"
+       y="22.590946"
        id="text1197-7"
        transform="scale(0.9999399,1.0000601)"><tspan
          sodipodi:role="line"
-         x="625.95837"
-         y="15.857345"
+         x="568.71588"
+         y="22.590946"
          style="text-align:start;text-anchor:start;stroke-width:0.26456752"
          id="tspan1213-6">A3 </tspan></text>
   </g>
