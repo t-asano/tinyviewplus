@@ -2457,13 +2457,13 @@ void speakLap(int camid, float sec, int num) {
     sout = camView[camid - 1].labelString + ", ";
     sout = regex_replace(sout, regex("(" + xmlLang.getValue("lang:pilot","Pilot") + ")(\\d)"), "$1 $2");
     if (useStartGate == true && num == 1) {
-        sout += ofToLower(xmlLang.getValue("lang:started","Started"));
+        sout += xmlLang.getValue("lang:started","Started");
         speakAny(currentlang, sout);
         return;
     }
     ssec = getLapStr(sec);
     if (num > 0) {
-        sout += ofToLower(xmlLang.getValue("lang:lap","Lap"));
+        sout += xmlLang.getValue("lang:lap","Lap");
         sout += " " + ofToString(num - (useStartGate == true ? 1 : 0)) + ", ";
     }
     sout += ssec;
@@ -3544,7 +3544,7 @@ void drawHelpBody(int line) {
     drawULineBlock(blk1, blk4, line + 1, szb, szl);
     ofSetColor(myColorWhite);
     value = (raceDuraSecs <= 0) ? xmlLang.getValue("lang:nolimit","No Limit") : getTimeString(raceDuraSecs);
-    value += ", " + ofToLower(xmlLang.getValue("lang:laps","Laps")) + ": " + ofToString(raceDuraLaps);
+    value += ", " + xmlLang.getValue("lang:laps","Laps") + ": " + ofToString(raceDuraLaps);
     drawStringBlock(&myFontOvlayP, xmlLang.getValue("lang:setraceopts","Set Race Duration (Time, Laps)"), blk1, line, ALIGN_LEFT, szb, szl);
     drawStringBlock(&myFontOvlayP, value, blk2, line, ALIGN_CENTER, szb, szl);
     drawStringBlock(&myFontOvlayP, xmlLang.getValue("lang:cursorkeys","Cursor Keys"), blk3, line, ALIGN_CENTER, szb, szl);
