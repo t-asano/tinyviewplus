@@ -21,7 +21,7 @@
 	<laphist>История прохождения кругов</laphist>
         <lap>Круг</lap>
         <laps>Кругов</laps>
-	<laptimemode>Режим срабатывания засечки</laptimemode>
+	<laptimemode>Режим засечки</laptimemode>
 	<loose>Свободный</loose>
 	<min1>мин</min1>
 	<min2>минут</min2>
@@ -59,7 +59,7 @@
         <sec1>с</sec1>
 	<sec2>сек</sec2>
 	<sec3>секунд</sec3>
-	<setarmode>Режим срабатывания засечки</setarmode>
+	<setarmode>Режим засечки</setarmode>
 	<setbgimg>Выбор фонового изображения</setbgimg>
 	<setborder>Рамка вокруг изображения</setborder>
 	<setcamtrim>Масштабирование изображения</setcamtrim>
