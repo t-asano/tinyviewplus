@@ -266,13 +266,13 @@ void loadLangFile() {
         if (xmlLang.loadFile("lang/lang_" + currentlang + ".xml")) {
             // For Windows here need translate all strings from unicode to ansi.
             // Simple method - load xml file to string, convert and restore xml structure in memory from string
-#ifdef TARGET_WIN32
-            string winlang;
-            xmlLang.copyXmlToString(winlang);
-            xmlLang.clear();
-            winlang = utf8ToAnsi(winlang);
-            xmlLang.loadFromBuffer(winlang);
-#endif /* TARGET_WIN32 */
+//#ifdef TARGET_WIN32
+            //string winlang;
+            //xmlLang.copyXmlToString(winlang);
+            //xmlLang.clear();
+            //winlang = utf8ToAnsi(winlang);
+            //xmlLang.loadFromBuffer(winlang);
+//#endif /* TARGET_WIN32 */
         } else {
             // Modal dialog block mouse in setting mode. Just will be used default values.
             //ofSystemAlertDialog("Error language file load";
@@ -473,7 +473,7 @@ void ofApp::update() {
             // speak remaining time
             if (nextNotifyRemainSecs >= 0 && raceDuraSecs - relp <= nextNotifyRemainSecs) {
                 if (nextNotifyRemainSecs > 0 || lapAfterTmoEnabled == true) {
-                    if (nextNotifyRemainSecs > 5) notifySound.play();
+                    if (nextNotifyRemainSecs > 10) notifySound.play();
                     speakRemainTime(nextNotifyRemainSecs);
                 }
                 setNextNotifyRemainSecs(nextNotifyRemainSecs);
@@ -2481,7 +2481,7 @@ void speakLap(int camid, float sec, int num) {
 //--------------------------------------------------------------
 void setNextNotifyRemainSecs(int curr) {
     int next;
-    // ...180,120,60,30,5..1,0
+    // ...180,120,60,30,10..1,0
     if (curr > 60) {
         if (curr % 60 == 0) {
             next = curr - 60;
@@ -2490,6 +2490,16 @@ void setNextNotifyRemainSecs(int curr) {
         }
     } else if (curr > 30) {
         next = 30;
+    } else if (curr > 10) {
+        next = 10;
+    } else if (curr > 9) {
+        next = 9;
+    } else if (curr > 8) {
+        next = 8;
+    } else if (curr > 7) {
+        next = 7;
+    } else if (curr > 6) {
+        next = 6;
     } else if (curr > 5) {
         next = 5;
     } else if (curr > 4) {
@@ -2516,15 +2526,15 @@ void speakRemainTime(int sec) {
     if (sec == 0) {
         xmlLang.getValue("lang:saytimeover","Timeover");
     } else {
-        if (sec > 5) {
-            str += xmlLang.getValue("lang:sayremainprefix","") + " ";
+        if (sec > 10) {
+            str += xmlLang.getValue("lang:sayremainprefix","");
             if (sec >= 60 && sec % 60 == 0) {
                 // minute
-                str += ofToString(min);
+                str += " " + ofToString(min);
                 str += " " + xmlLang.getValue("lang:min2","minutes");
             } else {
                 // second
-                str += ofToString(sec);
+                str += " " + ofToString(sec);
                 str += " " + xmlLang.getValue("lang:sec3","seconds");
             }
             str += " " + xmlLang.getValue("lang:sayremainpostfix","");
@@ -2535,19 +2545,19 @@ void speakRemainTime(int sec) {
     // internationalization
     // English
     if (currentlang == "en") {
-        if (min == 1) str = regex_replace(str, regex("minutes"), "minute");
-        if (sec > 5) str += "to go";
+        if (min == 1) ofStringReplace(str,"minutes","minute");
+        if (sec > 10) str += "to go";
     }
     // Russian
     if (currentlang == "ru") {
-        if (min == 1) str = regex_replace(str, regex("1"), "одна");
-        if (min == 2) str = regex_replace(str, regex("2"), "две");
-        if (min % 10 == 1 && min > 20) str = regex_replace(str, regex("1 "), "0 одна ");
-        if (min % 10 == 2 && min > 20) str = regex_replace(str, regex("2 "), "0 две ");
-        if ((min % 10 > 1 && min % 10 < 5) && (min < 10 || min > 20)) str = regex_replace(str, regex("минут"), "минуты");
+        if (min == 1) ofStringReplace(str,"1","одна");
+        if (min == 2) ofStringReplace(str,"2","две");
+        if (min % 10 == 1 && min > 20) ofStringReplace(str,"1 ","0 одна ");
+        if (min % 10 == 2 && min > 20) ofStringReplace(str,"2 ","0 две ");
+        if ((min % 10 > 1 && min % 10 < 5) && (min < 10 || min > 20)) ofStringReplace(str,"минут","минуты");
         if ((min == 1) || (min % 10 == 1 && min > 20)) {
-            str = regex_replace(str, regex("лось"), "лась");
-            str = regex_replace(str, regex("минут"), "минута");
+            ofStringReplace(str,"лось","лась");
+            ofStringReplace(str,"минут","минута");
         }
     }
     // Japanese
@@ -3680,8 +3690,9 @@ string utf8ToAnsi(string utf8) {
     string ansi;
 
     // utf8 -> wchar
-    ulen = MultiByteToWideChar(CP_UTF8, 0, utf8.c_str(), utf8.size() + 1, NULL, 0);
-    ubuf = new wchar_t[ulen];
+    ulen = MultiByteToWideChar(CP_UTF8, 0, utf8.c_str(), utf8.size() + 1, NULL, NULL);
+    //ubuf = new wchar_t[ulen];
+    ubuf = SysAllocStringLen(NULL, ulen);
     MultiByteToWideChar(CP_UTF8, 0, utf8.c_str(), utf8.size() + 1, ubuf, ulen);
     // wchar -> ansi
     alen = WideCharToMultiByte(CP_ACP, 0, ubuf, -1, NULL, 0, NULL, NULL);
@@ -3701,7 +3712,7 @@ string ansiToUtf8(string ansi) {
     string utf8;
 
     // ansi -> wchar
-    alen = MultiByteToWideChar(CP_THREAD_ACP, 0, ansi.c_str(), ansi.size() + 1, NULL, 0);
+    alen = MultiByteToWideChar(CP_THREAD_ACP, 0, ansi.c_str(), ansi.size() + 1, NULL, NULL);
     abuf = new wchar_t[alen];
     MultiByteToWideChar(CP_THREAD_ACP, 0, ansi.c_str(), ansi.size() + 1, abuf, alen);
     // wchar -> utf8
