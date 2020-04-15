@@ -3691,8 +3691,7 @@ string utf8ToAnsi(string utf8) {
 
     // utf8 -> wchar
     ulen = MultiByteToWideChar(CP_UTF8, 0, utf8.c_str(), utf8.size() + 1, NULL, NULL);
-    //ubuf = new wchar_t[ulen];
-    ubuf = SysAllocStringLen(NULL, ulen);
+    ubuf = new wchar_t[ulen];
     MultiByteToWideChar(CP_UTF8, 0, utf8.c_str(), utf8.size() + 1, ubuf, ulen);
     // wchar -> ansi
     alen = WideCharToMultiByte(CP_ACP, 0, ubuf, -1, NULL, 0, NULL, NULL);
