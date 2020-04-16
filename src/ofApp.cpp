@@ -1734,7 +1734,7 @@ void changeCameraLabel(int camid) {
 #ifdef TARGET_WIN32
     ofSetFullscreen(false);
 #endif /* TARGET_WIN32 */
-    str = ofTrim(ofSystemTextBoxDialog(strhead, str));
+    str = ofSystemTextBoxDialog(strhead, str);
     if (str.length() > 0) {
         camView[camid - 1].labelString = str;
         savePilotsFile();
@@ -1781,7 +1781,7 @@ void changeCameraIconPath(int camid, string path, bool synclabel) {
         camView[idx].iconImage.clear();
         camView[idx].iconImage.load(path);
         if (synclabel) {
-            camView[camid - 1].labelString = ofTrim(file.getBaseName());
+            camView[camid - 1].labelString = file.getBaseName();
             savePilotsFile();
         }
     } else {
