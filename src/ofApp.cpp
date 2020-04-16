@@ -264,15 +264,6 @@ void loadLangFile() {
     xmlLang.clear();
     if (currentlang != "en") {
         if (xmlLang.loadFile("lang/lang_" + currentlang + ".xml")) {
-            // For Windows here need translate all strings from unicode to ansi.
-            // Simple method - load xml file to string, convert and restore xml structure in memory from string
-//#ifdef TARGET_WIN32
-            //string winlang;
-            //xmlLang.copyXmlToString(winlang);
-            //xmlLang.clear();
-            //winlang = utf8ToAnsi(winlang);
-            //xmlLang.loadFromBuffer(winlang);
-//#endif /* TARGET_WIN32 */
         } else {
             // Modal dialog block mouse in setting mode. Just will be used default values.
             //ofSystemAlertDialog("Error language file load";
@@ -982,7 +973,7 @@ void drawCameraLapTime(int idx, bool issub) {
     } else {
         // not finished
         if (laps == 1 && useStartGate == true) {
-            sout = xmlLang.getValue("lang:started","Started");
+            sout = ofToLower(xmlLang.getValue("lang:started","Started"));
         } else {
             sout = xmlLang.getValue("lang:lap","Lap") + ofToString(useStartGate == true ? laps - 1 : laps);
             sout += ": " + getLapStr(camView[i].lastLapTime) + xmlLang.getValue("lang:sec1","s");
@@ -1742,8 +1733,6 @@ void changeCameraLabel(int camid) {
     strhead = xmlLang.getValue("lang:camera","Camera") + ofToString(camid) + " - " + xmlLang.getValue("lang:label","Label");
 #ifdef TARGET_WIN32
     ofSetFullscreen(false);
-    str = ansiToUtf8(str);
-    strhead = ansiToUtf8(strhead);
 #endif /* TARGET_WIN32 */
     str = ofTrim(ofSystemTextBoxDialog(strhead, str));
     if (str.length() > 0) {
@@ -2331,9 +2320,6 @@ void recvOscCameraString(int camid, string method, string argstr) {
     }
     else if (method == "label") {
         string str = argstr;
-#ifdef TARGET_WIN32
-        str = utf8ToAnsi(str);
-#endif /* TARGET_WIN32 */
         camView[camid - 1].labelString = str;
         autoSelectCameraIcon(camid, str);
     }
@@ -2463,7 +2449,7 @@ void speakLap(int camid, float sec, int num) {
     }
     ssec = getLapStr(sec);
     if (num > 0) {
-        sout += xmlLang.getValue("lang:lap","Lap");
+        sout += ofToLower(xmlLang.getValue("lang:lap","Lap"));
         sout += " " + ofToString(num - (useStartGate == true ? 1 : 0)) + ", ";
     }
     sout += ssec;
@@ -3554,7 +3540,7 @@ void drawHelpBody(int line) {
     drawULineBlock(blk1, blk4, line + 1, szb, szl);
     ofSetColor(myColorWhite);
     value = (raceDuraSecs <= 0) ? xmlLang.getValue("lang:nolimit","No Limit") : getTimeString(raceDuraSecs);
-    value += ", " + xmlLang.getValue("lang:laps","Laps") + ": " + ofToString(raceDuraLaps);
+    value += ", " + ofToLower(xmlLang.getValue("lang:laps","Laps")) + ": " + ofToString(raceDuraLaps);
     drawStringBlock(&myFontOvlayP, xmlLang.getValue("lang:setraceopts","Set Race Duration (Time, Laps)"), blk1, line, ALIGN_LEFT, szb, szl);
     drawStringBlock(&myFontOvlayP, value, blk2, line, ALIGN_CENTER, szb, szl);
     drawStringBlock(&myFontOvlayP, xmlLang.getValue("lang:cursorkeys","Cursor Keys"), blk3, line, ALIGN_CENTER, szb, szl);
@@ -3681,52 +3667,6 @@ void drawOverlayMessage() {
     drawOverlayMessageCore(font, msg);
 }
 
-#ifdef TARGET_WIN32
-//--------------------------------------------------------------
-string utf8ToAnsi(string utf8) {
-    int ulen, alen;
-    wchar_t* ubuf;
-    char* abuf;
-    string ansi;
-
-    // utf8 -> wchar
-    ulen = MultiByteToWideChar(CP_UTF8, 0, utf8.c_str(), utf8.size() + 1, NULL, NULL);
-    ubuf = new wchar_t[ulen];
-    MultiByteToWideChar(CP_UTF8, 0, utf8.c_str(), utf8.size() + 1, ubuf, ulen);
-    // wchar -> ansi
-    alen = WideCharToMultiByte(CP_ACP, 0, ubuf, -1, NULL, 0, NULL, NULL);
-    abuf = new char[alen];
-    WideCharToMultiByte(CP_ACP, 0, ubuf, ulen, abuf, alen, NULL, NULL);
-    ansi = abuf;
-
-    delete[] ubuf;
-    delete[] abuf;
-    return ansi;
-}
-
-string ansiToUtf8(string ansi) {
-    int alen, ulen;
-    wchar_t* abuf;
-    char* ubuf;
-    string utf8;
-
-    // ansi -> wchar
-    alen = MultiByteToWideChar(CP_THREAD_ACP, 0, ansi.c_str(), ansi.size() + 1, NULL, NULL);
-    abuf = new wchar_t[alen];
-    MultiByteToWideChar(CP_THREAD_ACP, 0, ansi.c_str(), ansi.size() + 1, abuf, alen);
-    // wchar -> utf8
-    ulen = WideCharToMultiByte(CP_UTF8, 0, abuf, -1, NULL, 0, NULL, NULL);
-    ubuf = new char[ulen];
-    WideCharToMultiByte(CP_UTF8, 0, abuf, alen + 1, ubuf, ulen, NULL, NULL);
-    utf8 = ubuf;
-
-    delete[] abuf;
-    delete[] ubuf;
-
-    return utf8;
-}
-#endif /* TARGET_WIN32 */
-
 //--------------------------------------------------------------
 void toggleQrReader() {
     if (qrEnabled == false) {
@@ -3761,9 +3701,6 @@ void processQrReader() {
                 camView[qrCamIndex].qrScanned = true;
                 beepSound.play();
                 string label = ofTrim(zxres.getText());
-#ifdef TARGET_WIN32
-                label = utf8ToAnsi(label);
-#endif /* TARGET_WIN32 */
                 camView[qrCamIndex].labelString = label;
                 savePilotsFile();
                 autoSelectCameraIcon(qrCamIndex + 1, label);
