@@ -2457,7 +2457,7 @@ void speakLap(int camid, float sec, int num) {
     // English
     if (currentlang == "en") sout += " seconds";
     // Russian
-    if (currentlang == "ru") sout = regex_replace(sout, regex("(\\d).(\\d)"), "$1 $2");
+    if (currentlang == "ru") ofStringReplace(sout,"."," ");
     // Japanese
     if (currentlang == "jp") sout = regex_replace(sout, regex("(\\d).(\\d)(\\d)"), "$1秒$2 $3");
     // Put your language definition here
