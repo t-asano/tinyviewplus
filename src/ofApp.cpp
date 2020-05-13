@@ -2439,25 +2439,23 @@ void speakLap(int camid, float sec, int num) {
     if (camid < 1 || camid > cameraNum || sec == 0.0) {
         return;
     }
-    string ssec, sout;
-    sout = camView[camid - 1].labelString + ", ";
+    string sout = camView[camid - 1].labelString + ", ";
     sout = regex_replace(sout, regex("(" + xmlLang.getValue("lang:pilot","Pilot") + ")(\\d)"), "$1 $2");
     if (useStartGate == true && num == 1) {
         sout += xmlLang.getValue("lang:started","Started");
         speakAny(currentlang, sout);
         return;
     }
-    ssec = getLapStr(sec);
     if (num > 0) {
         sout += ofToLower(xmlLang.getValue("lang:lap","Lap"));
         sout += " " + ofToString(num - (useStartGate == true ? 1 : 0)) + ", ";
     }
-    sout += ssec;
+    sout += getLapStr(sec);
     // internationalization
     // English
     if (currentlang == "en") sout += " seconds";
     // Russian
-    if (currentlang == "ru") ofStringReplace(sout,"."," ");
+    if (currentlang == "ru") sout = regex_replace(sout, regex("(\\d).(\\d{2})"), "$1 $2");
     // Japanese
     if (currentlang == "jp") sout = regex_replace(sout, regex("(\\d).(\\d)(\\d)"), "$1秒$2 $3");
     // Put your language definition here
