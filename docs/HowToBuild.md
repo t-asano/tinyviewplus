@@ -107,6 +107,11 @@ std::string convertWideToNarrow( const wchar_t *s, char dfault = '?', const std:
 }
 ```
 
+5. アプリ起動時にコンソールが表示されるのを禁止する
+   - tinyviewplusプロジェクトのプロパティを開く
+   - [構成プロパティ] -> [リンカ] -> [詳細] と進む
+   - 「全ての構成」「すべてのプラットフォーム」に対して、「エントリポイント」として「mainCRTStartup」を指定する
+
 ### Linuxの場合(実験的)
 
 カメラが二重に検出されてしまうバグがあるので、openFrameworksの修正が必要。  

@@ -19,8 +19,6 @@ Tiny View Plus is a FPV multi-view and lap timing system. It works on PC with UV
 </tr>
 </table>
 
-To build from source code, [openFrameworks](http://openframeworks.cc/ja/) v0.10.1 is required.
-
 ## Install
 
 Attention: We are not responsible for any problems caused by running the application.
@@ -98,9 +96,9 @@ On Windows, if multiple receivers are connected to same USB hub, only one of the
 | key | Function | Default value |
 |---|---|---|
 | A | Set AR lap timer mode (Normal/Loose/Off) (\*1) | Normal |
-| D | Set race duration time (0\~36,000s) and laps (1\~10,000) | 0s (No limit), 10 laps |
+| Left/Right,Up/Down,D | Set race duration time (0\~36,000s) and laps (1\~10,000) | 0s (No limit), 10 laps |
 | W | Set wait for lap after time limit (On/Off) | Off |
-| M | Set minimum lap time (1~100s) | 3s |
+| PgUp/PgDown | Set minimum lap time (1~100s) | 3s |
 | G | Set staggered start (On/Off) (\*2) | Off |
 | L | Set lap history view (On/Off) | Off |
 | Space | Start/Stop race | - |
@@ -176,14 +174,14 @@ You can measure the lap time by using AR marker.
 ![argate_single.png](docs/img/argate_single.png)
 ![argate_multi.png](docs/img/argate_multi.png)
 
-Please place 4 to 8 markers around the gate. Also make sure that the top of the marker faces the center of the gate. Following four types of markers are supported. It does not matter if only one type is placed as shown above.
+Please place 8 or more markers around the gate. Also make sure that the top of the marker faces the center of the gate. Following four types of markers are supported. It does not matter if only one type is placed as shown above.
 
 - [marker_00_main_a.png](docs/img/marker_00_main_a.png)
 - [marker_01_main_b.png](docs/img/marker_01_main_b.png)
 - [marker_02_main_c.png](docs/img/marker_02_main_c.png)
 - [marker_03_main_d.png](docs/img/marker_03_main_d.png)
 
-The size of the marker should be 150mm per side. Larger marker will be suitable for high speed race. If marker recognition is not successful, please try increasing the size of the marker, using multiple types, or placing them in a brighter place.
+The size of the marker should be 120-150mm per side. Larger marker will be suitable for higher speed range. If marker recognition is not successful, please try increasing the size of the marker or placing them in a brighter place.
 
 Lap time will be measured only during the race. After detecting two or more correctly oriented markers simultaneously, when the marker disappears from the screen, lap time will be confirmed. However, if the direction of the last displayed marker is incorrect, the measurement will be canceled.
 
