@@ -181,6 +181,11 @@ Please place 8 or more markers around the gate. Also make sure that the top of t
 
 The size of the marker should be 120-150mm per side. Larger marker will be suitable for higher speed range. If marker recognition is not successful, please try increasing the size of the marker or placing them in a brighter place.
 
+Following are gate design  prototypes.
+- Normal gate : [Whole (A0)](docs/gate/MainGate_TypeA.pdf) [Part (A4)](docs/gate/MainGate_TypeA_A4.pdf)
+- Gate for high speed : [Whore (A0)](docs/gate/MainGate_TypeC.pdf) [Part (A3)](docs/gate/MainGate_TypeC_A3.pdf)
+- [Others](docs/gate)
+
 Lap time will be measured only during the race. After detecting two or more correctly oriented markers simultaneously, when the marker disappears from the screen, lap time will be confirmed. However, if the direction of the last displayed marker is incorrect, the measurement will be canceled.
 
 Depending on the environment, recognition processing of markers might be heavy. In that case, please disable the function.

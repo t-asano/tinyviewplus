@@ -184,8 +184,8 @@ ARマーカーを利用して、ラップタイムを計測できます。
 
 以下は、試作中のゲートの印刷データです。ご活用ください。
 
-- 標準ゲート : [全体(A0)](docs/gate/MainGate_TypeA.pdf) [分割(A4)](docs/gate/MainGate_TypeA_A4.pdf)
-- 高速レース用ゲート : [全体(A0)](docs/gate/MainGate_TypeC.pdf) [分割(A4)](docs/gate/MainGate_TypeC_A4.pdf)
+- 標準ゲート : [全体 (A0)](docs/gate/MainGate_TypeA.pdf) [分割 (A4)](docs/gate/MainGate_TypeA_A4.pdf)
+- 高速レース用ゲート : [全体 (A0)](docs/gate/MainGate_TypeC.pdf) [分割 (A3)](docs/gate/MainGate_TypeC_A3.pdf)
 - [その他](docs/gate)
 
 ラップタイムの計測は、レース中にのみ行われます。同時に2個以上の正しい向きのマーカーを検出した後、画面からマーカーが消えたタイミングでラップタイムが確定します。ただし、最後に映っていたマーカーの向きが正しくない(ゲートの外側を通った等の)場合は、計測の対象外となります。
