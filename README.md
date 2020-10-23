@@ -32,7 +32,7 @@ If you want to build from source code, please refer to [this document](docs/HowT
     - Run following command  on the "Terminal" app.
     - ```xattr -c ~/Downloads/tinyviewplus_*_macos64bit.zip```
 3. Extract zip file.
-4. Place app file in the "Application" folder.
+4. Place app file in the "Application" folder.  
     ![install_mac.png](docs/img/install_mac.png)
     - If you place it anywhere else, file write functions will not work.
 
