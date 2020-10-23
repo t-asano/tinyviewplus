@@ -6,7 +6,7 @@ Tiny View Plus is a FPV multi-view and lap timing system. It works on PC with UV
 
 ![tinyviewplus](docs/img/overview.jpg)
 
-**(\*)On Windows, it is impossible to connect multiple receivers to a USB hub. Please connect only one receiver to each USB port built in PC.**
+**(\*)On Windows, please connect only one receiver to each USB port built in PC.**
 
 ## Environment
 
@@ -28,21 +28,19 @@ If you want to build from source code, please refer to [this document](docs/HowT
 ### macOS
 
 1. Download a zip file from [Release page](https://github.com/t-asano/tinyviewplus/releases).
-
-2. Remove extended file attribute from zip file on the "Terminal" app.
-    - $ xattr -c ~/Downloads/tinyviewplus_*_macos64bit.zip
-    - It is absolutely reuired on macOS Catalina.
-3. Extract zip file and place app file in the "Application" folder.  
-    - If you place it anywhere else, functions that writing to file will not work correctly.
+2. Remove extended file attribute from zip file.
+    - Run following command  on the "Terminal" app.
+    - ```xattr -c ~/Downloads/tinyviewplus_*_macos64bit.zip```
+3. Extract zip file.
+4. Place app file in the "Application" folder.
     ![install_mac.png](docs/img/install_mac.png)
+    - If you place it anywhere else, file write functions will not work.
 
 ### Windows
 
 1. Download a zip file from [Release page](https://github.com/t-asano/tinyviewplus/releases).
 2. Extract it and place its contents in the proper place.
-3. Install [Microsoft Visual C++ Redistributable for Visual Studio 2015, 2017 and 2019(vc_redist.x64.exe)
-](https://www.microsoft.com/ja-jp/download/details.aspx?id=53587)  
-(https://support.microsoft.com/en-us/help/2977003/the-latest-supported-visual-c-downloads)
+3. Install [Microsoft Visual C++ Redistributable for Visual Studio 2015, 2017 and 2019(vc_redist.x64.exe)](https://support.microsoft.com/en-us/help/2977003/the-latest-supported-visual-c-downloads).
 
 ## Usage
 

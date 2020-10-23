@@ -6,13 +6,13 @@ Tiny View Plusはラップ計測に対応したFPVマルチビューアーです
 
 ![tinyviewplus](docs/img/overview.jpg)
 
-**(※)Windowsの場合、USBハブに複数の受信機を接続すると正しく動作しないことがあります。PC本体のUSBポートに1つにつき、受信機1台のみを接続してください。PC内部でハブが接続されている場合もあり、その場合には正しく動作しません。**
+**(※)Windowsの場合、USBハブに複数の受信機を接続すると正しく動作しないことがあります。USBポート1つにつき、受信機1台のみを接続してください。ただし、PC内部でハブが接続されている場合もあり、その場合には正しく動作しません。**
 
 ## 動作環境
 
 <table>
 <tr>
-<td>OS</td><td>macOS (Mojave推奨)<br/>Windows (10 64bit推奨)</td>
+<td>OS</td><td>macOS (Catalina推奨)<br/>Windows (10 64bit推奨)</td>
 </tr>
 <tr>
 <td>受信機</td><td>Eachine ROTG02<br/>Eachine ROTG01 Pro<br/>Eachine ROTG01</td>
@@ -30,19 +30,19 @@ Tiny View Plusはラップ計測に対応したFPVマルチビューアーです
 ### macOSの場合
 
 1. [リリースページ](https://github.com/t-asano/tinyviewplus/releases)よりzipファイルをダウンロード
-2. macOSの「ターミナル」でzipファイルに付いている拡張属性を削除
-    - $ xattr -c ~/Downloads/tinyviewplus_*_macos64bit.zip
-    - macOS Catalinaで起動するためには必須
-3. zipファイルに含まれるアプリ本体を「アプリケーション」フォルダの下に配置
-    - それ以外の場所に配置すると、ファイルの書き込みを伴う機能が正しく動作しません。  
+2. zipファイルに付いている拡張属性を削除
+    - 以下のコマンドをmacOSの「ターミナル」で実行
+    - ```xattr -c ~/Downloads/tinyviewplus_*_macos64bit.zip```
+3. zipファイルを展開
+4. アプリ本体を「アプリケーション」フォルダの下に配置
     ![install_mac.png](docs/img/install_mac.png)
+    - 別の場所に配置すると、設定保存機能などが正しく動作しません。
 
 ### Windowsの場合
 
 1. [リリースページ](https://github.com/t-asano/tinyviewplus/releases)よりzipファイルをダウンロード
 2. zipファイルを展開して適当な場所に配置
-3. [Visual Studio 2015、2017、および 2019 用 Microsoft Visual C++ 再頒布可能パッケージ(vc_redist.x64.exe)
-](https://support.microsoft.com/ja-jp/help/2977003/the-latest-supported-visual-c-downloads)をインストール
+3. [Visual Studio 2015、2017、および 2019 用 Microsoft Visual C++ 再頒布可能パッケージ(vc_redist.x64.exe)](https://support.microsoft.com/ja-jp/help/2977003/the-latest-supported-visual-c-downloads)をインストール
 
 ## 使い方
 
