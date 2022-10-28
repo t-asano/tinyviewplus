@@ -54,6 +54,15 @@ function test() {
   sendOsc("/v1/camera/2/label", "Pilot2", wait += step);
   sendOsc("/v1/camera/3/label", "Pilot3", wait += step);
   sendOsc("/v1/camera/4/label", "Pilot4", wait += step);
+  // camera lap
+  sendOsc("/v1/camera/1/lap", "add", wait += step);
+  sendOsc("/v1/camera/2/lap", "add", wait += step_lap);
+  sendOsc("/v1/camera/3/lap", "add", wait += step_lap);
+  sendOsc("/v1/camera/4/lap", "add", wait += step_lap);
+  sendOsc("/v1/camera/1/lap", "del", wait += step_lap);
+  sendOsc("/v1/camera/2/lap", "del", wait += step);
+  sendOsc("/v1/camera/3/lap", "del", wait += step);
+  sendOsc("/v1/camera/4/lap", "del", wait += step);
   // camera laptime
   sendOsc("/v1/camera/1/laptime", 62.09, wait += step);
   sendOsc("/v1/camera/2/laptime", 56.20, wait += step_lap);

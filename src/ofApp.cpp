@@ -2247,7 +2247,14 @@ void recvOscCameraString(int camid, string method, string argstr) {
     if (camid < 1 || camid > cameraNum) {
         return;
     }
-    if (method == "solo") {
+    if (method == "lap") {
+        if (argstr == "add") {
+            pushLapRecord(camid, ofGetElapsedTimef());
+        }
+        if (argstr == "del") {
+            popLapRecord(camid);
+        }
+    } else if (method == "solo") {
         if (cameraIdxSolo != (camid - 1) && argstr == "on") {
             toggleCameraSolo(camid);
         }

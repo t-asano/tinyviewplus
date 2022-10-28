@@ -107,3 +107,4 @@ icon.rc
 *vcxproj*
 addons/
 bin/data/settings.xml
+package-lock.json
