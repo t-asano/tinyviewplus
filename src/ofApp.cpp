@@ -2483,7 +2483,7 @@ void speakAny(string lang, string text) {
     if (pid == 0) {
         // child process
         if (lang == "en") {
-            execlp("say", "", "-r", "240", "-v", "Victoria", text.c_str(), NULL);
+            execlp("say", "", "-r", "240", "-v", "Samantha", text.c_str(), NULL);
         }
         else if (lang == "jp") {
             execlp("say", "", "-r", "240", "-v", "Kyoko", text.c_str(), NULL);
