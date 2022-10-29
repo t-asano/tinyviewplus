@@ -38,12 +38,12 @@
 #define SNM_VIEW_BGIMG  "view:bgImage"
 #define SNM_VIEW_CAMTRM "view:camTrim"
 #define SNM_VIEW_CAMFRM "view:camFrame"
+#define SNM_VIEW_LAPHST "view:lapHistMode"
 #define SNM_RACE_ARMODE "race:arMode"
 #define SNM_RACE_DRSECS "race:duraSecs"
 #define SNM_RACE_DRLAPS "race:duraLaps"
 #define SNM_RACE_MINLAP "race:minLapTime"
 #define SNM_RACE_STAGGR "race:staggStart"
-#define SNM_RACE_DISPLH "race:dispLapHist"
 #define SNM_RACE_LAPTMO "race:lapAfterTmo"
 #define BTTN_FSCR_FILE  "system/button_fullscreen.png"
 #define BTTN_QUIT_FILE  "system/button_quit.png"
@@ -110,17 +110,20 @@
 #define LAP_HEIGHT      20
 #define LAP_MARGIN_X    20
 #define LAP_MARGIN_Y    80
+#define LAPHIST_MD_OFF  0
+#define LAPHIST_MD_IN   1
+#define LAPHIST_MD_OUT  2
 #define LAPHIST_HEIGHT  15
 #define LAPHIST_MARGIN  8
 #define FRAME_LINEWIDTH 8
 #define DFLT_FSCR_ENBLD false
 #define DFLT_CAM_TRIM   false
-#define DFLT_CAM_LAPHST false
+#define DFLT_CAM_LAPHST LAPHIST_MD_OFF
 #define DFLT_CAM_FRAMED false
 #define ALIGN_LEFT      0
 #define ALIGN_CENTER    1
 #define ALIGN_RIGHT     2
-#define HIDECUR_TIME    (FRAME_RATE * 3)
+#define HIDECUR_TIME    FRAME_RATE
 // overlay
 #define OVLMODE_NONE    0
 #define OVLMODE_HELP    1
@@ -347,7 +350,7 @@ void drawCamera(int);
 string getWatchString(float);
 void drawWatch();
 void drawInfo();
-void drawStringWithShadow(ofxTrueTypeFontUC*, ofColor, string, int, int);
+void drawStringWithShadow(ofxTrueTypeFontUC*, ofColor, ofColor, string, int, int);
 void drawSystemButtons();
 // input
 void keyPressedOverlayHelp(int);

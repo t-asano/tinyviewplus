@@ -34,7 +34,7 @@ int cameraNumVisible;
 int cameraIdxSolo;
 bool cameraTrimEnabled;
 bool fullscreenEnabled;
-bool cameraLapHistEnabled;
+int cameraLapHistMode;
 bool cameraFrameEnabled;
 int hideCursorTimer;
 // osc
@@ -100,7 +100,7 @@ void setupInit() {
     loadOverlayFont();
     cameraTrimEnabled = DFLT_CAM_TRIM;
     fullscreenEnabled = DFLT_FSCR_ENBLD;
-    cameraLapHistEnabled = DFLT_CAM_LAPHST;
+    cameraLapHistMode = DFLT_CAM_LAPHST;
     cameraFrameEnabled = DFLT_CAM_FRAMED;
     // splash
     logoLargeImage.load(LOGO_LARGE_FILE);
@@ -185,6 +185,8 @@ void loadSettingsFile() {
     cameraTrimEnabled = xmlSettings.getValue(SNM_VIEW_CAMTRM, cameraTrimEnabled);
     // camera frame visibility
     cameraFrameEnabled = xmlSettings.getValue(SNM_VIEW_CAMFRM, cameraFrameEnabled);
+    // lap history view
+    cameraLapHistMode = xmlSettings.getValue(SNM_VIEW_LAPHST, cameraLapHistMode);
 
     // RACE
     // AR lap timer mode
@@ -197,8 +199,6 @@ void loadSettingsFile() {
     minLapTime = xmlSettings.getValue(SNM_RACE_MINLAP, minLapTime);
     // staggered start
     useStartGate = xmlSettings.getValue(SNM_RACE_STAGGR, useStartGate);
-    // lap history view
-    cameraLapHistEnabled = xmlSettings.getValue(SNM_RACE_DISPLH, cameraLapHistEnabled);
 }
 
 void saveSettingsFile() {
@@ -217,6 +217,8 @@ void saveSettingsFile() {
     xmlSettings.setValue(SNM_VIEW_CAMTRM, cameraTrimEnabled);
     // camera frame visibility
     xmlSettings.setValue(SNM_VIEW_CAMFRM, cameraFrameEnabled);
+    // lap history view mode
+    xmlSettings.setValue(SNM_VIEW_LAPHST, cameraLapHistMode);
 
     // RACE
     // AR lap timer mode
@@ -229,8 +231,6 @@ void saveSettingsFile() {
     xmlSettings.setValue(SNM_RACE_MINLAP, minLapTime);
     // staggered start
     xmlSettings.setValue(SNM_RACE_STAGGR, useStartGate);
-    // lap history view
-    xmlSettings.setValue(SNM_RACE_DISPLH, cameraLapHistEnabled);
 
     xmlSettings.saveFile(SETTINGS_FILE);
 }
@@ -793,7 +793,7 @@ void drawCameraARMarker(int idx, bool isSub) {
     ofSetLineWidth(ARAP_RECT_LINEW);
     camView[i].aruco.draw2dGate(myColorYellow, myColorAlert, false);
     ofPopMatrix();
-    if (cameraLapHistEnabled == true) {
+    if (cameraLapHistMode == LAPHIST_MD_IN) {
         return;
     }
     // meter
@@ -908,7 +908,7 @@ void drawCameraPilot(int cidx, bool issub) {
     }
     x = min(ofGetWidth(), camView[cidx].posX + camView[cidx].width) - (1 + fontlp->stringWidth(str));
     x = x - (issub ? 5 : 10) - offset;
-    drawStringWithShadow(fontlp, myColorWhite, str, x, camView[cidx].labelPosY + offset);
+    drawStringWithShadow(fontlp, myColorWhite, myColorBGMiddle, str, x, camView[cidx].labelPosY + offset);
 }
 
 //--------------------------------------------------------------
@@ -929,21 +929,21 @@ void drawCameraLapTime(int idx, bool issub) {
         // race/laps finished
         sout = "Laps: " + ofToString((useStartGate == true && laps > 0) ? laps - 1 : laps);
         if (issub) {
-            drawStringWithShadow(&myFontLapSub, myColorWhite, sout,
+            drawStringWithShadow(&myFontLapSub, myColorWhite, myColorBGMiddle, sout,
                                  camView[i].lapPosX + offset, camView[i].lapPosY + offset);
         } else {
-            drawStringWithShadow(&myFontLap, myColorWhite, sout,
+            drawStringWithShadow(&myFontLap, myColorWhite, myColorBGMiddle, sout,
                                  camView[i].lapPosX, camView[i].lapPosY + offset);
         }
         float blap = getBestLap(i);
         if (blap != 0) {
             sout = "BestLap: " + getLapStr(blap) + "s";
             if (issub) {
-                drawStringWithShadow(&myFontLapSub, myColorWhite, sout,
+                drawStringWithShadow(&myFontLapSub, myColorWhite, myColorBGMiddle, sout,
                                      camView[i].lapPosX + offset,
                                      camView[i].lapPosY + offset + (LAP_HEIGHT / 2) + 5);
             } else {
-                drawStringWithShadow(&myFontLap, myColorWhite, sout,
+                drawStringWithShadow(&myFontLap, myColorWhite, myColorBGMiddle, sout,
                                      camView[i].lapPosX,
                                      camView[i].lapPosY + offset + LAP_HEIGHT + 10);
             }
@@ -954,11 +954,11 @@ void drawCameraLapTime(int idx, bool issub) {
                 sout += getWatchString(camView[i].prevElapsedSec - WATCH_COUNT_SEC);
             }
             if (issub) {
-                drawStringWithShadow(&myFontLapSub, myColorWhite, sout,
+                drawStringWithShadow(&myFontLapSub, myColorWhite, myColorBGMiddle, sout,
                                      camView[i].lapPosX + offset,
                                      camView[i].lapPosY + offset + LAP_HEIGHT + 10);
             } else {
-                drawStringWithShadow(&myFontLap, myColorWhite, sout,
+                drawStringWithShadow(&myFontLap, myColorWhite, myColorBGMiddle, sout,
                                      camView[i].lapPosX,
                                      camView[i].lapPosY + offset + (LAP_HEIGHT * 2) + 20);
             }
@@ -972,14 +972,14 @@ void drawCameraLapTime(int idx, bool issub) {
             sout += ": " + getLapStr(camView[i].lastLapTime) + "s";
         }
         if (issub) {
-            drawStringWithShadow(&myFontLapSub, myColorWhite, sout,
+            drawStringWithShadow(&myFontLapSub, myColorWhite, myColorBGMiddle, sout,
                                  camView[i].lapPosX + offset, camView[i].lapPosY + offset);
         } else {
-            drawStringWithShadow(&myFontLap, myColorWhite, sout,
+            drawStringWithShadow(&myFontLap, myColorWhite, myColorBGMiddle, sout,
                                  camView[i].lapPosX, camView[i].lapPosY + offset);
         }
         // history
-        if (cameraLapHistEnabled == false || laps < 2 || camView[i].moveSteps > 0) {
+        if (cameraLapHistMode == LAPHIST_MD_OFF || laps < 2 || camView[i].moveSteps > 0) {
             return;
         }
         drawCameraLapHistory(i, issub);
@@ -992,18 +992,29 @@ void drawCameraLapHistory(int camidx, bool issub) {
     float lap;
     int lapidx = camView[camidx].totalLaps - 2;
     int offset = (cameraFrameEnabled == true) ? FRAME_LINEWIDTH : 0;
-    int height = LAPHIST_HEIGHT;
+    int height = issub ? (LAPHIST_HEIGHT / 2) : LAPHIST_HEIGHT;
     int marg = LAPHIST_MARGIN;
-    int posy = camView[camidx].lapPosY + marg + offset;
     int scry = ofGetHeight() - 1;
+    int posy;
+    bool isout;
 
-    if (issub) {
-        height = height / 2;
+    if (cameraLapHistMode == LAPHIST_MD_OUT && cameraIdxSolo == -1) {
+        isout = true;
+        posy = camView[camidx].posY + camView[camidx].height + marg;
+    } else {
+        isout = false;
+        posy = camView[camidx].lapPosY + marg + offset;
     }
     for (; lapidx >= 0; lapidx--) {
         posy += height + marg;
-        if (posy + marg >= min(camView[camidx].posY + camView[camidx].height, scry) - offset) {
-            break;
+        if (isout) {
+            if (posy + marg >= scry - offset) {
+                break;
+            }
+        } else {
+            if (posy + marg >= min(camView[camidx].posY + camView[camidx].height, scry) - offset) {
+                break;
+            }
         }
         lap = camView[camidx].lapHistLapTime[lapidx];
         if (useStartGate == true) {
@@ -1017,9 +1028,9 @@ void drawCameraLapHistory(int camidx, bool issub) {
         }
         text += ": " + getLapStr(lap) + "s";
         if (issub) {
-            drawStringWithShadow(&myFontLapSub, myColorWhite, text, camView[camidx].lapPosX + offset, posy);
+            drawStringWithShadow(&myFontLapSub, myColorWhite, myColorBGMiddle, text, camView[camidx].lapPosX + offset, posy);
         } else {
-            drawStringWithShadow(&myFontLapHist, myColorWhite, text, camView[camidx].lapPosX, posy);
+            drawStringWithShadow(&myFontLapHist, myColorWhite, myColorBGMiddle, text, camView[camidx].lapPosX, posy);
         }
     }
 }
@@ -1083,12 +1094,11 @@ void drawWatch() {
     }
     int x = (ofGetWidth() / 2) - (myFontInfo3m.stringWidth(str) / 2);
     x = (int)(x / 10) * 10;
-    drawStringWithShadow(&myFontInfo3m, myColorWhite, str, x, ofGetHeight() - 10);
+    drawStringWithShadow(&myFontInfo3m, myColorWhite, myColorBGDark, str, x, ofGetHeight() - 10);
 }
 
 //--------------------------------------------------------------
 void drawInfo() {
-    ofColor *tcolor;
     string str;
     int x, y;
     y = ofGetHeight() - (1 + 4);
@@ -1096,20 +1106,19 @@ void drawInfo() {
     if (tvpScene == SCENE_CAMS || overlayMode == OVLMODE_HELP || overlayMode == OVLMODE_RCRSLT) {
         ofSetColor(myColorWhite);
         logoSmallImage.draw(0, 0);
-        tcolor = &myColorWhite;
         // appinfo
         str = ofToString(APP_VER);
-        drawStringWithShadow(&myFontInfo1p, *tcolor, str, 4, y);
+        drawStringWithShadow(&myFontInfo1p, myColorWhite, myColorBGMiddle, str, 4, y);
         // date/time
         str = ofGetTimestampString("%F %T");
         x = ofGetWidth() - myFontInfo1m.stringWidth(str);
         x = (int)(x / 5) * 5;
-        drawStringWithShadow(&myFontInfo1m, *tcolor, str, x, y);
+        drawStringWithShadow(&myFontInfo1m, myColorWhite, myColorBGMiddle, str, x, y);
     }
 }
 
 //--------------------------------------------------------------
-void drawStringWithShadow(ofxTrueTypeFontUC *font, ofColor color, string str, int x, int y) {
+void drawStringWithShadow(ofxTrueTypeFontUC *font, ofColor color, ofColor bgcolor, string str, int x, int y) {
     // shadow
     ofRectangle rect;
     int margin = 4;
@@ -1118,7 +1127,7 @@ void drawStringWithShadow(ofxTrueTypeFontUC *font, ofColor color, string str, in
     rect.height = rect.height + (margin * 2);
     rect.x = x - margin;
     rect.y = rect.y - margin;
-    ofSetColor(myColorBGMiddle);
+    ofSetColor(bgcolor);
     ofDrawRectangle(rect);
     // string
     ofSetColor(color);
@@ -1179,7 +1188,7 @@ void ofApp::draw() {
     if (qrEnabled == true) {
         string str = "Scanning QR Code...";
         int x = (ofGetWidth() / 2) - (myFontInfo1p.stringWidth(str) / 2);
-        drawStringWithShadow(&myFontInfo1p, myColorYellow, str, x, ofGetHeight() - 10);
+        drawStringWithShadow(&myFontInfo1p, myColorYellow, myColorBGMiddle, str, x, ofGetHeight() - 10);
     }
     // overlay
     switch (overlayMode) {
@@ -1437,10 +1446,13 @@ void mouseReleasedOverlayNone(int x, int y, int button) {
         int xend = ofGetWidth() - 1;
         if (x >= (xend - 30) && x <= (xend -  10)) {
             ofExit();
+            return;
         } else if (x >= (xend - 60) && x <= (xend -  40)) {
             toggleFullscreen();
+            return;
         } else if (x >= (xend - 90) && x <= (xend -  70)) {
             setOverlayMode(OVLMODE_HELP);
+            return;
         }
     }
     // pilot
@@ -1912,7 +1924,14 @@ void setViewParams() {
                     camView[idx].heightTarget = ch;
                     camView[idx].posXTarget = (width / 2) - (cw / 2) + (cw + 2);
                     camView[idx].posYTarget = (height / 2) - (ch / 2);
-               }
+                }
+                // reset for lap history
+                if (cameraLapHistMode == LAPHIST_MD_OUT) {
+                    for (i = 1; i <= 3; i++) {
+                        idx = getCameraIdxNthVisibleAll(i);
+                        camView[idx].posYTarget = 0;
+                    }
+                }
             } else { // solo mode on
                 // main camera
                 idx = cameraIdxSolo;
@@ -2128,7 +2147,6 @@ void initConfig() {
     }
     cameraNumVisible = cameraNum;
     cameraIdxSolo = -1;
-    setViewParams();
     // camera icon, label, laptime
     for (i = 0; i < cameraNum; i++) {
         camView[i].iconImage.clear();
@@ -2139,8 +2157,9 @@ void initConfig() {
     // view mode
     cameraTrimEnabled = DFLT_CAM_TRIM;
     fullscreenEnabled = DFLT_FSCR_ENBLD;
-    cameraLapHistEnabled = DFLT_CAM_LAPHST;
+    cameraLapHistMode = DFLT_CAM_LAPHST;
     cameraFrameEnabled = DFLT_CAM_FRAMED;
+    setViewParams();
     // AR lap timer
     setOverlayMode(OVLMODE_NONE);
     arLapMode = DFLT_ARAP_MODE;
@@ -3085,12 +3104,21 @@ void toggleCameraFrame() {
 
 //--------------------------------------------------------------
 void toggleLapHistory() {
-    cameraLapHistEnabled = !cameraLapHistEnabled;
-    if (cameraLapHistEnabled == true) {
-        setOverlayMessage("Lap History View: On");
-    } else {
-        setOverlayMessage("Lap History View: Off");
+    switch (cameraLapHistMode) {
+        case LAPHIST_MD_OFF:
+            cameraLapHistMode = LAPHIST_MD_IN;
+            setOverlayMessage("Lap History View Mode: Inside");
+            break;
+        case LAPHIST_MD_IN:
+            cameraLapHistMode = LAPHIST_MD_OUT;
+            setOverlayMessage("Lap History View Mode: Outside");
+            break;
+        case LAPHIST_MD_OUT:
+            cameraLapHistMode = LAPHIST_MD_OFF;
+            setOverlayMessage("Lap History View Mode: Off");
+            break;
     }
+    setViewParams();
     saveSettingsFile();
 }
 
@@ -3535,7 +3563,17 @@ void drawHelpBody(int line) {
     ofSetColor(myColorDGray);
     drawULineBlock(blk1, blk4, line + 1, szb, szl);
     ofSetColor(myColorWhite);
-    value = cameraLapHistEnabled ? "On" : "Off";
+    switch (cameraLapHistMode) {
+        case LAPHIST_MD_OFF:
+            value = "Off";
+            break;
+        case LAPHIST_MD_IN:
+            value = "Inside";
+            break;
+        case LAPHIST_MD_OUT:
+            value = "Outside";
+            break;
+    }
     drawStringBlock(&myFontOvlayP, "Set Lap History View", blk1, line, ALIGN_LEFT, szb, szl);
     drawStringBlock(&myFontOvlayP, value, blk2, line, ALIGN_CENTER, szb, szl);
     drawStringBlock(&myFontOvlayP, "L", blk3, line, ALIGN_CENTER, szb, szl);
