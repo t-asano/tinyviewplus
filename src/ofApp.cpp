@@ -965,6 +965,7 @@ void drawCameraLapTime(int idx, bool issub) {
         }
     } else {
         // not finished
+        bool isout;
         if (laps == 1 && useStartGate == true) {
             sout = "Started";
         } else {
@@ -982,12 +983,17 @@ void drawCameraLapTime(int idx, bool issub) {
         if (cameraLapHistMode == LAPHIST_MD_OFF || laps < 2 || camView[i].moveSteps > 0) {
             return;
         }
-        drawCameraLapHistory(i, issub);
+        if (cameraLapHistMode == LAPHIST_MD_OUT && cameraNumVisible == 3 && cameraIdxSolo == -1) {
+            isout = true;
+        } else {
+            isout = false;
+        }
+        drawCameraLapHistory(i, issub, isout);
     }
 }
 
 //--------------------------------------------------------------
-void drawCameraLapHistory(int camidx, bool issub) {
+void drawCameraLapHistory(int camidx, bool issub, bool isout) {
     string text;
     float lap;
     int lapidx = camView[camidx].totalLaps - 2;
@@ -996,13 +1002,10 @@ void drawCameraLapHistory(int camidx, bool issub) {
     int marg = LAPHIST_MARGIN;
     int scry = ofGetHeight() - 1;
     int posy;
-    bool isout;
 
-    if (cameraLapHistMode == LAPHIST_MD_OUT && cameraIdxSolo == -1) {
-        isout = true;
+    if (isout) {
         posy = camView[camidx].posY + camView[camidx].height + marg;
     } else {
-        isout = false;
         posy = camView[camidx].lapPosY + marg + offset;
     }
     for (; lapidx >= 0; lapidx--) {

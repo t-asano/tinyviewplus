@@ -346,7 +346,7 @@ void drawCameraFrame(int);
 void drawCameraARMarker(int, bool);
 void drawCameraPilot(int, bool);
 void drawCameraLapTime(int, bool);
-void drawCameraLapHistory(int, bool);
+void drawCameraLapHistory(int, bool, bool);
 void drawCamera(int);
 string getWatchString(float);
 void drawWatch();
