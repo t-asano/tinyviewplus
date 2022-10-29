@@ -997,7 +997,7 @@ void drawCameraLapHistory(int camidx, bool issub, bool isout) {
     string text;
     float lap;
     int lapidx = camView[camidx].totalLaps - 2;
-    int offset = (cameraFrameEnabled == true) ? FRAME_LINEWIDTH : 0;
+    int frmsz = (cameraFrameEnabled == true) ? FRAME_LINEWIDTH : 0;
     int height = issub ? (LAPHIST_HEIGHT / 2) : LAPHIST_HEIGHT;
     int marg = LAPHIST_MARGIN;
     int scry = ofGetHeight() - 1;
@@ -1006,16 +1006,16 @@ void drawCameraLapHistory(int camidx, bool issub, bool isout) {
     if (isout) {
         posy = camView[camidx].posY + camView[camidx].height + marg;
     } else {
-        posy = camView[camidx].lapPosY + marg + offset;
+        posy = camView[camidx].lapPosY + marg + frmsz;
     }
     for (; lapidx >= 0; lapidx--) {
         posy += height + marg;
         if (isout) {
-            if (posy + marg >= scry - offset) {
+            if (posy + marg >= scry - (WATCH_HEIGHT + WATCH_OFFSET_Y)) {
                 break;
             }
         } else {
-            if (posy + marg >= min(camView[camidx].posY + camView[camidx].height, scry) - offset) {
+            if (posy + marg >= min(camView[camidx].posY + camView[camidx].height, scry) - frmsz) {
                 break;
             }
         }
@@ -1031,7 +1031,7 @@ void drawCameraLapHistory(int camidx, bool issub, bool isout) {
         }
         text += ": " + getLapStr(lap) + "s";
         if (issub) {
-            drawStringWithShadow(&myFontLapSub, myColorWhite, myColorBGMiddle, text, camView[camidx].lapPosX + offset, posy);
+            drawStringWithShadow(&myFontLapSub, myColorWhite, myColorBGMiddle, text, camView[camidx].lapPosX + frmsz, posy);
         } else {
             drawStringWithShadow(&myFontLapHist, myColorWhite, myColorBGMiddle, text, camView[camidx].lapPosX, posy);
         }
@@ -1097,7 +1097,7 @@ void drawWatch() {
     }
     int x = (ofGetWidth() / 2) - (myFontInfoWatch.stringWidth(str) / 2);
     x = (int)(x / 10) * 10;
-    drawStringWithShadow(&myFontInfoWatch, myColorWhite, myColorBGDark, str, x, ofGetHeight() - 10);
+    drawStringWithShadow(&myFontInfoWatch, myColorWhite, myColorBGDark, str, x, ofGetHeight() - WATCH_OFFSET_Y);
 }
 
 //--------------------------------------------------------------
