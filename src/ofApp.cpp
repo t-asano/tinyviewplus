@@ -19,7 +19,7 @@ ofColor myColorYellow, myColorWhite, myColorLGray, myColorDGray, myColorAlert;
 ofColor myColorBGDark, myColorBGMiddle, myColorBGLight;
 ofxTrueTypeFontUC myFontNumber, myFontLabel, myFontLap, myFontLapHist;
 ofxTrueTypeFontUC myFontNumberSub, myFontLabelSub, myFontLapSub;
-ofxTrueTypeFontUC myFontInfo1m, myFontInfo1p, myFontInfo3m;
+ofxTrueTypeFontUC myFontInfo1m, myFontInfo1p, myFontInfoWatch;
 ofImage logoLargeImage, logoSmallImage;
 ofImage bttnFscrImage, bttnQuitImage, bttnSettImage, bttnWndwImage;
 ofImage wallImage;
@@ -96,7 +96,7 @@ void setupInit() {
     myFontLapSub.load(FONT_P_FILE, LAP_HEIGHT / 2);
     myFontInfo1m.load(FONT_M_FILE, INFO_HEIGHT);
     myFontInfo1p.load(FONT_P_FILE, INFO_HEIGHT);
-    myFontInfo3m.load(FONT_M_FILE, INFO_HEIGHT * 3);
+    myFontInfoWatch.load(FONT_M_FILE, WATCH_HEIGHT);
     loadOverlayFont();
     cameraTrimEnabled = DFLT_CAM_TRIM;
     fullscreenEnabled = DFLT_FSCR_ENBLD;
@@ -1092,9 +1092,9 @@ void drawWatch() {
             str = str + " / " + getWatchString(raceDuraSecs);
         }
     }
-    int x = (ofGetWidth() / 2) - (myFontInfo3m.stringWidth(str) / 2);
+    int x = (ofGetWidth() / 2) - (myFontInfoWatch.stringWidth(str) / 2);
     x = (int)(x / 10) * 10;
-    drawStringWithShadow(&myFontInfo3m, myColorWhite, myColorBGDark, str, x, ofGetHeight() - 10);
+    drawStringWithShadow(&myFontInfoWatch, myColorWhite, myColorBGDark, str, x, ofGetHeight() - 10);
 }
 
 //--------------------------------------------------------------

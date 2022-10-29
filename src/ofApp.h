@@ -135,6 +135,7 @@
 #define OVLTXT_MARG     10
 #define OLVMSG_TIME     FRAME_RATE
 #define INFO_HEIGHT     10
+#define WATCH_HEIGHT    40
 // sound
 #define SND_BEEP_FILE   "system/beep.wav"
 #define SND_BEEP3_FILE  "system/beep3.wav"
