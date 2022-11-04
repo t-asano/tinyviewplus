@@ -83,7 +83,7 @@ On Windows, if multiple receivers are connected to same USB hub, only one of the
 | 1~4           | Set camera 1~4 enhanced view (On/Off)            | Off            |
 | command + 1~4 | Set camera 1~4 visibility (On/Off) [macOS]       | On             |
 | Alt + 1~4     | Set camera 1~4 visibility (On/Off) [Windows]     | On             |
-| L             | Set lap history view (Off/Inside/Outside) (\*3)  | Off            |
+| L             | Set lap history view mode (Off/Inside/Outside) (\*3)  | Off            |
 | Q             | Start/Stop QR Code reader for camera label (\*4) | -              |
 
 - (\*1) The background image will be scaled according to the screen. Upper left corner will be displayed in priority.
