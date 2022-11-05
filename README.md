@@ -12,7 +12,7 @@ Tiny View Plus is a FPV multi-view and lap timing system. It works on PC with UV
 
 <table>
 <tr>
-<td>OS</td><td>macOS (13 Venture is recommended)<br/>Windows (10 64bit is recommended)</td>
+<td>OS</td><td>macOS (13 Venture is recommended)<br/>Windows (11 is recommended)</td>
 </tr>
 <tr>
 <td>FPV Receiver</td><td>Eachine ROTG02<br/>Eachine ROTG01 Pro<br/>Eachine ROTG01</td>
@@ -40,7 +40,7 @@ If you want to build from source code, please refer to [this document](docs/HowT
 
 1. Download a zip file from [Release page](https://github.com/t-asano/tinyviewplus/releases).
 2. Extract it and place its contents in the proper place.
-3. Install [Microsoft Visual C++ Redistributable for Visual Studio 2015, 2017 and 2019(vc_redist.x64.exe)](https://support.microsoft.com/en-us/help/2977003/the-latest-supported-visual-c-downloads).
+3. Install [Microsoft Visual C++ Redistributable for Visual Studio(vc_redist.x64.exe)](https://support.microsoft.com/en-us/help/2977003/the-latest-supported-visual-c-downloads).
 
 ## Usage
 
@@ -74,17 +74,17 @@ On Windows, if multiple receivers are connected to same USB hub, only one of the
 
 #### Display
 
-| key           | Function                                         | Default value  |
-| ------------- | ------------------------------------------------ | -------------- |
-| F,Esc         | Set fullscreen mode (On/Off)                     | Off            |
-| B             | Set background image (\*1)                       | Built-in image |
-| T             | Set camera view trimming (On/Off) (\*2)          | Off            |
-| E             | Set camera frame visibility (On/Off)             | Off            |
-| 1~4           | Set camera 1~4 enhanced view (On/Off)            | Off            |
-| command + 1~4 | Set camera 1~4 visibility (On/Off) [macOS]       | On             |
-| Alt + 1~4     | Set camera 1~4 visibility (On/Off) [Windows]     | On             |
-| L             | Set lap history view mode (Off/Inside/Outside) (\*3)  | Off            |
-| Q             | Start/Stop QR Code reader for camera label (\*4) | -              |
+| key           | Function                                             | Default value  |
+| ------------- | ---------------------------------------------------- | -------------- |
+| F,Esc         | Set fullscreen mode (On/Off)                         | Off            |
+| B             | Set background image (\*1)                           | Built-in image |
+| T             | Set camera view trimming (On/Off) (\*2)              | Off            |
+| E             | Set camera frame visibility (On/Off)                 | Off            |
+| 1~4           | Set camera 1~4 enhanced view (On/Off)                | Off            |
+| command + 1~4 | Set camera 1~4 visibility (On/Off) [macOS]           | On             |
+| Alt + 1~4     | Set camera 1~4 visibility (On/Off) [Windows]         | On             |
+| L             | Set lap history view mode (Off/Inside/Outside) (\*3) | Off            |
+| Q             | Start/Stop QR Code reader for camera label (\*4)     | -              |
 
 - (\*1) The background image will be scaled according to the screen. Upper left corner will be displayed in priority.
 - (\*2) Camera image will be cropped and displayed as large as possible, when 1 or 3 cameras are connected.
