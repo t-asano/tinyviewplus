@@ -34,6 +34,9 @@
 #define SETTINGS_FILE   "settings.xml"
 #define SNM_SYS_SPCLANG "system:speechJpn"
 #define SNM_SYS_STAT    "system:sysStat"
+#define SNM_OSCMON_ENA  "oscMonitor:enabled"
+#define SNM_OSCMON_HOST "oscMonitor:host"
+#define SNM_OSCMON_PORT "oscMonitor:port"
 #define SNM_VIEW_FLLSCR "view:fullscreen"
 #define SNM_VIEW_BGIMG  "view:bgImage"
 #define SNM_VIEW_CAMTRM "view:camTrim"
@@ -167,6 +170,9 @@
 #define WATCH_COUNT_SEC 5
 // osc
 #define OSC_LISTEN_PORT 4000
+#define DFLT_OSCM_ENBLD true
+#define DFLT_OSCM_HOST  "127.0.0.1"
+#define DFLT_OSCM_PORT  4001
 // speech
 #define DFLT_SPCH_ENBLD false
 #define SPCH_SLOT_NUM	8
@@ -295,6 +301,7 @@ void saveSettingsFile();
 void savePilotsFile();
 void loadPilotsFile();
 void loadCameraProfileFile();
+void setupOsc();
 void updateInit();
 void drawInit();
 // -- camera setup --
@@ -334,6 +341,9 @@ void recvOsc();
 void recvOscCameraString(int, string, string);
 void recvOscCameraFloat(int, string, float);
 void recvOscSpeech(string, string);
+void sendOscSystemInfo(string);
+void sendOscRaceEvent(string);
+void sendOscCameraLap(int, int, float);
 // speech
 void toggleSpeechLang();
 void autoSelectSpeechLang();

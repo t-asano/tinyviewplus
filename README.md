@@ -200,7 +200,7 @@ However, if the interval between the two is equal to or greater than the minimum
 
 ## OSC API
 
-Tiny View Plus can be controlled by OSC protocol. Detailed information is [here](docs/OSCAPI_en.md).
+Tiny View Plus can be controlled and monitored by OSC protocol. Detailed information is [here](docs/OSCAPI_en.md).
 
 ## License
 

@@ -13,6 +13,10 @@ int camCheckCount;
 int tvpScene;
 ofxXmlSettings xmlSettings, xmlCamProfFpv, xmlPilots;
 bool sysStatEnabled;
+// osc monitor
+bool oscMonEnabled;
+string oscMonHost;
+int oscMonPort;
 // view
 ofVideoGrabber grabber[CAMERA_MAXNUM];
 ofColor myColorYellow, myColorWhite, myColorLGray, myColorDGray, myColorAlert;
@@ -39,6 +43,7 @@ bool cameraFrameEnabled;
 int hideCursorTimer;
 // osc
 ofxOscReceiver oscReceiver;
+ofxOscSender oscSender;
 // speech
 bool speechLangJpn;
 // AR lap timer
@@ -120,8 +125,6 @@ void setupInit() {
     setOverlayMode(OVLMODE_NONE);
     initOverlayMessage();
     raceResultPage = 0;
-    // osc
-    oscReceiver.setup(OSC_LISTEN_PORT);
     // gamepad (GPAD_MAX_DEVS: 4)
     gamePad[0].setup(GLFW_JOYSTICK_1);
     gamePad[1].setup(GLFW_JOYSTICK_2);
@@ -150,6 +153,10 @@ void setupInit() {
     autoSelectSpeechLang();
     // extra camera
     camProfFpvExtra.enabled = false;
+    // OSC
+    oscMonEnabled = DFLT_OSCM_ENBLD;
+    oscMonHost = DFLT_OSCM_HOST;
+    oscMonPort = DFLT_OSCM_PORT;
 }
 
 //--------------------------------------------------------------
@@ -175,6 +182,14 @@ void loadSettingsFile() {
     speechLangJpn = xmlSettings.getValue(SNM_SYS_SPCLANG, speechLangJpn);
     // system statistics
     sysStatEnabled = xmlSettings.getValue(SNM_SYS_STAT, sysStatEnabled);
+
+    // OSC MONITOR
+    // enabled
+    oscMonEnabled = xmlSettings.getValue(SNM_OSCMON_ENA, oscMonEnabled);
+    // host
+    oscMonHost = xmlSettings.getValue(SNM_OSCMON_HOST, oscMonHost);
+    // port
+    oscMonPort = xmlSettings.getValue(SNM_OSCMON_PORT, oscMonPort);
 
     // VIEW
     // fullscreen
@@ -207,6 +222,14 @@ void saveSettingsFile() {
     xmlSettings.setValue(SNM_SYS_SPCLANG, speechLangJpn);
     // system statistics
     xmlSettings.setValue(SNM_SYS_STAT, sysStatEnabled);
+
+    // OSC MONITOR
+    // enabled
+    xmlSettings.setValue(SNM_OSCMON_ENA, oscMonEnabled);
+    // host
+    xmlSettings.setValue(SNM_OSCMON_HOST, oscMonHost);
+    // port
+    xmlSettings.setValue(SNM_OSCMON_PORT, oscMonPort);
 
     // VIEW
     // fullscreen
@@ -289,6 +312,17 @@ void loadCameraProfileFile() {
     }
     // wide?
     p->isWide = (p->drawAspr == "16:9");
+}
+
+//--------------------------------------------------------------
+void setupOsc() {
+    // receiver
+    oscReceiver.setup(OSC_LISTEN_PORT);
+    // sender
+    if (oscMonEnabled == true) {
+        oscSender.setup(oscMonHost, oscMonPort);
+        sendOscSystemInfo("hello");
+    }
 }
 
 //--------------------------------------------------------------
@@ -414,6 +448,7 @@ void ofApp::setup() {
     loadCameraProfileFile();
     loadWallImage(wallPath);
     saveSettingsFile();
+    setupOsc();
 }
 
 //--------------------------------------------------------------
@@ -2265,7 +2300,7 @@ void recvOsc() {
 
 //--------------------------------------------------------------
 void recvOscCameraString(int camid, string method, string argstr) {
-    ofLogNotice() << "osc cam(s): " << method << "," << camid << "," << argstr;
+    ofLogNotice() << "osc recv cam(s): " << method << "," << camid << "," << argstr;
     if (camid < 1 || camid > cameraNum) {
         return;
     }
@@ -2303,7 +2338,7 @@ void recvOscCameraString(int camid, string method, string argstr) {
 
 //--------------------------------------------------------------
 void recvOscCameraFloat(int camid, string method, float argfloat) {
-    ofLogNotice() << "osc cam(f): " << method << "," << argfloat;
+    ofLogNotice() << "osc recv cam(f): " << method << "," << argfloat;
     if (camid < 1 || camid > cameraNum) {
         return;
     }
@@ -2318,6 +2353,46 @@ void recvOscCameraFloat(int camid, string method, float argfloat) {
         }
         return;
     }
+}
+
+//--------------------------------------------------------------
+void sendOscSystemInfo(string argstr) {
+    if (oscMonEnabled == false) {
+        return;
+    }
+    string method = "info";
+    ofLogNotice() << "osc send system: " << method << "," << argstr;
+    ofxOscMessage m;
+    m.setAddress("/v1/system/" + method);
+    m.addStringArg(argstr);
+    oscSender.sendMessage(m, false);
+}
+
+//--------------------------------------------------------------
+void sendOscRaceEvent(string argstr) {
+    if (oscMonEnabled == false) {
+        return;
+    }
+    string method = "event";
+    ofLogNotice() << "osc send race: " << method << "," << argstr;
+    ofxOscMessage m;
+    m.setAddress("/v1/race/" + method);
+    m.addStringArg(argstr);
+    oscSender.sendMessage(m, false);
+}
+
+//--------------------------------------------------------------
+void sendOscCameraLap(int camid, int lapnum, float laptime) {
+    if (oscMonEnabled == false) {
+        return;
+    }
+    string method = "lap";
+    ofLogNotice() << "osc send camera: " << method << "," << camid << "," << lapnum << "," << laptime;
+    ofxOscMessage m;
+    m.setAddress("/v1/camera/" + ofToString(camid) + "/" + method);
+    m.addIntArg(lapnum);
+    m.addFloatArg(laptime);
+    oscSender.sendMessage(m, false);
 }
 
 //--------------------------------------------------------------
@@ -2420,6 +2495,7 @@ void speakLap(int camid, float sec, int num) {
         sout += ssec + " seconds";
     }
     speakAny(speechLangJpn ? "jp" : "en", sout);
+    sendOscCameraLap(camid, num, sec);
 }
 
 //--------------------------------------------------------------
@@ -2577,6 +2653,7 @@ void startRace() {
     qrEnabled = false;
     ofResetElapsedTimeCounter();
     countSound.play();
+    sendOscRaceEvent("started");
 }
 
 //--------------------------------------------------------------
@@ -2589,6 +2666,7 @@ void stopRace(bool appexit) {
         raceStarted = false;
         countSound.stop();
         finishSound.play();
+        sendOscRaceEvent("finished");
         if (speechLangJpn == true) {
             speakAny("jp", "レース終了");
         } else {

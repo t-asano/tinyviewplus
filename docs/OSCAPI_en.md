@@ -1,8 +1,10 @@
 # OSC API for Tiny View Plus
 
-Tiny View Plus can be controlled by OSC protocol. It receives OSC packet at UDP port 4000.
+Tiny View Plus can be controlled and monitored by OSC protocol.
 
-## Message format
+## Controlling(receiver)
+
+It receives OSC packet at UDP port 4000.
 
 ### Set camera enhanced view on / off
 
@@ -69,3 +71,46 @@ Camera icon is also automatically changed in conjunction with the camera label c
   - text ... sentence to speak
 - Example: Say "We can fly!" in English
   - /v1/speeech/en/say "We can fly!"
+
+## Monitoring(sender) ※experimental
+
+It sends OSC packet to the host/port specified in "settings.xml".
+
+```xml
+<oscMonitor>
+    <enabled>1</enabled>
+    <host>127.0.0.1</host>
+    <port>4001</port>
+</oscMonitor>
+```
+
+Set "enabled" to 1 to enable this feature. Set to 0 to disable.
+
+### System information notification
+
+/v1/system/info {info}
+
+- Parameters
+  - info ... System information
+- Example: "Hello"
+  - /v1/system/info "hello"
+
+### Race event notifiacation
+
+/v1/race/event {event}
+
+- Parameters
+  - event ... "started" or "finished"
+- Example: Race has started
+  - /v1/race/event "started"
+
+### Lap notification
+
+/v1/camera/{id}/lap {lapnum} {laptime}
+
+- Parameters
+  - id ... Camera ID(1～4)
+  - lapnum ... Lap number
+  - laptime ... Lap time(seconds)
+- Example: Notify lap of camera 3(lap 5, 10.2 seconds)
+  - /v1/camera/3/lap 5 10.2

@@ -1,8 +1,10 @@
-## OSCによるTiny View Plusの制御
+# OSCによるTiny View Plusの制御と監視
 
-Tiny View Plusは、OSCプロトコルにより外部から制御可能です。UDP4000番ポートでOSCパケットを受信します。
+Tiny View Plusは、OSCプロトコルによって、外部からの制御と監視が可能です。
 
-## メッセージフォーマット
+## Tiny View Plusの制御(受信側)
+
+UDP4000番ポートでOSCパケットを受信します。
 
 ### カメラの拡大表示
 
@@ -69,3 +71,46 @@ Tiny View Plusは、OSCプロトコルにより外部から制御可能です。
   - text ... 読み上げ文
 - 例: 日本語で"ドローンで遊ぼう"と読み上げる
   - /v1/speeech/jp/say "ドローンで遊ぼう"
+
+## Tiny View Plusの監視(送信側) ※実験的な機能
+
+"settings.xml"で指定されたホスト・ポートへOSCパケットを送信します。
+
+```xml
+<oscMonitor>
+    <enabled>1</enabled>
+    <host>127.0.0.1</host>
+    <port>4001</port>
+</oscMonitor>
+```
+
+"settings.xml"は初回起動時に自動生成されます。この機能を有効にするには、Tiny View Plusを終了させた状態で、"enabled"に1を設定してください。無効にするには、0を設定してください。
+
+### システム情報の通知
+
+/v1/system/info {info}
+
+- パラメーター
+  - info ... システム情報
+- 例: "hello"を通知する
+  - /v1/system/info "hello"
+
+### レースイベントの通知
+
+/v1/race/event {event}
+
+- パラメーター
+  - event ... "started"または"finished"
+- 例: レースの開始を通知する
+  - /v1/race/event "started"
+
+### ラップの通知
+
+/v1/camera/{id}/lap {lapnum} {laptime}
+
+- パラメーター
+  - id ... カメラID(1～4)
+  - lapnum ... ラップ数
+  - laptime ... タップタイム(秒)
+- 例: カメラ3のラップを通知する(5周目、10.2秒)
+  - /v1/camera/3/lap 5 10.2
