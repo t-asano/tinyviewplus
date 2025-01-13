@@ -6,7 +6,7 @@
 
 1. Xcodeをインストールする
    - [App Store](https://itunes.apple.com/ca/app/xcode/id497799835?mt=12)からXcodeをインストールする÷
-2. openFrameworks 0.11.2をインストールする
+2. openFrameworks 0.12.0をインストールする
    - [openFrameworks for osx (zipファイル)](https://openframeworks.cc/download/)をダウンロードする
    - 拡張属性を取り除く
      - $ xattr -cr of\_\*\_osx_release.zip
@@ -18,7 +18,8 @@
    - [こちらのドキュメント](https://openframeworks.cc/setup/vs/)を参考とする
    - 「openFrameworks plugin for Visual Studio」は実施しない
 2. openFrameworks 0.11.2をインストールする
-   - 適当な場所に[openFrameworks for visual studio](https://openframeworks.cc/download/)を展開する
+   - [openFrameworks for visual studio (zipファイル)](https://openframeworks.cc/download/)をダウンロードする
+   - 適当な場所に展開する
 3. [Git for Windows](https://gitforwindows.org)をインストールする
    - これに含まれるGit Bashを使って、GitHubからのファイルの取得や、ローカルでのファイル操作を行うことになる
 
