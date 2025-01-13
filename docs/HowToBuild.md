@@ -4,8 +4,7 @@
 
 ### macOSの場合
 
-1. Xcodeをインストールする
-   - [App Store](https://itunes.apple.com/ca/app/xcode/id497799835?mt=12)からXcodeをインストールする÷
+1. Xcode 16をインストールする
 2. openFrameworks 0.12.0をインストールする
    - [openFrameworks for osx (zipファイル)](https://openframeworks.cc/download/)をダウンロードする
    - 拡張属性を取り除く
