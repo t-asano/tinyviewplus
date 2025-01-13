@@ -343,7 +343,9 @@ void recvOscCameraFloat(int, string, float);
 void recvOscSpeech(string, string);
 void sendOscSystemInfo(string);
 void sendOscRaceEvent(string);
-void sendOscCameraLap(int, int, float);
+void sendOscCameraLap(int, int, float, string);
+void sendOscCameraLabel(int, string);
+void sendOscCameraLabelAll();
 // speech
 void toggleSpeechLang();
 void autoSelectSpeechLang();

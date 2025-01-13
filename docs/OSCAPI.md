@@ -34,7 +34,7 @@ UDP4000番ポートでOSCパケットを受信します。
   - id ... カメラID(1～4)
   - label ... 任意の文字列(パイロット名など)
 - 例: カメラ2のラベルを"Whooper2"とする
-  - /v1/camera/2/label "Whooper2"
+  - /v1/camera/2/label "Whooper 2"
 
 ラベルの変更と連動して、アイコンも自動的に変更されます。
 
@@ -106,11 +106,24 @@ UDP4000番ポートでOSCパケットを受信します。
 
 ### ラップの通知
 
-/v1/camera/{id}/lap {lapnum} {laptime}
+/v1/camera/{id}/lap {lapnum} {laptime} {label}
 
 - パラメーター
   - id ... カメラID(1～4)
   - lapnum ... ラップ数
   - laptime ... タップタイム(秒)
+  - label ... カメラのラベル(パイロット名など)
 - 例: カメラ3のラップを通知する(5周目、10.2秒)
-  - /v1/camera/3/lap 5 10.2
+  - /v1/camera/3/lap 5 10.2 "Whooper 3"
+
+### カメラのラベルの通知
+
+/v1/camera/{id}/label {label}
+
+- パラメーター
+  - id ... カメラID(1～4)
+  - label ... カメラのラベル(パイロット名など)
+- 例: カメラ2のラベルを通知する
+  - /v1/camera/2/label "Whooper 2"
+
+レース開始時およびラベル変更時に通知します。

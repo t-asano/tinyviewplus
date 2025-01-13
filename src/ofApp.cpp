@@ -413,6 +413,7 @@ void setupMain() {
         camView[i].labelString = "Pilot" + ofToString(i + 1);
     }
     loadPilotsFile();
+    sendOscCameraLabelAll();
     setViewParams();
     for (int i = 0; i < cameraNum; i++) {
         camView[i].moveSteps = 1;
@@ -430,7 +431,7 @@ void setupMain() {
         speakAny("jp", "タイニービュープラスへ、ようこそ。");
 #else /* TARGET_OSX */
         speakAny("jp", "タイニービュープラスへようこそ。");
-#endif /* TARGET_WIN32 TARGET_LINUX */
+#endif /* TARGET_OSX */
     } else {
         speakAny("en", "Welcome to Tiny View Plus.");
     }
@@ -1737,6 +1738,10 @@ void changeCameraLabel(int camid) {
         camView[camid - 1].labelString = str;
         savePilotsFile();
         autoSelectCameraIcon(camid, str);
+#ifdef TARGET_WIN32
+        str = ansiToUtf8(str);
+#endif /* TARGET_WIN32 */
+        sendOscCameraLabel(camid, str);
     }
 #ifdef TARGET_WIN32
     ofSetFullscreen(fullscreenEnabled);
@@ -2328,6 +2333,7 @@ void recvOscCameraString(int camid, string method, string argstr) {
     }
     else if (method == "label") {
         string str = argstr;
+        sendOscCameraLabel(camid, str);
 #ifdef TARGET_WIN32
         str = utf8ToAnsi(str);
 #endif /* TARGET_WIN32 */
@@ -2382,17 +2388,43 @@ void sendOscRaceEvent(string argstr) {
 }
 
 //--------------------------------------------------------------
-void sendOscCameraLap(int camid, int lapnum, float laptime) {
+void sendOscCameraLap(int camid, int lapnum, float laptime, string label) {
     if (oscMonEnabled == false) {
         return;
     }
     string method = "lap";
-    ofLogNotice() << "osc send camera: " << method << "," << camid << "," << lapnum << "," << laptime;
+    ofLogNotice() << "osc send camera: " << method << "," << camid << "," << lapnum << "," << laptime << "," << label;
     ofxOscMessage m;
     m.setAddress("/v1/camera/" + ofToString(camid) + "/" + method);
     m.addIntArg(lapnum);
     m.addFloatArg(laptime);
+    m.addStringArg(label);
     oscSender.sendMessage(m, false);
+}
+
+//--------------------------------------------------------------
+void sendOscCameraLabel(int camid, string label) {
+    if (oscMonEnabled == false) {
+        return;
+    }
+    string method = "label";
+    ofLogNotice() << "osc send camera: " << method << "," << camid << "," << label;
+    ofxOscMessage m;
+    m.setAddress("/v1/camera/" + ofToString(camid) + "/" + method);
+    m.addStringArg(label);
+    oscSender.sendMessage(m, false);
+}
+
+//--------------------------------------------------------------
+void sendOscCameraLabelAll() {
+    string label;
+    for (int i = 0; i < cameraNum; i++) {
+        label = (camView[i].labelString == "") ? ("Pilot" + ofToString(i + 1)) : camView[i].labelString;
+#ifdef TARGET_WIN32
+        label = ansiToUtf8(label);
+#endif /* TARGET_WIN32 */
+        sendOscCameraLabel(i + 1, label);
+    }
 }
 
 //--------------------------------------------------------------
@@ -2465,8 +2497,9 @@ void speakLap(int camid, float sec, int num) {
     if (camid < 1 || camid > cameraNum || sec == 0.0) {
         return;
     }
-    string ssec, sout;
-    sout = camView[camid - 1].labelString + ", ";
+    string ssec, sout, label;
+    label = camView[camid - 1].labelString;
+    sout = label + ", ";
     if (speechLangJpn == true) {
         sout = regex_replace(sout, regex("(Pilot)(\\d)"), "パイロット $2");
     } else {
@@ -2495,7 +2528,10 @@ void speakLap(int camid, float sec, int num) {
         sout += ssec + " seconds";
     }
     speakAny(speechLangJpn ? "jp" : "en", sout);
-    sendOscCameraLap(camid, num, sec);
+#ifdef TARGET_WIN32
+    label = ansiToUtf8(label);
+#endif /* TARGET_WIN32 */
+    sendOscCameraLap(camid, num, sec, label);
 }
 
 //--------------------------------------------------------------
@@ -2654,6 +2690,7 @@ void startRace() {
     ofResetElapsedTimeCounter();
     countSound.play();
     sendOscRaceEvent("started");
+    sendOscCameraLabelAll();
 }
 
 //--------------------------------------------------------------
@@ -3727,9 +3764,9 @@ void drawHelpBody(int line) {
     drawStringBlock(&myFontOvlayP, value, blk2, line, ALIGN_CENTER, szb, szl);
 #ifdef TARGET_OSX
     drawStringBlock(&myFontOvlayP, "fn + Up/Down", blk3, line, ALIGN_CENTER, szb, szl);
-#else /* TARGET_OSX */
+#else /* TARGET_OSX*/
     drawStringBlock(&myFontOvlayP, "PgUp/PgDown", blk3, line, ALIGN_CENTER, szb, szl);
-#endif /* TARGET_WIN32 TARGET_LINUX */
+#endif /* TARGET_OSX */
     line++;
     // Set staggered start
     ofSetColor(myColorDGray);
@@ -3902,6 +3939,8 @@ void processQrReader() {
                 camView[qrCamIndex].qrScanned = true;
                 beepSound.play();
                 string label = ofTrim(zxres.getText());
+                int camid = qrCamIndex + 1;
+                sendOscCameraLabel(camid, label);
 #ifdef TARGET_WIN32
                 label = utf8ToAnsi(label);
 #endif /* TARGET_WIN32 */

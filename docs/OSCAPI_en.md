@@ -112,5 +112,18 @@ Set "enabled" to 1 to enable this feature. Set to 0 to disable.
   - id ... Camera ID(1～4)
   - lapnum ... Lap number
   - laptime ... Lap time(seconds)
+  - label ... Camera label
 - Example: Notify lap of camera 3(lap 5, 10.2 seconds)
-  - /v1/camera/3/lap 5 10.2
+  - /v1/camera/3/lap 5 10.2 "Whooper 3"
+
+### Camera label notification
+
+/v1/camera/{id}/label {label}
+
+- Parameters
+  - id ... Camera ID(1～4)
+  - label ... Camera label
+- Example: Notify the label of camera 2
+  - /v1/camera/2/label "Whooper 2"
+
+This works at race start and label change.
