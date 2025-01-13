@@ -12,7 +12,7 @@ Tiny View Plus is a FPV multi-view and lap timing system. It works on PC with UV
 
 <table>
 <tr>
-<td>OS</td><td>macOS (13 Venture is recommended)<br/>Windows (11 is recommended)</td>
+<td>OS</td><td>macOS (15 Sequoia is recommended)<br/>Windows (11 is recommended)</td>
 </tr>
 <tr>
 <td>FPV Receiver</td><td>Eachine ROTG02<br/>Eachine ROTG01 Pro<br/>Eachine ROTG01</td>

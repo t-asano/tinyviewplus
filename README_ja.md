@@ -12,7 +12,7 @@ Tiny View Plusはラップ計測に対応したFPVマルチビューアーです
 
 <table>
 <tr>
-<td>OS</td><td>macOS (13 Venture推奨)<br/>Windows (11推奨)</td>
+<td>OS</td><td>macOS (15 Sequoia推奨)<br/>Windows (11推奨)</td>
 </tr>
 <tr>
 <td>受信機</td><td>Eachine ROTG02<br/>Eachine ROTG01 Pro<br/>Eachine ROTG01</td>
