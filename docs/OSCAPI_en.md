@@ -106,7 +106,7 @@ Set "enabled" to 1 to enable this feature. Set to 0 to disable.
 
 ### Lap notification
 
-/v1/camera/{id}/lap {lapnum} {laptime}
+/v1/camera/{id}/lap {lapnum} {laptime} {label}
 
 - Parameters
   - id ... Camera ID(1～4)

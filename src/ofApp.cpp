@@ -594,6 +594,11 @@ void ofApp::update() {
                     camView[i].foundValidMarkerNum = 0;
                     camView[i].enoughMarkers = false;
                     finishSound.play();
+                    string label = camView[i].labelString;
+#ifdef TARGET_WIN32
+                    label = ansiToUtf8(label);
+#endif /* TARGET_WIN32 */
+                    sendOscCameraLap((i + 1), total - (useStartGate == true ? 1 : 0), lap, label);
                     continue;
                 }
                 if (total == ((raceDuraLaps + (useStartGate == true ? 1 : 0)) - 1)) {
@@ -2505,6 +2510,9 @@ void speakLap(int camid, float sec, int num) {
     } else {
         sout = regex_replace(sout, regex("(Pilot)(\\d)"), "$1 $2");
     }
+#ifdef TARGET_WIN32
+    label = ansiToUtf8(label);
+#endif /* TARGET_WIN32 */
     if (useStartGate == true && num == 1) {
         if (speechLangJpn == true) {
             sout += "スタート";
@@ -2512,6 +2520,7 @@ void speakLap(int camid, float sec, int num) {
             sout += "started";
         }
         speakAny(speechLangJpn ? "jp" : "en", sout);
+        sendOscCameraLap(camid, 0, sec, label);
         return;
     }
     ssec = getLapStr(sec);
@@ -2528,10 +2537,7 @@ void speakLap(int camid, float sec, int num) {
         sout += ssec + " seconds";
     }
     speakAny(speechLangJpn ? "jp" : "en", sout);
-#ifdef TARGET_WIN32
-    label = ansiToUtf8(label);
-#endif /* TARGET_WIN32 */
-    sendOscCameraLap(camid, num, sec, label);
+    sendOscCameraLap(camid, num - (useStartGate == true ? 1 : 0), sec, label);
 }
 
 //--------------------------------------------------------------
@@ -2827,6 +2833,11 @@ void pushLapRecord(int cid, float elpsec) {
         camView[i].foundValidMarkerNum = 0;
         camView[i].enoughMarkers = false;
         finishSound.play();
+        string label = camView[i].labelString;
+#ifdef TARGET_WIN32
+        label = ansiToUtf8(label);
+#endif /* TARGET_WIN32 */
+        sendOscCameraLap((i + 1), total - (useStartGate == true ? 1 : 0), lap, label);
         return;
     }
     // notify
