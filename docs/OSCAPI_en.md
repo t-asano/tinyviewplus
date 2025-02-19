@@ -116,6 +116,16 @@ Set "enabled" to 1 to enable this feature. Set to 0 to disable.
 - Example: Notify lap of camera 3(lap 5, 10.2 seconds)
   - /v1/camera/3/lap 5 10.2 "Whooper 3"
 
+### Lap delete notification
+
+/v1/camera/{id}/lapdel {lapnum}
+
+- Parameters
+  - id ... Camera ID(1～4)
+  - lapnum ... Lap number
+- Example: Notify lap delete of camera 3(lap 5)
+  - /v1/camera/3/lapdel 5
+
 ### Camera label notification
 
 /v1/camera/{id}/label {label}

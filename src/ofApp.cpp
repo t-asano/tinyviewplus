@@ -2408,6 +2408,19 @@ void sendOscCameraLap(int camid, int lapnum, float laptime, string label) {
 }
 
 //--------------------------------------------------------------
+void sendOscCameraLapDelete(int camid, int lapnum) {
+    if (oscMonEnabled == false) {
+        return;
+    }
+    string method = "lapdel";
+    ofLogNotice() << "osc send camera: " << method << "," << camid << "," << lapnum;
+    ofxOscMessage m;
+    m.setAddress("/v1/camera/" + ofToString(camid) + "/" + method);
+    m.addIntArg(lapnum);
+    oscSender.sendMessage(m, false);
+}
+
+//--------------------------------------------------------------
 void sendOscCameraLabel(int camid, string label) {
     if (oscMonEnabled == false) {
         return;
@@ -2878,6 +2891,7 @@ void popLapRecord(int cid) {
         camView[i].lastLapTime = camView[i].lapHistLapTime[newlaps - 1];
     }
     updateRacePositions();
+    sendOscCameraLapDelete(cid, oldlaps - (useStartGate == true ? 1 : 0));
 }
 
 //--------------------------------------------------------------

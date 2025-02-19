@@ -344,6 +344,7 @@ void recvOscSpeech(string, string);
 void sendOscSystemInfo(string);
 void sendOscRaceEvent(string);
 void sendOscCameraLap(int, int, float, string);
+void sendOscCameraLapDelete(int, int);
 void sendOscCameraLabel(int, string);
 void sendOscCameraLabelAll();
 // speech
