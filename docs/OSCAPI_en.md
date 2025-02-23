@@ -104,6 +104,18 @@ Set "enabled" to 1 to enable this feature. Set to 0 to disable.
 - Example: Race has started
   - /v1/race/event "started"
 
+### Camera label notification
+
+/v1/camera/{id}/label {label}
+
+- Parameters
+  - id ... Camera ID(1～4)
+  - label ... Camera label
+- Example: Notify the label of camera 2
+  - /v1/camera/2/label "Whooper 2"
+
+This works at the start of the race and when changing labels.
+
 ### Lap notification
 
 /v1/camera/{id}/lap {lapnum} {laptime} {label}
@@ -126,14 +138,18 @@ Set "enabled" to 1 to enable this feature. Set to 0 to disable.
 - Example: Notify lap delete of camera 3(lap 5)
   - /v1/camera/3/lapdel 5
 
-### Camera label notification
+### Race result notification
 
-/v1/camera/{id}/label {label}
+/v1/camera/{id}/result {label} {pos} {laps} {bestlap} {totaltime}
 
 - Parameters
   - id ... Camera ID(1～4)
   - label ... Camera label
-- Example: Notify the label of camera 2
-  - /v1/camera/2/label "Whooper 2"
+  - pos ... Position
+  - laps ... Laps
+  - bestlap ... Best lap time(seconds)
+  - totaltime ... Total time(minutes:seconds)
+- Example: Notify race result of camera 1(1st, 10 laps, 5.43 seconds, 62.13 seconds)
+  - /v1/camera/1/lap "Whooper 1" 1 10 5.43 62.13
 
-This works at race start and label change.
+This works at the end of the race.

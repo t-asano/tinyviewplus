@@ -2445,6 +2445,22 @@ void sendOscCameraLabelAll() {
     }
 }
 
+void sendOscCameraResult(int camid, string label, int pos, int laps, float bestlap, float totaltime) {
+    if (oscMonEnabled == false) {
+        return;
+    }
+    string method = "result";
+    ofLogNotice() << "osc send camera: " << method << "," << camid << "," << label << "," << pos << "," << laps << "," << bestlap << totaltime;
+    ofxOscMessage m;
+    m.setAddress("/v1/camera/" + ofToString(camid) + "/" + method);
+    m.addStringArg(label);
+    m.addIntArg(pos);
+    m.addIntArg(laps);
+    m.addFloatArg(ceil(bestlap * 100) / 100);
+    m.addFloatArg(ceil(totaltime * 100) / 100);
+    oscSender.sendMessage(m, false);
+}
+
 //--------------------------------------------------------------
 void toggleSpeechLang() {
     speechLangJpn = !speechLangJpn;
@@ -2983,6 +2999,12 @@ void fwriteRaceResult() {
         strsumm += ((blap == 0) ? "-.-" : getLapStr(blap)) + sep; // BestLap
         strsumm += ((total <= 0) ? "-:-.-" : getWatchString(total)) + sep; // TotalTime
         strsumm += newline;
+        // OSC API
+        string label = pilot;
+#ifdef TARGET_WIN32
+        label = ansiToUtf8(label);
+#endif /* TARGET_WIN32 */
+        sendOscCameraResult(i + 1, label, pos, lps, blap, total);
     }
     strsumm += newline;
 

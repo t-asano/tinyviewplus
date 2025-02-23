@@ -347,6 +347,7 @@ void sendOscCameraLap(int, int, float, string);
 void sendOscCameraLapDelete(int, int);
 void sendOscCameraLabel(int, string);
 void sendOscCameraLabelAll();
+void sendOscCameraResult(int, string, int, int, float, float);
 // speech
 void toggleSpeechLang();
 void autoSelectSpeechLang();

@@ -104,6 +104,18 @@ UDP4000番ポートでOSCパケットを受信します。
 - 例: レースの開始を通知する
   - /v1/race/event "started"
 
+### カメラのラベルの通知
+
+/v1/camera/{id}/label {label}
+
+- パラメーター
+  - id ... カメラID(1～4)
+  - label ... カメラのラベル(パイロット名など)
+- 例: カメラ2のラベルを通知する
+  - /v1/camera/2/label "Whooper 2"
+
+レース開始時およびラベル変更時に通知します。
+
 ### ラップの通知
 
 /v1/camera/{id}/lap {lapnum} {laptime} {label}
@@ -111,7 +123,7 @@ UDP4000番ポートでOSCパケットを受信します。
 - パラメーター
   - id ... カメラID(1～4)
   - lapnum ... ラップ番号
-  - laptime ... タップタイム(秒)
+  - laptime ... ラップタイム(秒)
   - label ... カメラのラベル(パイロット名など)
 - 例: カメラ3のラップを通知する(ラップ5、10.2秒)
   - /v1/camera/3/lap 5 10.2 "Whooper 3"
@@ -125,15 +137,19 @@ UDP4000番ポートでOSCパケットを受信します。
   - lapnum ... ラップ番号
 - 例: カメラ3のラップの削除を通知する(ラップ5)
   - /v1/camera/3/lapdel 5
-  
-### カメラのラベルの通知
 
-/v1/camera/{id}/label {label}
+### レース結果の通知
+
+/v1/camera/{id}/result {label} {pos} {laps} {bestlap} {totaltime}
 
 - パラメーター
   - id ... カメラID(1～4)
   - label ... カメラのラベル(パイロット名など)
-- 例: カメラ2のラベルを通知する
-  - /v1/camera/2/label "Whooper 2"
+  - pos ... 順位
+  - laps ... ラップ数
+  - bestlap ... ベストラップ(秒)
+  - totaltime ... 総合タイム(秒)
+- 例: カメラ1のレース結果を通知する(1位、10周、5.43秒、62.13秒)
+  - /v1/camera/1/lap "Whooper 1" 1 10 5.43 62.13
 
-レース開始時およびラベル変更時に通知します。
+レース終了時に通知します。
